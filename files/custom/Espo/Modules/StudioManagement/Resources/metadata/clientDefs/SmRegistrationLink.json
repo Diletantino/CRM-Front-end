@@ -1,0 +1,7 @@
+{
+  "controller": "controllers/record",
+  "iconClass": "fas fa-link",
+  "mergeDisabled": true,
+  "duplicateDisabled": true,
+  "massUpdateDisabled": true
+}

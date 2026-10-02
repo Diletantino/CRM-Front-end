@@ -1,0 +1,4 @@
+{
+  "labels": {"Gross": "Gross", "Studio": "Studio", "Producers": "Producers", "Participants": "Participants", "Shifts": "Shifts", "Producer Earnings": "Producer Earnings"},
+  "messages": {"noData": "No closed shifts in this period.", "analyticsFailed": "Could not load analytics."}
+}

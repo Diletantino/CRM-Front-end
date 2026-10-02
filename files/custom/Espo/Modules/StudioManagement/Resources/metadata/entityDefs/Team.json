@@ -1,0 +1,12 @@
+{
+  "fields": {
+    "smProducer": {"type": "link", "audited": true},
+    "smShifts": {"type": "linkMultiple", "readOnly": true},
+    "smFinancialSnapshots": {"type": "linkMultiple", "readOnly": true}
+  },
+  "links": {
+    "smProducer": {"type": "belongsTo", "entity": "User", "foreign": "smProducerTeams"},
+    "smShifts": {"type": "hasMany", "entity": "SmShift", "foreign": "team"},
+    "smFinancialSnapshots": {"type": "hasMany", "entity": "SmShiftFinancialSnapshot", "foreign": "team"}
+  }
+}

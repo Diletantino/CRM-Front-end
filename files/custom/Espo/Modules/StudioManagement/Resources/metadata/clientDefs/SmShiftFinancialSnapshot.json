@@ -1,0 +1,10 @@
+{
+  "controller": "controllers/record",
+  "iconClass": "fas fa-coins",
+  "createDisabled": true,
+  "editDisabled": true,
+  "deleteDisabled": true,
+  "mergeDisabled": true,
+  "duplicateDisabled": true,
+  "massUpdateDisabled": true
+}

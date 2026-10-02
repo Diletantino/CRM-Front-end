@@ -1,0 +1,68 @@
+{
+  "fields": {
+    "name": {
+      "type": "varchar",
+      "maxLength": 150,
+      "required": true,
+      "default": "New shift",
+      "pattern": "$noBadCharacters"
+    },
+    "status": {
+      "type": "enum",
+      "options": ["Draft", "Open", "Closed"],
+      "default": "Draft",
+      "readOnly": true,
+      "index": true,
+      "style": {"Draft": "default", "Open": "success", "Closed": "info"},
+      "displayAsLabel": true
+    },
+    "startTime": {"type": "datetime", "readOnly": true, "index": true},
+    "endTime": {"type": "datetime", "readOnly": true, "index": true},
+    "team": {"type": "link", "required": true, "audited": true},
+    "participants": {
+      "type": "linkMultiple",
+      "audited": true,
+      "selectFilterType": "primary",
+      "selectPrimaryFilterName": "active"
+    },
+    "currency": {
+      "type": "varchar",
+      "maxLength": 3,
+      "default": "USD",
+      "required": true,
+      "readOnlyAfterCreate": true
+    },
+    "totalGross": {"type": "decimal", "precision": 18, "scale": 2, "decimalPlaces": 2, "readOnly": true},
+    "modelShare": {"type": "decimal", "precision": 18, "scale": 2, "decimalPlaces": 2, "readOnly": true},
+    "operatorShare": {"type": "decimal", "precision": 18, "scale": 2, "decimalPlaces": 2, "readOnly": true},
+    "producerShare": {"type": "decimal", "precision": 18, "scale": 2, "decimalPlaces": 2, "readOnly": true},
+    "studioShare": {"type": "decimal", "precision": 18, "scale": 2, "decimalPlaces": 2, "readOnly": true},
+    "platformMetrics": {"type": "jsonObject", "readOnly": true},
+    "closedBy": {"type": "link", "readOnly": true},
+    "financialSnapshot": {"type": "linkOne", "readOnly": true},
+    "assignedUser": {"type": "link", "view": "views/fields/assigned-user"},
+    "teams": {"type": "linkMultiple", "view": "views/fields/teams"},
+    "description": {"type": "text"},
+    "createdAt": {"type": "datetime", "readOnly": true},
+    "modifiedAt": {"type": "datetime", "readOnly": true},
+    "createdBy": {"type": "link", "readOnly": true},
+    "modifiedBy": {"type": "link", "readOnly": true}
+  },
+  "links": {
+    "team": {"type": "belongsTo", "entity": "Team", "foreign": "smShifts"},
+    "participants": {"type": "hasMany", "entity": "User", "foreign": "smShifts", "relationName": "SmShiftUser"},
+    "closedBy": {"type": "belongsTo", "entity": "User", "foreign": "smClosedShifts"},
+    "financialSnapshot": {"type": "hasOne", "entity": "SmShiftFinancialSnapshot", "foreign": "shift"},
+    "assignedUser": {"type": "belongsTo", "entity": "User"},
+    "teams": {"type": "hasMany", "entity": "Team", "relationName": "entityTeam", "layoutRelationshipsDisabled": true},
+    "createdBy": {"type": "belongsTo", "entity": "User"},
+    "modifiedBy": {"type": "belongsTo", "entity": "User"}
+  },
+  "indexes": {
+    "status": {"columns": ["status", "deleted"]},
+    "teamStart": {"columns": ["teamId", "startTime", "deleted"]},
+    "endTime": {"columns": ["endTime", "deleted"]},
+    "assignedUser": {"columns": ["assignedUserId", "deleted"]}
+  },
+  "collection": {"orderBy": "startTime", "order": "desc", "textFilterFields": ["name"]}
+}

@@ -1,0 +1,4 @@
+{
+  "scopeNames": {"SmShift": "Смена", "SmShiftFinancialSnapshot": "Финансовый снимок", "SmRegistrationLink": "Ссылка регистрации", "SmAnalytics": "Аналитика студии"},
+  "scopeNamesPlural": {"SmShift": "Смены", "SmShiftFinancialSnapshot": "Финансовые снимки", "SmRegistrationLink": "Ссылки регистрации", "SmAnalytics": "Аналитика студии"}
+}

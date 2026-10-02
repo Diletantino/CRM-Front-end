@@ -1,0 +1,39 @@
+{
+  "fields": {
+    "name": {"type": "varchar", "maxLength": 150, "readOnly": true},
+    "token": {"type": "varchar", "maxLength": 64, "readOnly": true, "copyToClipboard": true},
+    "registrationUrl": {"type": "url", "readOnly": true, "copyToClipboard": true},
+    "targetRole": {"type": "link", "required": true, "readOnlyAfterCreate": true},
+    "accountType": {
+      "type": "enum",
+      "options": ["Model", "Operator"],
+      "required": true,
+      "readOnlyAfterCreate": true,
+      "displayAsLabel": true,
+      "style": {"Model": "primary", "Operator": "info"}
+    },
+    "expiresAt": {
+      "type": "datetime",
+      "required": true,
+      "readOnlyAfterCreate": true,
+      "index": true,
+      "default": "javascript: return this.dateTime.getDateTimeShiftedFromNow(1, 'days', 15);"
+    },
+    "isUsed": {"type": "bool", "default": false, "readOnly": true, "index": true},
+    "usedAt": {"type": "datetime", "readOnly": true},
+    "usedByUser": {"type": "link", "readOnly": true},
+    "createdAt": {"type": "datetime", "readOnly": true},
+    "createdBy": {"type": "link", "readOnly": true}
+  },
+  "links": {
+    "targetRole": {"type": "belongsTo", "entity": "Role"},
+    "usedByUser": {"type": "belongsTo", "entity": "User"},
+    "createdBy": {"type": "belongsTo", "entity": "User"}
+  },
+  "indexes": {
+    "tokenUnique": {"type": "unique", "columns": ["token", "deleteId"]},
+    "expiryUsed": {"columns": ["expiresAt", "isUsed", "deleted"]}
+  },
+  "deleteId": true,
+  "collection": {"orderBy": "createdAt", "order": "desc", "textFilterFields": ["name", "token"]}
+}

@@ -1,0 +1,1 @@
+{"fields": {"smAccountType": "Тип аккаунта студии", "smSharePercentOverride": "Персональный процент"}, "tooltips": {"smSharePercentOverride": "Необязательный персональный процент. Если поле пустое, используется максимальный процент назначенных ролей."}, "options": {"smAccountType": {"": "Не задан", "Model": "Модель", "Operator": "Оператор", "ProducerAdmin": "Продюсер / Админ"}}}

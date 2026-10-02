@@ -1,0 +1,9 @@
+{
+  "fields": {
+    "registrationLinkId": {"type": "varchar", "maxLength": 36, "required": true, "readOnly": true},
+    "createdAt": {"type": "datetime", "readOnly": true}
+  },
+  "indexes": {
+    "registrationLinkUnique": {"type": "unique", "columns": ["registrationLinkId"]}
+  }
+}

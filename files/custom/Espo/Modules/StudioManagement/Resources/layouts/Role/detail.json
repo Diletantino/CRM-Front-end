@@ -1,0 +1,16 @@
+[
+  {
+    "rows": [
+      [{"name": "name"}, {"name": "smSharePercent"}, false]
+    ]
+  },
+  {
+    "rows": [
+      [{"name": "exportPermission"}, {"name": "mentionPermission"}, {"name": "assignmentPermission"}],
+      [{"name": "portalPermission"}, {"name": "groupEmailAccountPermission"}, {"name": "userCalendarPermission"}],
+      [{"name": "massUpdatePermission"}, {"name": "followerManagementPermission"}, {"name": "messagePermission"}],
+      [{"name": "auditPermission"}, {"name": "userPermission"}, {"name": "dataPrivacyPermission"}],
+      [{"name": "lockPermission"}, false, false]
+    ]
+  }
+]

@@ -1,0 +1,15 @@
+[
+  {
+    "rows": [
+      [{"name": "name"}, {"name": "closedAt"}],
+      [{"name": "shift"}, {"name": "team"}],
+      [{"name": "producer"}, {"name": "closedBy"}],
+      [{"name": "totalGross"}, {"name": "studioShare"}],
+      [{"name": "modelShare"}, {"name": "operatorShare"}],
+      [{"name": "producerShare"}, {"name": "participantShare"}],
+      [{"name": "currency"}, false],
+      [{"name": "participantBreakdown"}],
+      [{"name": "platformMetrics"}]
+    ]
+  }
+]

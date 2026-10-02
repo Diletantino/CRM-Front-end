@@ -1,0 +1,32 @@
+{
+  "fields": {
+    "smAccountType": {
+      "type": "enum",
+      "options": ["", "Model", "Operator", "ProducerAdmin"],
+      "default": "",
+      "audited": true,
+      "displayAsLabel": true,
+      "style": {"Model": "primary", "Operator": "info", "ProducerAdmin": "warning"}
+    },
+    "smSharePercentOverride": {
+      "type": "decimal",
+      "precision": 7,
+      "scale": 4,
+      "decimalPlaces": 4,
+      "min": 0,
+      "max": 100,
+      "audited": true,
+      "tooltip": true
+    },
+    "smShifts": {"type": "linkMultiple", "readOnly": true},
+    "smClosedShifts": {"type": "linkMultiple", "readOnly": true},
+    "smProducerTeams": {"type": "linkMultiple", "readOnly": true},
+    "smProducerFinancialSnapshots": {"type": "linkMultiple", "readOnly": true}
+  },
+  "links": {
+    "smShifts": {"type": "hasMany", "entity": "SmShift", "foreign": "participants", "relationName": "SmShiftUser"},
+    "smClosedShifts": {"type": "hasMany", "entity": "SmShift", "foreign": "closedBy"},
+    "smProducerTeams": {"type": "hasMany", "entity": "Team", "foreign": "smProducer"},
+    "smProducerFinancialSnapshots": {"type": "hasMany", "entity": "SmShiftFinancialSnapshot", "foreign": "producer"}
+  }
+}

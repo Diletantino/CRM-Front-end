@@ -1,0 +1,6 @@
+{
+  "studioRegister": {
+    "className": "Espo\\Modules\\StudioManagement\\EntryPoints\\StudioRegister",
+    "noAuth": true
+  }
+}

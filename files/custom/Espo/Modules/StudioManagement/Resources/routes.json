@@ -1,0 +1,23 @@
+[
+  {
+    "route": "/SmShift/:id/open",
+    "method": "post",
+    "actionClassName": "Espo\\Modules\\StudioManagement\\Api\\PostOpenShift"
+  },
+  {
+    "route": "/SmShift/:id/close",
+    "method": "post",
+    "actionClassName": "Espo\\Modules\\StudioManagement\\Api\\PostCloseShift"
+  },
+  {
+    "route": "/StudioManagement/analytics",
+    "method": "get",
+    "actionClassName": "Espo\\Modules\\StudioManagement\\Api\\GetAnalytics"
+  },
+  {
+    "route": "/StudioManagement/register",
+    "method": "post",
+    "noAuth": true,
+    "actionClassName": "Espo\\Modules\\StudioManagement\\Api\\PostRegister"
+  }
+]
