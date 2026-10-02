@@ -1,5 +1,11 @@
 ## EspoCRM
 
+> This repository contains the complete EspoCRM application with the custom
+> **Studio Management** module integrated into the backend and frontend.
+> Module features include shifts, teams, RBAC fields, one-time registration
+> links, immutable financial snapshots, and studio/producer analytics.
+> See [the module documentation](extensions/studio-management/README.md).
+
 [![PHPStan level 8](https://img.shields.io/badge/PHPStan-level%208-brightgreen)](#espocrm)
 
 [EspoCRM](https://www.espocrm.com) is a free, open-source CRM platform designed to help organizations build and maintain strong customer relationships.

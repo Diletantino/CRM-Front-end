@@ -1,0 +1,11 @@
+[
+  {
+    "label": "",
+    "rows": [
+      [{"name": "userName"}, {"name": "smAccountType"}],
+      [{"name": "name"}, {"name": "title"}],
+      [{"name": "emailAddress"}, {"name": "phoneNumber"}],
+      [{"name": "smSharePercentOverride"}, {"name": "gender"}]
+    ]
+  }
+]

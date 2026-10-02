@@ -1,0 +1,40 @@
+{
+  "fields": {
+    "name": {"type": "varchar", "maxLength": 150, "readOnly": true},
+    "shift": {"type": "link", "required": true, "readOnly": true},
+    "team": {"type": "link", "required": true, "readOnly": true},
+    "producer": {"type": "link", "required": true, "readOnly": true},
+    "closedBy": {"type": "link", "required": true, "readOnly": true},
+    "closedAt": {"type": "datetime", "required": true, "readOnly": true, "index": true},
+    "currency": {"type": "varchar", "maxLength": 3, "required": true, "readOnly": true},
+    "totalGross": {"type": "decimal", "precision": 18, "scale": 2, "decimalPlaces": 2, "required": true, "readOnly": true},
+    "modelShare": {"type": "decimal", "precision": 18, "scale": 2, "decimalPlaces": 2, "required": true, "readOnly": true},
+    "operatorShare": {"type": "decimal", "precision": 18, "scale": 2, "decimalPlaces": 2, "required": true, "readOnly": true},
+    "participantShare": {"type": "decimal", "precision": 18, "scale": 2, "decimalPlaces": 2, "required": true, "readOnly": true},
+    "producerShare": {"type": "decimal", "precision": 18, "scale": 2, "decimalPlaces": 2, "required": true, "readOnly": true},
+    "studioShare": {"type": "decimal", "precision": 18, "scale": 2, "decimalPlaces": 2, "required": true, "readOnly": true},
+    "participantBreakdown": {"type": "jsonArray", "readOnly": true},
+    "platformMetrics": {"type": "jsonObject", "readOnly": true},
+    "assignedUser": {"type": "link", "readOnly": true},
+    "teams": {"type": "linkMultiple", "readOnly": true},
+    "createdAt": {"type": "datetime", "readOnly": true},
+    "createdBy": {"type": "link", "readOnly": true}
+  },
+  "links": {
+    "shift": {"type": "belongsTo", "entity": "SmShift", "foreign": "financialSnapshot"},
+    "team": {"type": "belongsTo", "entity": "Team", "foreign": "smFinancialSnapshots"},
+    "producer": {"type": "belongsTo", "entity": "User", "foreign": "smProducerFinancialSnapshots"},
+    "closedBy": {"type": "belongsTo", "entity": "User"},
+    "assignedUser": {"type": "belongsTo", "entity": "User"},
+    "teams": {"type": "hasMany", "entity": "Team", "relationName": "entityTeam", "layoutRelationshipsDisabled": true},
+    "createdBy": {"type": "belongsTo", "entity": "User"}
+  },
+  "indexes": {
+    "shiftUnique": {"type": "unique", "columns": ["shiftId", "deleteId"]},
+    "closedAt": {"columns": ["closedAt", "deleted"]},
+    "producerClosedAt": {"columns": ["producerId", "closedAt", "deleted"]},
+    "teamClosedAt": {"columns": ["teamId", "closedAt", "deleted"]}
+  },
+  "deleteId": true,
+  "collection": {"orderBy": "closedAt", "order": "desc", "textFilterFields": ["name"]}
+}

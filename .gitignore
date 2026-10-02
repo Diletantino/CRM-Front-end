@@ -11,6 +11,7 @@
 /data/tmp/*
 /build
 /node_modules
+/.npm-cache/
 /npm-debug.log
 /test.php
 /main.html
@@ -25,6 +26,8 @@
 /custom/Espo/Modules/*
 !/custom/Espo/Custom/.htaccess
 !/custom/Espo/Modules/.htaccess
+!/custom/Espo/Modules/StudioManagement/
+!/custom/Espo/Modules/StudioManagement/**
 /install/config.php
 
 client/css/espo/*

@@ -1,0 +1,20 @@
+[
+  {
+    "rows": [
+      [{"name": "name"}, {"name": "status"}],
+      [{"name": "team"}, {"name": "participants"}],
+      [{"name": "startTime"}, {"name": "endTime"}],
+      [{"name": "currency"}, {"name": "closedBy"}]
+    ]
+  },
+  {
+    "label": "Financial results",
+    "rows": [
+      [{"name": "totalGross"}, {"name": "studioShare"}],
+      [{"name": "modelShare"}, {"name": "operatorShare"}],
+      [{"name": "producerShare"}, {"name": "financialSnapshot"}],
+      [{"name": "platformMetrics"}]
+    ]
+  },
+  {"rows": [[{"name": "description"}]]}
+]

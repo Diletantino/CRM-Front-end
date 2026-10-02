@@ -1,0 +1,37 @@
+{
+  "labels": {
+    "Create SmShift": "Create Shift",
+    "Open Shift": "Open Shift",
+    "Close Shift": "Close Shift",
+    "Financial results": "Financial results"
+  },
+  "fields": {
+    "name": "Name",
+    "status": "Status",
+    "startTime": "Start Time",
+    "endTime": "End Time",
+    "team": "Team",
+    "participants": "Participants",
+    "currency": "Currency",
+    "totalGross": "Gross Income",
+    "modelShare": "Model Share",
+    "operatorShare": "Operator Share",
+    "producerShare": "Producer Share",
+    "studioShare": "Studio Share",
+    "platformMetrics": "Platform Metrics",
+    "closedBy": "Closed By",
+    "financialSnapshot": "Financial Snapshot",
+    "description": "Description"
+  },
+  "links": {"team": "Team", "participants": "Participants", "closedBy": "Closed By", "financialSnapshot": "Financial Snapshot"},
+  "options": {"status": {"Draft": "Draft", "Open": "Open", "Closed": "Closed"}},
+  "messages": {
+    "openShiftConfirmation": "Open this shift now?",
+    "closeShiftConfirmation": "Close the shift and permanently record its financial snapshot?",
+    "enterGross": "Enter the final gross income (for example 1250.50)",
+    "enterPlatformMetrics": "Enter platform metrics as JSON (for example {\"tokens\": 1000})",
+    "invalidMetricsJson": "Platform metrics must be a valid JSON object.",
+    "shiftOpened": "Shift opened.",
+    "shiftClosed": "Shift closed and snapshot recorded."
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "labels": {
+    "Create SmRegistrationLink": "Create Registration Link",
+    "Registration": "Registration",
+    "Account Type": "Account Type",
+    "Target Role": "Target Role",
+    "Expires At": "Expires At",
+    "Full Name": "Full Name",
+    "Confirm Password": "Confirm Password",
+    "Register": "Register",
+    "Go to Login": "Go to Login"
+  },
+  "fields": {"name": "Name", "token": "Token", "registrationUrl": "Registration URL", "targetRole": "Target Role", "accountType": "Account Type", "expiresAt": "Expires At", "isUsed": "Used", "usedAt": "Used At", "usedByUser": "Registered User"},
+  "links": {"targetRole": "Target Role", "usedByUser": "Registered User"},
+  "options": {"accountType": {"Model": "Model", "Operator": "Operator"}},
+  "messages": {
+    "invitationUnavailable": "This invitation is invalid, expired or already used.",
+    "allFieldsRequired": "Complete all required fields.",
+    "passwordsDoNotMatch": "Passwords do not match.",
+    "registrationComplete": "Registration completed. You can now sign in.",
+    "registrationFailed": "Registration failed. Check the entered data."
+  }
+}

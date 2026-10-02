@@ -1,0 +1,7 @@
+{
+  "labels": {"Create SmRegistrationLink": "Создать ссылку регистрации", "Registration": "Регистрация", "Account Type": "Тип аккаунта", "Target Role": "Роль", "Expires At": "Истекает", "Full Name": "Полное имя", "Confirm Password": "Подтверждение пароля", "Register": "Зарегистрироваться", "Go to Login": "Перейти ко входу"},
+  "fields": {"name": "Название", "token": "Токен", "registrationUrl": "Ссылка регистрации", "targetRole": "Роль", "accountType": "Тип аккаунта", "expiresAt": "Истекает", "isUsed": "Использована", "usedAt": "Использована в", "usedByUser": "Созданный пользователь"},
+  "links": {"targetRole": "Роль", "usedByUser": "Созданный пользователь"},
+  "options": {"accountType": {"Model": "Модель", "Operator": "Оператор"}},
+  "messages": {"invitationUnavailable": "Ссылка недействительна, просрочена или уже использована.", "allFieldsRequired": "Заполните все обязательные поля.", "passwordsDoNotMatch": "Пароли не совпадают.", "registrationComplete": "Регистрация завершена. Теперь можно войти.", "registrationFailed": "Не удалось зарегистрироваться. Проверьте введённые данные."}
+}

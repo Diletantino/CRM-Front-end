@@ -1,0 +1,4 @@
+{
+  "labels": {"Gross": "Общий доход", "Studio": "Студия", "Producers": "Продюсеры", "Participants": "Участники", "Shifts": "Смены", "Producer Earnings": "Заработок продюсеров"},
+  "messages": {"noData": "За выбранный период закрытых смен нет.", "analyticsFailed": "Не удалось загрузить аналитику."}
+}

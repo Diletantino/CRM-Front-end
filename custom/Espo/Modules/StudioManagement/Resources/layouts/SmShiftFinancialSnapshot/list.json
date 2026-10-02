@@ -1,0 +1,9 @@
+[
+  {"name": "closedAt", "link": true, "width": 18},
+  {"name": "team", "width": 18},
+  {"name": "producer", "width": 18},
+  {"name": "totalGross", "width": 14},
+  {"name": "studioShare", "width": 14},
+  {"name": "producerShare", "width": 14},
+  {"name": "currency", "width": 8}
+]

@@ -1,0 +1,7 @@
+{
+  "labels": {"Create SmShift": "Создать смену", "Open Shift": "Открыть смену", "Close Shift": "Закрыть смену", "Financial results": "Финансовые результаты"},
+  "fields": {"name": "Название", "status": "Статус", "startTime": "Начало", "endTime": "Окончание", "team": "Команда", "participants": "Участники", "currency": "Валюта", "totalGross": "Общий доход", "modelShare": "Доля моделей", "operatorShare": "Доля операторов", "producerShare": "Доля продюсера", "studioShare": "Доля студии", "platformMetrics": "Метрики платформ", "closedBy": "Закрыл смену", "financialSnapshot": "Финансовый снимок", "description": "Описание"},
+  "links": {"team": "Команда", "participants": "Участники", "closedBy": "Закрыл смену", "financialSnapshot": "Финансовый снимок"},
+  "options": {"status": {"Draft": "Черновик", "Open": "Открыта", "Closed": "Закрыта"}},
+  "messages": {"openShiftConfirmation": "Открыть смену сейчас?", "closeShiftConfirmation": "Закрыть смену и навсегда зафиксировать финансовый снимок?", "enterGross": "Введите итоговый общий доход (например, 1250.50)", "enterPlatformMetrics": "Введите метрики платформ в JSON (например, {\"tokens\": 1000})", "invalidMetricsJson": "Метрики платформ должны быть корректным JSON-объектом.", "shiftOpened": "Смена открыта.", "shiftClosed": "Смена закрыта, финансовый снимок сохранён."}
+}

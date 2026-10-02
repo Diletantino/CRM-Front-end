@@ -1,0 +1,9 @@
+[
+  {"name": "name", "link": true},
+  {"name": "status", "width": 12},
+  {"name": "team", "width": 18},
+  {"name": "startTime", "width": 18},
+  {"name": "endTime", "width": 18},
+  {"name": "totalGross", "width": 14},
+  {"name": "currency", "width": 8}
+]

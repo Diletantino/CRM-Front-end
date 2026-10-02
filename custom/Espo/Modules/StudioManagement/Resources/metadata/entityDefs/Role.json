@@ -1,0 +1,15 @@
+{
+  "fields": {
+    "smSharePercent": {
+      "type": "decimal",
+      "precision": 7,
+      "scale": 4,
+      "decimalPlaces": 4,
+      "min": 0,
+      "max": 100,
+      "default": 0,
+      "audited": true,
+      "tooltip": true
+    }
+  }
+}

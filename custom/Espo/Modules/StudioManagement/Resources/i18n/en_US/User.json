@@ -1,0 +1,1 @@
+{"fields": {"smAccountType": "Studio Account Type", "smSharePercentOverride": "Share Percent Override"}, "tooltips": {"smSharePercentOverride": "Optional individual percentage. When empty, the highest percentage from assigned roles is used."}, "options": {"smAccountType": {"": "Not Set", "Model": "Model", "Operator": "Operator", "ProducerAdmin": "Producer / Admin"}}}

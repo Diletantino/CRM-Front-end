@@ -1,0 +1,10 @@
+[
+  {
+    "rows": [
+      [{"name": "name"}, {"name": "smProducer"}],
+      [{"name": "roles"}, {"name": "positionList"}],
+      [{"name": "layoutSet"}, {"name": "workingTimeCalendar"}]
+    ]
+  },
+  {"rows": [[{"name": "description"}]]}
+]

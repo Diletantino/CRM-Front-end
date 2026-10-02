@@ -1,0 +1,6 @@
+{
+  "fields": {
+    "name": "Name", "shift": "Shift", "team": "Team", "producer": "Producer", "closedBy": "Closed By", "closedAt": "Closed At", "currency": "Currency", "totalGross": "Gross Income", "modelShare": "Model Share", "operatorShare": "Operator Share", "participantShare": "Participant Share", "producerShare": "Producer Share", "studioShare": "Studio Share", "participantBreakdown": "Participant Breakdown", "platformMetrics": "Platform Metrics"
+  },
+  "links": {"shift": "Shift", "team": "Team", "producer": "Producer", "closedBy": "Closed By"}
+}

@@ -1,0 +1,4 @@
+{
+  "controller": "studio-management:controllers/sm-analytics",
+  "iconClass": "fas fa-chart-line"
+}

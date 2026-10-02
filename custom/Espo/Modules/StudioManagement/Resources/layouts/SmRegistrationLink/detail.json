@@ -1,0 +1,12 @@
+[
+  {
+    "rows": [
+      [{"name": "name"}, {"name": "accountType"}],
+      [{"name": "targetRole"}, {"name": "expiresAt"}],
+      [{"name": "registrationUrl"}],
+      [{"name": "token"}],
+      [{"name": "isUsed"}, {"name": "usedAt"}],
+      [{"name": "usedByUser"}, {"name": "createdBy"}]
+    ]
+  }
+]

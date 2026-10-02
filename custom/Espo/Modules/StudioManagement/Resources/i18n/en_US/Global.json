@@ -1,0 +1,14 @@
+{
+  "scopeNames": {
+    "SmShift": "Studio Shift",
+    "SmShiftFinancialSnapshot": "Financial Snapshot",
+    "SmRegistrationLink": "Registration Link",
+    "SmAnalytics": "Studio Analytics"
+  },
+  "scopeNamesPlural": {
+    "SmShift": "Studio Shifts",
+    "SmShiftFinancialSnapshot": "Financial Snapshots",
+    "SmRegistrationLink": "Registration Links",
+    "SmAnalytics": "Studio Analytics"
+  }
+}

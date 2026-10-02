@@ -1,0 +1,10 @@
+{
+  "controller": "controllers/record",
+  "recordViews": {
+    "detail": "studio-management:views/sm-shift/record/detail"
+  },
+  "iconClass": "fas fa-clock",
+  "mergeDisabled": true,
+  "duplicateDisabled": true,
+  "boolFilterList": []
+}

@@ -1,0 +1,4 @@
+{
+  "fields": {"name": "Название", "shift": "Смена", "team": "Команда", "producer": "Продюсер", "closedBy": "Закрыл", "closedAt": "Дата закрытия", "currency": "Валюта", "totalGross": "Общий доход", "modelShare": "Доля моделей", "operatorShare": "Доля операторов", "participantShare": "Доля участников", "producerShare": "Доля продюсера", "studioShare": "Доля студии", "participantBreakdown": "Разбивка участников", "platformMetrics": "Метрики платформ"},
+  "links": {"shift": "Смена", "team": "Команда", "producer": "Продюсер", "closedBy": "Закрыл"}
+}
