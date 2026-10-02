@@ -1,0 +1,14 @@
+[
+    "createdAt",
+    "createdBy",
+    "modifiedAt",
+    "expirationDate",
+    "language",
+    "type",
+    "status",
+    "portals",
+    "publishDate",
+    "isHtml",
+    "assignedUser",
+    "teams"
+]
