@@ -13,7 +13,7 @@ class AfterInstall
         $writer = $container->getByClass(InjectableFactory::class)->create(ConfigWriter::class);
         $tabList = $config->get('tabList') ?? [];
 
-        foreach (['SmShift', 'SmShiftFinancialSnapshot', 'SmRegistrationLink', 'SmAnalytics'] as $tab) {
+        foreach (['SmShift', 'SmModels', 'SmOperators', 'SmShiftFinancialSnapshot', 'SmRegistrationLink', 'SmAnalytics'] as $tab) {
             if (!in_array($tab, $tabList, true)) {
                 $tabList[] = $tab;
             }

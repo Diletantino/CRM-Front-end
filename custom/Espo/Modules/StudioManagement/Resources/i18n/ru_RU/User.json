@@ -1,1 +1,22 @@
-{"fields": {"smAccountType": "Тип аккаунта студии", "smSharePercentOverride": "Персональный процент"}, "tooltips": {"smSharePercentOverride": "Необязательный персональный процент. Если поле пустое, используется максимальный процент назначенных ролей."}, "options": {"smAccountType": {"": "Не задан", "Model": "Модель", "Operator": "Оператор", "ProducerAdmin": "Продюсер / Админ"}}}
+{
+  "fields": {
+    "smAccountType": "Тип аккаунта студии",
+    "smSharePercentOverride": "Персональный процент",
+    "smBirthDate": "Дата рождения",
+    "smStartDate": "Дата начала работы",
+    "smContact": "Контакт",
+    "smProfileBio": "Информация о сотруднике",
+    "smSiteAccess": "Доступы к сайтам",
+    "smProfilePhotos": "Фотографии",
+    "smDocumentPhotos": "Фотографии документов",
+    "smCommentsWidget": "Комментарии",
+    "smProfileDashboard": "Смены и доход"
+  },
+  "tooltips": {
+    "smSharePercentOverride": "Необязательный персональный процент. Если поле пустое, используется максимальный процент назначенных ролей.",
+    "smSiteAccess": "Доступы можно вести в свободном текстовом или табличном формате."
+  },
+  "options": {"smAccountType": {"": "Не задан", "Model": "Модель", "Operator": "Оператор", "ProducerAdmin": "Продюсер / Админ"}},
+  "labels": {"Profile Photos": "Фотографии", "Document Photos": "Документы", "Comments": "Комментарии", "Shift History and Earnings": "История смен и доход", "Write a comment": "Введите комментарий", "Add Comment": "Добавить комментарий", "Shift History": "Список смен за последний период", "Income by Payout Day": "График дохода по дням выплат", "Operator": "Оператор", "Team": "Команда", "Start": "Начало", "End": "Конец", "Result": "Результат", "Personal Income": "Личный доход"},
+  "messages": {"staffProfileUnavailable": "Профиль доступен только продюсеру команды или администратору.", "commentRequired": "Введите комментарий.", "commentSaveFailed": "Не удалось сохранить комментарий.", "noStaffComments": "Комментариев пока нет.", "noStaffShifts": "Закрытых смен пока нет."}
+}

@@ -1,0 +1,4 @@
+{
+  "controller": "studio-management:controllers/sm-operators",
+  "iconClass": "fas fa-headset"
+}

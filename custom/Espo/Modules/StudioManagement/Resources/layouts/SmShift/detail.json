@@ -1,20 +1,31 @@
 [
   {
+    "label": "Shift details",
     "rows": [
-      [{"name": "name"}, {"name": "status"}],
-      [{"name": "team"}, {"name": "participants"}],
+      [{"name": "number"}, {"name": "status"}],
+      [{"name": "operator"}, {"name": "model"}],
+      [{"name": "modelBirthDate"}, {"name": "team"}],
       [{"name": "startTime"}, {"name": "endTime"}],
-      [{"name": "currency"}, {"name": "closedBy"}]
+      [{"name": "siteData", "fullWidth": true}],
+      [{"name": "modelImages", "fullWidth": true}]
     ]
   },
   {
-    "label": "Financial results",
+    "label": "Shift calculation",
     "rows": [
+      [{"name": "botTotal"}, {"name": "calculatedTotal"}],
+      [{"name": "result"}, {"name": "offlineBonus"}],
+      [{"name": "screenshots", "fullWidth": true}],
+      [{"name": "currency"}, {"name": "closedBy"}],
       [{"name": "totalGross"}, {"name": "studioShare"}],
       [{"name": "modelShare"}, {"name": "operatorShare"}],
-      [{"name": "producerShare"}, {"name": "financialSnapshot"}],
-      [{"name": "platformMetrics"}]
+      [{"name": "producerShare"}, {"name": "financialSnapshot"}]
     ]
   },
-  {"rows": [[{"name": "description"}]]}
+  {
+    "rows": [
+      [{"name": "description"}],
+      [{"name": "workflowFooter", "fullWidth": true, "noLabel": true}]
+    ]
+  }
 ]

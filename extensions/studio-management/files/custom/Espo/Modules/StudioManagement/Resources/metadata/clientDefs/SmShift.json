@@ -1,7 +1,9 @@
 {
   "controller": "controllers/record",
   "recordViews": {
-    "detail": "studio-management:views/sm-shift/record/detail"
+    "detail": "studio-management:views/sm-shift/record/detail",
+    "edit": "studio-management:views/sm-shift/record/edit",
+    "list": "studio-management:views/sm-shift/record/list"
   },
   "iconClass": "fas fa-clock",
   "mergeDisabled": true,

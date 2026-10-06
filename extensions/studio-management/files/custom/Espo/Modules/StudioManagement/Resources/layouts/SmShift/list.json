@@ -1,9 +1,13 @@
 [
-  {"name": "name", "link": true},
-  {"name": "status", "width": 12},
-  {"name": "team", "width": 18},
-  {"name": "startTime", "width": 18},
-  {"name": "endTime", "width": 18},
-  {"name": "totalGross", "width": 14},
-  {"name": "currency", "width": 8}
+  {"name": "number", "width": 5},
+  {"name": "status", "width": 11},
+  {"name": "operator", "width": 13},
+  {"name": "model", "width": 13},
+  {"name": "botTotal", "width": 10},
+  {"name": "calculatedTotal", "width": 10},
+  {"name": "result", "width": 9},
+  {"name": "offlineBonus", "width": 10},
+  {"name": "startTime", "width": 14},
+  {"name": "endTime", "width": 14},
+  {"name": "workflowActions", "width": 13, "notSortable": true}
 ]

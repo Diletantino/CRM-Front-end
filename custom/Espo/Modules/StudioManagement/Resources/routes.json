@@ -10,9 +10,34 @@
     "actionClassName": "Espo\\Modules\\StudioManagement\\Api\\PostCloseShift"
   },
   {
+    "route": "/SmShift/:id/finish",
+    "method": "post",
+    "actionClassName": "Espo\\Modules\\StudioManagement\\Api\\PostFinishShift"
+  },
+  {
+    "route": "/SmShift/:id/revise",
+    "method": "post",
+    "actionClassName": "Espo\\Modules\\StudioManagement\\Api\\PostReviseShift"
+  },
+  {
     "route": "/StudioManagement/analytics",
     "method": "get",
     "actionClassName": "Espo\\Modules\\StudioManagement\\Api\\GetAnalytics"
+  },
+  {
+    "route": "/StudioManagement/staff/:type",
+    "method": "get",
+    "actionClassName": "Espo\\Modules\\StudioManagement\\Api\\GetStaffList"
+  },
+  {
+    "route": "/StudioManagement/staff/:type/:id",
+    "method": "get",
+    "actionClassName": "Espo\\Modules\\StudioManagement\\Api\\GetStaffProfile"
+  },
+  {
+    "route": "/StudioManagement/staff/:type/:id/comment",
+    "method": "post",
+    "actionClassName": "Espo\\Modules\\StudioManagement\\Api\\PostStaffComment"
   },
   {
     "route": "/StudioManagement/register",

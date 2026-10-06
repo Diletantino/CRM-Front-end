@@ -1,0 +1,4 @@
+{
+  "controller": "studio-management:controllers/sm-models",
+  "iconClass": "fas fa-camera"
+}

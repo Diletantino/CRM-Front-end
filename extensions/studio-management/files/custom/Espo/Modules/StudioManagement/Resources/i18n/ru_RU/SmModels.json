@@ -1,0 +1,4 @@
+{
+  "labels": {"Full Name": "ФИО", "Birth Date": "ДР", "Photo": "Фото", "Start Date": "Дата начала работы", "Previous Week Average": "Средний чек за прошлую неделю", "Team": "Команда", "Last Shift": "Дата последней смены", "Action": "Действие", "Edit": "Edit", "Refresh": "Обновить"},
+  "messages": {"noData": "Модели не найдены.", "loadFailed": "Не удалось загрузить список моделей."}
+}

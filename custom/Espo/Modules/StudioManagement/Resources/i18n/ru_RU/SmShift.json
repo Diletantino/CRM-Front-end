@@ -1,7 +1,85 @@
 {
-  "labels": {"Create SmShift": "Создать смену", "Open Shift": "Открыть смену", "Close Shift": "Закрыть смену", "Financial results": "Финансовые результаты"},
-  "fields": {"name": "Название", "status": "Статус", "startTime": "Начало", "endTime": "Окончание", "team": "Команда", "participants": "Участники", "currency": "Валюта", "totalGross": "Общий доход", "modelShare": "Доля моделей", "operatorShare": "Доля операторов", "producerShare": "Доля продюсера", "studioShare": "Доля студии", "platformMetrics": "Метрики платформ", "closedBy": "Закрыл смену", "financialSnapshot": "Финансовый снимок", "description": "Описание"},
-  "links": {"team": "Команда", "participants": "Участники", "closedBy": "Закрыл смену", "financialSnapshot": "Финансовый снимок"},
-  "options": {"status": {"Draft": "Черновик", "Open": "Открыта", "Closed": "Закрыта"}},
-  "messages": {"openShiftConfirmation": "Открыть смену сейчас?", "closeShiftConfirmation": "Закрыть смену и навсегда зафиксировать финансовый снимок?", "enterGross": "Введите итоговый общий доход (например, 1250.50)", "enterPlatformMetrics": "Введите метрики платформ в JSON (например, {\"tokens\": 1000})", "invalidMetricsJson": "Метрики платформ должны быть корректным JSON-объектом.", "shiftOpened": "Смена открыта.", "shiftClosed": "Смена закрыта, финансовый снимок сохранён."}
+  "labels": {
+    "Create SmShift": "Создать смену",
+    "Open Shift": "Открыть смену",
+    "Close Shift": "Закрыть смену",
+    "Start Shift": "Старт",
+    "Finish Shift": "Конец",
+    "Complete Calculation": "Завершить подсчёт",
+    "Save Changes": "Сохранить изменения",
+    "Add Site": "Добавить сайт",
+    "Start Site": "Начать",
+    "Banned": "Забанен",
+    "Calculated": "Завершено",
+    "Shift details": "Детали смены",
+    "Shift calculation": "Подсчёт смены",
+    "Financial results": "Финансовые результаты"
+  },
+  "fields": {
+    "number": "#",
+    "name": "Название",
+    "status": "Статус",
+    "operator": "Оператор",
+    "model": "Модель",
+    "modelBirthDate": "День рождения модели",
+    "siteData": "Доступы к сайтам",
+    "site": "Сайт",
+    "siteAccess": "Доступ к сайту",
+    "siteLogin": "Логин",
+    "sitePassword": "Пароль",
+    "siteState": "Состояние",
+    "siteEarning": "Заработок",
+    "siteOfflineBonus": "Оффлайн-бонус",
+    "modelImages": "Изображения модели",
+    "screenshots": "Загруженные скриншоты",
+    "workflowActions": "Действия",
+    "botTotal": "Итог по боту (coming soon)",
+    "calculatedTotal": "Итог подсчёта",
+    "result": "Результат",
+    "offlineBonus": "Бонус (оффлайн-доход)",
+    "startTime": "Начало смены",
+    "endTime": "Конец смены",
+    "team": "Команда",
+    "participants": "Участники",
+    "currency": "Валюта",
+    "totalGross": "Общий доход",
+    "modelShare": "Доля моделей",
+    "operatorShare": "Доля операторов",
+    "producerShare": "Доля продюсера",
+    "studioShare": "Доля студии",
+    "platformMetrics": "Метрики платформ",
+    "closedBy": "Закрыл смену",
+    "financialSnapshot": "Финансовый снимок",
+    "description": "Описание"
+  },
+  "links": {
+    "team": "Команда",
+    "operator": "Оператор",
+    "model": "Модель",
+    "participants": "Участники",
+    "closedBy": "Закрыл смену",
+    "financialSnapshot": "Финансовый снимок"
+  },
+  "options": {
+    "status": {
+      "Draft": "Предварительно",
+      "Open": "Смена идёт",
+      "Counting": "Идёт подсчёт",
+      "Closed": "Подсчитана"
+    }
+  },
+  "siteStates": {
+    "Pending": "Не начат",
+    "Started": "Начат",
+    "Banned": "Забанен"
+  },
+  "messages": {
+    "openShiftConfirmation": "Начать смену сейчас? Время начала будет записано автоматически.",
+    "finishShiftConfirmation": "Завершить смену и перейти к подсчёту?",
+    "closeShiftConfirmation": "Завершить подсчёт и зафиксировать финансовый результат?",
+    "reviseShiftConfirmation": "Сохранить исправленные суммы и обновить финансовый снимок?",
+    "shiftOpened": "Смена начата.",
+    "shiftClosed": "Подсчёт завершён, финансовый результат сохранён.",
+    "shiftRevised": "Данные смены и финансовый снимок обновлены."
+  }
 }

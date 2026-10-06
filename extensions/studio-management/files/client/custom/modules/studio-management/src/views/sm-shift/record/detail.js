@@ -1,76 +1,66 @@
 define(['views/record/detail'], function (DetailRecordView) {
     return class extends DetailRecordView {
+        editModeDisabled = true
+
         setupActionItems() {
             super.setupActionItems();
 
-            if (!this.getAcl().checkModel(this.model, 'edit')) {
-                return;
+            this.buttonList = this.buttonList.filter(item => item.name !== 'edit');
+
+            const status = this.model.get('status');
+            const accountType = this.getUser().get('smAccountType');
+            const isAdmin = this.getUser().isAdmin();
+            const isAssignedOperator = accountType === 'Operator' &&
+                this.model.get('operatorId') === this.getUser().id;
+            const isManager = isAdmin || accountType === 'ProducerAdmin';
+
+            if ((isAssignedOperator || isAdmin) && status === 'Draft') {
+                this.buttonList.push({name: 'prepareStart', label: 'Start Shift', style: 'success'});
             }
 
-            this.dropdownItemList.push({
-                label: 'Open Shift',
-                name: 'openShift',
-                onClick: () => this.actionOpenShift(),
-                iconClass: 'fas fa-play',
-            });
-            this.dropdownItemList.push({
-                label: 'Close Shift',
-                name: 'closeShift',
-                onClick: () => this.actionCloseShift(),
-                iconClass: 'fas fa-stop',
-            });
+            if ((isAssignedOperator || isAdmin) && status === 'Open') {
+                this.buttonList.push({name: 'finishShift', label: 'Finish Shift', style: 'danger'});
+            }
 
-            const control = () => {
-                const status = this.model.get('status');
-                status === 'Draft' ? this.showActionItem('openShift') : this.hideActionItem('openShift');
-                status === 'Open' ? this.showActionItem('closeShift') : this.hideActionItem('closeShift');
-            };
+            if ((isAssignedOperator || isAdmin) && status === 'Counting') {
+                this.buttonList.push({
+                    name: 'continueCalculation',
+                    label: 'Complete Calculation',
+                    style: 'success',
+                });
+            }
 
-            control();
-            this.model.onSync({owner: this, callback: control});
+            if (isManager && ['Draft', 'Closed'].includes(status)) {
+                this.buttonList.push({name: 'managerEdit', label: 'Edit', style: 'default'});
+            }
+
+            if (!isManager) {
+                this.removeActionItem('delete');
+            }
         }
 
-        async actionOpenShift() {
-            await this.confirm(this.translate('openShiftConfirmation', 'messages', 'SmShift'));
-            const data = await Espo.Ajax.postRequest(`SmShift/${this.model.id}/open`);
-            this.model.set(data);
-            Espo.Ui.success(this.translate('shiftOpened', 'messages', 'SmShift'));
+        actionPrepareStart() {
+            this.navigateToEdit('start');
         }
 
-        async actionCloseShift() {
-            const gross = window.prompt(this.translate('enterGross', 'messages', 'SmShift'));
+        async actionFinishShift() {
+            await this.confirm(this.translate('finishShiftConfirmation', 'messages', 'SmShift'));
+            const response = await Espo.Ajax.postRequest(`SmShift/${this.model.id}/finish`);
+            this.model.set(response);
+            this.navigateToEdit('count');
+        }
 
-            if (gross === null) {
-                return;
-            }
+        actionContinueCalculation() {
+            this.navigateToEdit('count');
+        }
 
-            const metricsRaw = window.prompt(this.translate('enterPlatformMetrics', 'messages', 'SmShift'), '{}');
+        actionManagerEdit() {
+            this.navigateToEdit(this.model.get('status') === 'Closed' ? 'revise' : null);
+        }
 
-            if (metricsRaw === null) {
-                return;
-            }
-
-            let platformMetrics;
-
-            try {
-                platformMetrics = JSON.parse(metricsRaw || '{}');
-            } catch (e) {
-                Espo.Ui.error(this.translate('invalidMetricsJson', 'messages', 'SmShift'));
-                return;
-            }
-
-            if (!platformMetrics || Array.isArray(platformMetrics) || typeof platformMetrics !== 'object') {
-                Espo.Ui.error(this.translate('invalidMetricsJson', 'messages', 'SmShift'));
-                return;
-            }
-
-            await this.confirm(this.translate('closeShiftConfirmation', 'messages', 'SmShift'));
-            const data = await Espo.Ajax.postRequest(`SmShift/${this.model.id}/close`, {
-                totalGross: gross,
-                platformMetrics,
-            });
-            this.model.set(data);
-            Espo.Ui.success(this.translate('shiftClosed', 'messages', 'SmShift'));
+        navigateToEdit(mode) {
+            const suffix = mode ? `/${mode}` : '';
+            this.getRouter().navigate(`#SmShift/edit/${this.model.id}${suffix}`, {trigger: true});
         }
     };
 });

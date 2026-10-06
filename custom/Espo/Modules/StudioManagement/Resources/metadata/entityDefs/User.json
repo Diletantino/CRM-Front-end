@@ -18,13 +18,66 @@
       "audited": true,
       "tooltip": true
     },
+    "smBirthDate": {
+      "type": "date",
+      "audited": true
+    },
+    "smStartDate": {
+      "type": "date",
+      "audited": true
+    },
+    "smContact": {
+      "type": "varchar",
+      "maxLength": 255,
+      "audited": true
+    },
+    "smProfileBio": {
+      "type": "text",
+      "audited": true
+    },
+    "smSiteAccess": {
+      "type": "text",
+      "audited": true
+    },
+    "smProfilePhotos": {
+      "type": "attachmentMultiple",
+      "sourceList": ["Document"],
+      "accept": ["image/*"],
+      "maxCount": 50
+    },
+    "smDocumentPhotos": {
+      "type": "attachmentMultiple",
+      "sourceList": ["Document"],
+      "accept": ["image/*", "application/pdf"],
+      "maxCount": 50
+    },
+    "smProfileComments": {
+      "type": "jsonArray",
+      "readOnly": true
+    },
+    "smCommentsWidget": {
+      "type": "varchar",
+      "notStorable": true,
+      "readOnly": true,
+      "view": "studio-management:views/user/fields/staff-comments"
+    },
+    "smProfileDashboard": {
+      "type": "varchar",
+      "notStorable": true,
+      "readOnly": true,
+      "view": "studio-management:views/user/fields/staff-dashboard"
+    },
     "smShifts": {"type": "linkMultiple", "readOnly": true},
+    "smOperatorShifts": {"type": "linkMultiple", "readOnly": true},
+    "smModelShifts": {"type": "linkMultiple", "readOnly": true},
     "smClosedShifts": {"type": "linkMultiple", "readOnly": true},
     "smProducerTeams": {"type": "linkMultiple", "readOnly": true},
     "smProducerFinancialSnapshots": {"type": "linkMultiple", "readOnly": true}
   },
   "links": {
     "smShifts": {"type": "hasMany", "entity": "SmShift", "foreign": "participants", "relationName": "SmShiftUser"},
+    "smOperatorShifts": {"type": "hasMany", "entity": "SmShift", "foreign": "operator"},
+    "smModelShifts": {"type": "hasMany", "entity": "SmShift", "foreign": "model"},
     "smClosedShifts": {"type": "hasMany", "entity": "SmShift", "foreign": "closedBy"},
     "smProducerTeams": {"type": "hasMany", "entity": "Team", "foreign": "smProducer"},
     "smProducerFinancialSnapshots": {"type": "hasMany", "entity": "SmShiftFinancialSnapshot", "foreign": "producer"}

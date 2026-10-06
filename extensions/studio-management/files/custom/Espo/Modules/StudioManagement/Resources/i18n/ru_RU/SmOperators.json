@@ -1,0 +1,4 @@
+{
+  "labels": {"Full Name": "ФИО", "Birth Date": "ДР", "Contact": "Контакт", "Photo": "Фото", "Start Date": "Дата начала работы", "Previous Week Average": "Средний чек за прошлую неделю", "Current Week Average": "Средний чек за эту неделю", "Current Week Shifts": "Количество смен за текущий период", "Last Shift": "Дата последней смены", "Action": "Действие", "Edit": "Edit", "Refresh": "Обновить"},
+  "messages": {"noData": "Операторы не найдены.", "loadFailed": "Не удалось загрузить список операторов."}
+}

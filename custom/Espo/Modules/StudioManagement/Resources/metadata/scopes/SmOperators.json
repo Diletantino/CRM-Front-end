@@ -1,0 +1,6 @@
+{
+  "module": "StudioManagement",
+  "entity": false,
+  "tab": true,
+  "acl": "boolean"
+}

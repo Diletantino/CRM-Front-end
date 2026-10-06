@@ -1,0 +1,4 @@
+{
+  "labels": {"Full Name": "Full Name", "Birth Date": "Birth Date", "Contact": "Contact", "Photo": "Photo", "Start Date": "Start Date", "Previous Week Average": "Previous Week Average", "Current Week Average": "Current Week Average", "Current Week Shifts": "Current Period Shifts", "Last Shift": "Last Shift", "Action": "Action", "Edit": "Edit", "Refresh": "Refresh"},
+  "messages": {"noData": "No operators found.", "loadFailed": "Could not load operators."}
+}

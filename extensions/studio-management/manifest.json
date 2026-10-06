@@ -1,9 +1,9 @@
 {
   "name": "Studio Management",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "acceptableVersions": [">=10.0.0"],
   "php": [">=8.3"],
-  "releaseDate": "2026-10-02",
+  "releaseDate": "2026-10-04",
   "author": "NoDiletant",
-  "description": "Shift management, expiring registration links and financial snapshots for EspoCRM."
+  "description": "Role-aware shifts, model and operator profiles, per-site calculation, screenshots, registration links and financial analytics for EspoCRM."
 }

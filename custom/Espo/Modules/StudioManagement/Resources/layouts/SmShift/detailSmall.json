@@ -1,3 +1,12 @@
 [
-  {"rows": [[{"name": "name"}, {"name": "status"}], [{"name": "team"}, {"name": "participants"}], [{"name": "currency"}, false]]}
+  {
+    "rows": [
+      [{"name": "status"}, {"name": "number"}],
+      [{"name": "operator"}, {"name": "model"}],
+      [{"name": "modelBirthDate"}, {"name": "team"}],
+      [{"name": "siteData", "fullWidth": true}],
+      [{"name": "modelImages", "fullWidth": true}],
+      [{"name": "screenshots", "fullWidth": true}]
+    ]
+  }
 ]

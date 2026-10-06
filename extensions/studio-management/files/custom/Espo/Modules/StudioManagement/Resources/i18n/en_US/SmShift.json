@@ -3,13 +3,42 @@
     "Create SmShift": "Create Shift",
     "Open Shift": "Open Shift",
     "Close Shift": "Close Shift",
+    "Start Shift": "Start",
+    "Finish Shift": "Finish",
+    "Complete Calculation": "Complete Calculation",
+    "Save Changes": "Save Changes",
+    "Add Site": "Add Site",
+    "Start Site": "Start",
+    "Banned": "Banned",
+    "Calculated": "Completed",
+    "Shift details": "Shift details",
+    "Shift calculation": "Shift calculation",
     "Financial results": "Financial results"
   },
   "fields": {
+    "number": "#",
     "name": "Name",
     "status": "Status",
-    "startTime": "Start Time",
-    "endTime": "End Time",
+    "operator": "Operator",
+    "model": "Model",
+    "modelBirthDate": "Model Birth Date",
+    "siteData": "Site Access",
+    "site": "Site",
+    "siteAccess": "Site Access",
+    "siteLogin": "Login",
+    "sitePassword": "Password",
+    "siteState": "State",
+    "siteEarning": "Earning",
+    "siteOfflineBonus": "Offline Bonus",
+    "modelImages": "Model Images",
+    "screenshots": "Uploaded Screenshots",
+    "workflowActions": "Actions",
+    "botTotal": "Bot Total (coming soon)",
+    "calculatedTotal": "Calculated Total",
+    "result": "Result",
+    "offlineBonus": "Bonus (offline income)",
+    "startTime": "Shift Start",
+    "endTime": "Shift End",
     "team": "Team",
     "participants": "Participants",
     "currency": "Currency",
@@ -23,15 +52,34 @@
     "financialSnapshot": "Financial Snapshot",
     "description": "Description"
   },
-  "links": {"team": "Team", "participants": "Participants", "closedBy": "Closed By", "financialSnapshot": "Financial Snapshot"},
-  "options": {"status": {"Draft": "Draft", "Open": "Open", "Closed": "Closed"}},
+  "links": {
+    "team": "Team",
+    "operator": "Operator",
+    "model": "Model",
+    "participants": "Participants",
+    "closedBy": "Closed By",
+    "financialSnapshot": "Financial Snapshot"
+  },
+  "options": {
+    "status": {
+      "Draft": "Preliminary",
+      "Open": "Shift in progress",
+      "Counting": "Being calculated",
+      "Closed": "Calculated"
+    }
+  },
+  "siteStates": {
+    "Pending": "Not started",
+    "Started": "Started",
+    "Banned": "Banned"
+  },
   "messages": {
-    "openShiftConfirmation": "Open this shift now?",
-    "closeShiftConfirmation": "Close the shift and permanently record its financial snapshot?",
-    "enterGross": "Enter the final gross income (for example 1250.50)",
-    "enterPlatformMetrics": "Enter platform metrics as JSON (for example {\"tokens\": 1000})",
-    "invalidMetricsJson": "Platform metrics must be a valid JSON object.",
-    "shiftOpened": "Shift opened.",
-    "shiftClosed": "Shift closed and snapshot recorded."
+    "openShiftConfirmation": "Start this shift now? The start time will be recorded automatically.",
+    "finishShiftConfirmation": "Finish the shift and proceed to calculation?",
+    "closeShiftConfirmation": "Complete the calculation and record the financial result?",
+    "reviseShiftConfirmation": "Save the corrected amounts and update the financial snapshot?",
+    "shiftOpened": "Shift started.",
+    "shiftClosed": "Calculation completed and financial result recorded.",
+    "shiftRevised": "Shift data and financial snapshot updated."
   }
 }

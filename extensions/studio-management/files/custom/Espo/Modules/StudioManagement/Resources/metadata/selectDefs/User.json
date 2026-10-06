@@ -1,0 +1,6 @@
+{
+  "primaryFilterClassNameMap": {
+    "smModels": "Espo\\Modules\\StudioManagement\\Classes\\Select\\User\\PrimaryFilters\\Models",
+    "smOperators": "Espo\\Modules\\StudioManagement\\Classes\\Select\\User\\PrimaryFilters\\Operators"
+  }
+}

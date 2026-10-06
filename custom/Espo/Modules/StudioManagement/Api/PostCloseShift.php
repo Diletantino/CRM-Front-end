@@ -14,7 +14,6 @@ use Espo\Entities\User;
 use Espo\Modules\StudioManagement\Entities\SmShift;
 use Espo\Modules\StudioManagement\Tools\ShiftService;
 use Espo\ORM\EntityManager;
-use stdClass;
 
 final class PostCloseShift implements Action
 {
@@ -44,19 +43,29 @@ final class PostCloseShift implements Action
             throw new Forbidden();
         }
 
-        $gross = $data->totalGross ?? null;
-
-        if (!is_string($gross) && !is_int($gross) && !is_float($gross)) {
-            throw new BadRequest('A gross income value is required.');
+        if (
+            !$this->user->isAdmin() &&
+            (
+                $this->user->get('smAccountType') !== 'Operator' ||
+                $shift->get('operatorId') !== $this->user->getId()
+            )
+        ) {
+            throw new Forbidden('Only the assigned operator can complete this shift.');
         }
 
-        $metrics = $data->platformMetrics ?? new stdClass();
+        $siteData = $data->siteData ?? null;
 
-        if (!$metrics instanceof stdClass) {
-            throw new BadRequest('Platform metrics must be a JSON object.');
+        if (!is_array($siteData)) {
+            throw new BadRequest('Site calculation rows are required.');
         }
 
-        $shift = $this->service->close($id, $gross, $metrics, $this->user);
+        $screenshotIds = $data->screenshotsIds ?? [];
+
+        if (!is_array($screenshotIds)) {
+            throw new BadRequest('Screenshot IDs must be an array.');
+        }
+
+        $shift = $this->service->close($id, $siteData, $screenshotIds, $this->user);
 
         return ResponseComposer::json($shift->getValueMap());
     }

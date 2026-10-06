@@ -1,3 +1,14 @@
 {
-  "additionalRecordFields": ["smAccountType", "smSharePercentOverride"]
+  "additionalRecordFields": [
+    "smAccountType",
+    "smSharePercentOverride",
+    "smBirthDate",
+    "smStartDate",
+    "smContact",
+    "smProfileBio",
+    "smSiteAccess",
+    "smProfilePhotos",
+    "smDocumentPhotos",
+    "smProfileComments"
+  ]
 }

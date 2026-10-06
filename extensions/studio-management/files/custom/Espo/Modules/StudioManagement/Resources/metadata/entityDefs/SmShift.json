@@ -1,5 +1,11 @@
 {
   "fields": {
+    "number": {
+      "type": "autoincrement",
+      "dbType": "bigint",
+      "readOnly": true,
+      "index": true
+    },
     "name": {
       "type": "varchar",
       "maxLength": 150,
@@ -9,16 +15,57 @@
     },
     "status": {
       "type": "enum",
-      "options": ["Draft", "Open", "Closed"],
+      "options": ["Draft", "Open", "Counting", "Closed"],
       "default": "Draft",
       "readOnly": true,
       "index": true,
-      "style": {"Draft": "default", "Open": "success", "Closed": "info"},
+      "style": {"Draft": "default", "Open": "success", "Counting": "warning", "Closed": "info"},
       "displayAsLabel": true
     },
     "startTime": {"type": "datetime", "readOnly": true, "index": true},
     "endTime": {"type": "datetime", "readOnly": true, "index": true},
     "team": {"type": "link", "required": true, "audited": true},
+    "operator": {
+      "type": "link",
+      "required": true,
+      "audited": true,
+      "selectFilterType": "primary",
+      "selectPrimaryFilterName": "smOperators"
+    },
+    "model": {
+      "type": "link",
+      "required": true,
+      "audited": true,
+      "selectFilterType": "primary",
+      "selectPrimaryFilterName": "smModels"
+    },
+    "modelBirthDate": {"type": "date", "audited": true},
+    "siteData": {
+      "type": "jsonArray",
+      "view": "studio-management:views/sm-shift/fields/site-data",
+      "audited": true
+    },
+    "modelImages": {
+      "type": "attachmentMultiple",
+      "sourceList": ["Document"],
+      "accept": ["image/*"]
+    },
+    "screenshots": {
+      "type": "attachmentMultiple",
+      "sourceList": ["Document"],
+      "accept": ["image/*"]
+    },
+    "workflowActions": {
+      "type": "varchar",
+      "notStorable": true,
+      "readOnly": true,
+      "view": "studio-management:views/sm-shift/fields/workflow-actions"
+    },
+    "workflowFooter": {
+      "type": "varchar",
+      "notStorable": true,
+      "view": "studio-management:views/sm-shift/fields/workflow-footer"
+    },
     "participants": {
       "type": "linkMultiple",
       "audited": true,
@@ -32,6 +79,10 @@
       "required": true,
       "readOnlyAfterCreate": true
     },
+    "botTotal": {"type": "decimal", "precision": 18, "scale": 2, "decimalPlaces": 2, "readOnly": true},
+    "calculatedTotal": {"type": "decimal", "precision": 18, "scale": 2, "decimalPlaces": 2, "readOnly": true},
+    "result": {"type": "decimal", "precision": 18, "scale": 2, "decimalPlaces": 2, "readOnly": true},
+    "offlineBonus": {"type": "decimal", "precision": 18, "scale": 2, "decimalPlaces": 2, "readOnly": true},
     "totalGross": {"type": "decimal", "precision": 18, "scale": 2, "decimalPlaces": 2, "readOnly": true},
     "modelShare": {"type": "decimal", "precision": 18, "scale": 2, "decimalPlaces": 2, "readOnly": true},
     "operatorShare": {"type": "decimal", "precision": 18, "scale": 2, "decimalPlaces": 2, "readOnly": true},
@@ -50,6 +101,8 @@
   },
   "links": {
     "team": {"type": "belongsTo", "entity": "Team", "foreign": "smShifts"},
+    "operator": {"type": "belongsTo", "entity": "User", "foreign": "smOperatorShifts"},
+    "model": {"type": "belongsTo", "entity": "User", "foreign": "smModelShifts"},
     "participants": {"type": "hasMany", "entity": "User", "foreign": "smShifts", "relationName": "SmShiftUser"},
     "closedBy": {"type": "belongsTo", "entity": "User", "foreign": "smClosedShifts"},
     "financialSnapshot": {"type": "hasOne", "entity": "SmShiftFinancialSnapshot", "foreign": "shift"},
@@ -61,8 +114,10 @@
   "indexes": {
     "status": {"columns": ["status", "deleted"]},
     "teamStart": {"columns": ["teamId", "startTime", "deleted"]},
+    "operatorStart": {"columns": ["operatorId", "startTime", "deleted"]},
+    "modelStart": {"columns": ["modelId", "startTime", "deleted"]},
     "endTime": {"columns": ["endTime", "deleted"]},
     "assignedUser": {"columns": ["assignedUserId", "deleted"]}
   },
-  "collection": {"orderBy": "startTime", "order": "desc", "textFilterFields": ["name"]}
+  "collection": {"orderBy": "number", "order": "desc", "textFilterFields": ["name"]}
 }
