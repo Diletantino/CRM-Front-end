@@ -74,6 +74,30 @@ Create a [GitHub issue](https://github.com/espocrm/espocrm/issues/new/choose) or
 
 See the [developer documentation](https://docs.espocrm.com/development/).
 
+#### Reproducible Linux build
+
+The full EspoCRM build requires Node.js, PHP, Composer, PHP extensions, and
+Unix utilities. A dedicated build-only Docker environment is included so the
+same toolchain can be used on Windows, macOS, and Linux. It does not define or
+change any runtime CRM containers.
+
+From PowerShell run:
+
+```powershell
+.\scripts\build-linux.ps1
+```
+
+From a Unix shell run:
+
+```bash
+bash ./scripts/build-linux.sh
+```
+
+The first run downloads the toolchain and dependency caches. The resulting
+EspoCRM distribution is written to the repository's `build` directory. To
+clear only the build dependency caches, run
+`docker compose -f compose.build.yaml down --volumes`.
+
 We highly recommend using an IDE for development. The backend codebase adheres to SOLID principles, utilizes interfaces, static typing and generics. We recommend to start learning EspoCRM from the Dependency Injection article in the documentation.
 
 Metadata plays an integral role in the EspoCRM application. All possible parameters are described with a JSON Schema, meaning you will have autocompletion in the IDE. You can also find the full metadata reference in the documentation.

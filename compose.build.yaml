@@ -1,0 +1,18 @@
+services:
+  crm-build:
+    build:
+      context: ./docker/build
+    init: true
+    working_dir: /workspace
+    volumes:
+      - .:/workspace
+      - crm-build-node-modules:/workspace/node_modules
+      - crm-build-vendor:/workspace/vendor
+      - crm-build-npm-cache:/tmp/npm-cache
+      - crm-build-composer-cache:/tmp/composer-cache
+
+volumes:
+  crm-build-node-modules:
+  crm-build-vendor:
+  crm-build-npm-cache:
+  crm-build-composer-cache:
