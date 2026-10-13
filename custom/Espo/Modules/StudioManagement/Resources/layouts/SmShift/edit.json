@@ -1,5 +1,6 @@
 [
   {
+    "name": "shiftDetails",
     "label": "Shift details",
     "rows": [
       [{"name": "name"}, {"name": "status"}],
@@ -11,7 +12,17 @@
     ]
   },
   {
+    "name": "shiftCalculation",
     "label": "Shift calculation",
+    "dynamicLogicVisible": {
+      "conditionGroup": [
+        {
+          "type": "in",
+          "attribute": "status",
+          "value": ["Counting", "Closed"]
+        }
+      ]
+    },
     "rows": [
       [{"name": "screenshots", "fullWidth": true}],
       [{"name": "currency"}, {"name": "closedBy"}],
@@ -24,6 +35,7 @@
     ]
   },
   {
+    "name": "shiftNotes",
     "rows": [
       [{"name": "description"}]
     ]

@@ -14,5 +14,6 @@
     "SmShiftFinancialSnapshot": "Financial Snapshots",
     "SmRegistrationLink": "Registration Links",
     "SmAnalytics": "Studio Analytics"
-  }
+  },
+  "themes": {"StudioDark": "Studio Dark"}
 }

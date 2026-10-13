@@ -1,5 +1,6 @@
 [
   {
+    "name": "shiftDetails",
     "label": "Shift details",
     "rows": [
       [{"name": "number"}, {"name": "status"}],
@@ -11,7 +12,17 @@
     ]
   },
   {
+    "name": "shiftCalculation",
     "label": "Shift calculation",
+    "dynamicLogicVisible": {
+      "conditionGroup": [
+        {
+          "type": "in",
+          "attribute": "status",
+          "value": ["Counting", "Closed"]
+        }
+      ]
+    },
     "rows": [
       [{"name": "botTotal"}, {"name": "calculatedTotal"}],
       [{"name": "result"}, {"name": "offlineBonus"}],
@@ -26,6 +37,7 @@
     ]
   },
   {
+    "name": "shiftNotes",
     "rows": [
       [{"name": "description"}],
       [{"name": "workflowFooter", "fullWidth": true, "noLabel": true}]

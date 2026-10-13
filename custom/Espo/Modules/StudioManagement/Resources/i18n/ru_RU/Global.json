@@ -1,4 +1,5 @@
 {
   "scopeNames": {"SmShift": "Смена", "SmModels": "Модели", "SmOperators": "Операторы", "SmShiftFinancialSnapshot": "Финансовый снимок", "SmRegistrationLink": "Ссылка регистрации", "SmAnalytics": "Аналитика студии"},
-  "scopeNamesPlural": {"SmShift": "Смены", "SmModels": "Модели", "SmOperators": "Операторы", "SmShiftFinancialSnapshot": "Финансовые снимки", "SmRegistrationLink": "Ссылки регистрации", "SmAnalytics": "Аналитика студии"}
+  "scopeNamesPlural": {"SmShift": "Смены", "SmModels": "Модели", "SmOperators": "Операторы", "SmShiftFinancialSnapshot": "Финансовые снимки", "SmRegistrationLink": "Ссылки регистрации", "SmAnalytics": "Аналитика студии"},
+  "themes": {"StudioDark": "Studio Dark"}
 }

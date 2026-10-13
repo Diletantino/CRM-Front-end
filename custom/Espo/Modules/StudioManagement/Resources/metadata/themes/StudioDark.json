@@ -1,0 +1,28 @@
+{
+  "parent": "Dark",
+  "stylesheet": "client/custom/modules/studio-management/css/studio-dark.css",
+  "stylesheetIframe": "client/css/espo/dark-iframe.css",
+  "stylesheetIframeFallback": "client/css/espo/hazyblue-iframe.css",
+  "logo": "client/custom/modules/studio-management/img/studio-crm-logo.svg",
+  "params": {
+    "navbar": {
+      "type": "enum",
+      "default": "side",
+      "options": ["side"]
+    },
+    "direction": {
+      "type": "enum",
+      "default": "ltr",
+      "options": ["ltr", "rtl"]
+    }
+  },
+  "fontSize": 13,
+  "textColor": "#f3f5f7",
+  "hoverColor": "#2196f3",
+  "chartGridColor": "#3a3d42",
+  "chartTickColor": "#a6adb7",
+  "chartSuccessColor": "#35c28c",
+  "chartColorList": ["#2196f3", "#35c28c", "#ffb547", "#ef6b73", "#8b7cf6", "#55c2d9"],
+  "chartColorAlternativeList": ["#2196f3", "#35c28c", "#ffb547", "#ef6b73", "#8b7cf6"],
+  "isDark": true
+}

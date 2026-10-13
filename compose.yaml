@@ -46,6 +46,8 @@ services:
       ESPOCRM_LANGUAGE: ${CRM_LANGUAGE:-ru_RU}
       ESPOCRM_TIME_ZONE: ${CRM_TIME_ZONE:-Europe/Berlin}
       ESPOCRM_DEFAULT_CURRENCY: ${CRM_DEFAULT_CURRENCY:-USD}
+      ESPOCRM_CONFIG_THEME: StudioDark
+      ESPOCRM_CONFIG_USER_THEMES_DISABLED: "true"
     volumes: *crm-volumes
     depends_on:
       db:
