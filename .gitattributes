@@ -9,6 +9,7 @@
 *.html text eol=crlf
 
 bin/command text eol=lf
+*.sh text eol=lf
 
 .gitattributes text eol=crlf
 .gitignore text eol=crlf

@@ -2,11 +2,11 @@
   "fields": {
     "smAccountType": {
       "type": "enum",
-      "options": ["", "Model", "Operator", "ProducerAdmin"],
+      "options": ["", "Model", "Operator", "ProducerAdmin", "TechnicalDirector", "Recruiter"],
       "default": "",
       "audited": true,
       "displayAsLabel": true,
-      "style": {"Model": "primary", "Operator": "info", "ProducerAdmin": "warning"}
+      "style": {"Model": "primary", "Operator": "info", "ProducerAdmin": "warning", "TechnicalDirector": "danger", "Recruiter": "success"}
     },
     "smSharePercentOverride": {
       "type": "decimal",
@@ -18,6 +18,66 @@
       "audited": true,
       "tooltip": true
     },
+    "smOperatorSharePercentOverride": {
+      "type": "decimal",
+      "precision": 7,
+      "scale": 4,
+      "decimalPlaces": 4,
+      "min": 0,
+      "max": 100,
+      "audited": true,
+      "tooltip": true
+    },
+    "smProducerSharePercentOverride": {
+      "type": "decimal",
+      "precision": 7,
+      "scale": 4,
+      "decimalPlaces": 4,
+      "min": 0,
+      "max": 100,
+      "audited": true,
+      "tooltip": true
+    },
+    "smTechnicalDirectorSharePercentOverride": {
+      "type": "decimal",
+      "precision": 7,
+      "scale": 4,
+      "decimalPlaces": 4,
+      "min": 0,
+      "max": 100,
+      "audited": true,
+      "tooltip": true
+    },
+    "smRecruiter": {"type": "link", "audited": true},
+    "smRecruits": {"type": "linkMultiple", "readOnly": true},
+    "smRecruiterRewardMode": {
+      "type": "enum",
+      "options": ["None", "FlatAfterFiveShifts", "PercentPerShift"],
+      "default": "None",
+      "audited": true,
+      "displayAsLabel": true,
+      "style": {"None": "default", "FlatAfterFiveShifts": "warning", "PercentPerShift": "success"}
+    },
+    "smRecruiterPercent": {
+      "type": "decimal",
+      "precision": 7,
+      "scale": 4,
+      "decimalPlaces": 4,
+      "min": 0,
+      "max": 100,
+      "default": 5,
+      "audited": true
+    },
+    "smRecruiterFlatAmount": {
+      "type": "decimal",
+      "precision": 18,
+      "scale": 2,
+      "decimalPlaces": 2,
+      "min": 0,
+      "default": 150,
+      "audited": true
+    },
+    "smRecruiterMilestonePaid": {"type": "bool", "default": false, "readOnly": true, "audited": true},
     "smBirthDate": {
       "type": "date",
       "audited": true
@@ -72,7 +132,9 @@
     "smModelShifts": {"type": "linkMultiple", "readOnly": true},
     "smClosedShifts": {"type": "linkMultiple", "readOnly": true},
     "smProducerTeams": {"type": "linkMultiple", "readOnly": true},
-    "smProducerFinancialSnapshots": {"type": "linkMultiple", "readOnly": true}
+    "smProducerFinancialSnapshots": {"type": "linkMultiple", "readOnly": true},
+    "smRecruiterRegistrationLinks": {"type": "linkMultiple", "readOnly": true},
+    "smShiftExpenses": {"type": "linkMultiple", "readOnly": true}
   },
   "links": {
     "smShifts": {"type": "hasMany", "entity": "SmShift", "foreign": "participants", "relationName": "SmShiftUser"},
@@ -80,6 +142,10 @@
     "smModelShifts": {"type": "hasMany", "entity": "SmShift", "foreign": "model"},
     "smClosedShifts": {"type": "hasMany", "entity": "SmShift", "foreign": "closedBy"},
     "smProducerTeams": {"type": "hasMany", "entity": "Team", "foreign": "smProducer"},
-    "smProducerFinancialSnapshots": {"type": "hasMany", "entity": "SmShiftFinancialSnapshot", "foreign": "producer"}
+    "smProducerFinancialSnapshots": {"type": "hasMany", "entity": "SmShiftFinancialSnapshot", "foreign": "producer"},
+    "smRecruiter": {"type": "belongsTo", "entity": "User", "foreign": "smRecruits"},
+    "smRecruits": {"type": "hasMany", "entity": "User", "foreign": "smRecruiter"},
+    "smRecruiterRegistrationLinks": {"type": "hasMany", "entity": "SmRegistrationLink", "foreign": "recruiter"},
+    "smShiftExpenses": {"type": "hasMany", "entity": "SmShiftExpense", "foreign": "user"}
   }
 }

@@ -7,6 +7,7 @@ use DateTimeImmutable;
 use DateTimeZone;
 use Espo\Core\Exceptions\BadRequest;
 use Espo\Entities\User;
+use Espo\Modules\StudioManagement\Entities\SmShiftExpense;
 use Espo\Modules\StudioManagement\Entities\SmShiftFinancialSnapshot;
 use Espo\ORM\EntityManager;
 
@@ -36,10 +37,16 @@ final class AnalyticsService
             'closedAt<' => $to->format('Y-m-d H:i:s'),
         ];
 
-        // Producer accounts are restricted to their own immutable snapshots even
-        // when a role was accidentally configured with broad entity read access.
-        if (!$user->isAdmin() && $user->get('smAccountType') === 'ProducerAdmin') {
-            $where['producerId'] = $user->getId();
+        // Business visibility is enforced in addition to Espo ACL. A broad role
+        // configuration must never expose another employee's financial history.
+        if (!$user->isAdmin()) {
+            match ($user->get('smAccountType')) {
+                'ProducerAdmin' => $where['producerId'] = $user->getId(),
+                'Model' => $where['modelId'] = $user->getId(),
+                'Operator' => $where['operatorId'] = $user->getId(),
+                'TechnicalDirector' => null,
+                default => $where['id'] = '__no_access__',
+            };
         }
 
         $query = $this->entityManager
@@ -56,6 +63,9 @@ final class AnalyticsService
                 ['SUM:operatorShare', 'operatorShare'],
                 ['SUM:participantShare', 'participantShare'],
                 ['SUM:producerShare', 'producerShare'],
+                ['SUM:technicalDirectorShare', 'technicalDirectorShare'],
+                ['SUM:recruiterShare', 'recruiterShare'],
+                ['SUM:expensesTotal', 'expensesTotal'],
                 ['SUM:studioShare', 'studioShare'],
             ])
             ->where($where)
@@ -85,6 +95,9 @@ final class AnalyticsService
                 'operatorShare' => (string) ($raw['operatorShare'] ?? '0'),
                 'participantShare' => (string) ($raw['participantShare'] ?? '0'),
                 'producerShare' => (string) ($raw['producerShare'] ?? '0'),
+                'technicalDirectorShare' => (string) ($raw['technicalDirectorShare'] ?? '0'),
+                'recruiterShare' => (string) ($raw['recruiterShare'] ?? '0'),
+                'expensesTotal' => (string) ($raw['expensesTotal'] ?? '0'),
                 'studioShare' => (string) ($raw['studioShare'] ?? '0'),
             ];
             $rows[] = $row;
@@ -95,17 +108,31 @@ final class AnalyticsService
                 'totalGross' => 0.0,
                 'participantShare' => 0.0,
                 'producerShare' => 0.0,
+                'technicalDirectorShare' => 0.0,
+                'recruiterShare' => 0.0,
+                'expensesTotal' => 0.0,
                 'studioShare' => 0.0,
             ];
             $totalsByCurrency[$currency]['shiftCount'] += $row['shiftCount'];
             $totalsByCurrency[$currency]['totalGross'] += (float) $row['totalGross'];
             $totalsByCurrency[$currency]['participantShare'] += (float) $row['participantShare'];
             $totalsByCurrency[$currency]['producerShare'] += (float) $row['producerShare'];
+            $totalsByCurrency[$currency]['technicalDirectorShare'] += (float) $row['technicalDirectorShare'];
+            $totalsByCurrency[$currency]['recruiterShare'] += (float) $row['recruiterShare'];
+            $totalsByCurrency[$currency]['expensesTotal'] += (float) $row['expensesTotal'];
             $totalsByCurrency[$currency]['studioShare'] += (float) $row['studioShare'];
         }
 
         foreach ($totalsByCurrency as &$total) {
-            foreach (['totalGross', 'participantShare', 'producerShare', 'studioShare'] as $field) {
+            foreach ([
+                'totalGross',
+                'participantShare',
+                'producerShare',
+                'technicalDirectorShare',
+                'recruiterShare',
+                'expensesTotal',
+                'studioShare',
+            ] as $field) {
                 $total[$field] = number_format((float) $total[$field], 2, '.', '');
             }
         }
@@ -116,6 +143,43 @@ final class AnalyticsService
             'to' => $toRaw,
             'totals' => array_values($totalsByCurrency),
             'rows' => $rows,
+            'personalTotals' => $this->getPersonalTotals($from, $to, $user),
         ];
+    }
+
+    /** @return array<int, array{currency: string, amount: string}> */
+    private function getPersonalTotals(
+        DateTimeImmutable $from,
+        DateTimeImmutable $to,
+        User $user,
+    ): array {
+        if ($user->isAdmin()) {
+            return [];
+        }
+
+        $query = $this->entityManager
+            ->getQueryBuilder()
+            ->select()
+            ->from(SmShiftExpense::ENTITY_TYPE)
+            ->select(['currency', ['SUM:amount', 'amount']])
+            ->where([
+                'deleted' => false,
+                'incurredAt>=' => $from->format('Y-m-d H:i:s'),
+                'incurredAt<' => $to->format('Y-m-d H:i:s'),
+                'userId' => $user->getId(),
+            ])
+            ->group(['currency'])
+            ->build();
+        $rows = $this->entityManager->getQueryExecutor()->execute($query)->fetchAll() ?: [];
+        $result = [];
+
+        foreach ($rows as $row) {
+            $result[] = [
+                'currency' => (string) $row['currency'],
+                'amount' => number_format((float) ($row['amount'] ?? 0), 2, '.', ''),
+            ];
+        }
+
+        return $result;
     }
 }

@@ -1,0 +1,43 @@
+{
+  "fields": {
+    "name": {"type": "varchar", "maxLength": 190, "required": true, "readOnly": true},
+    "shift": {"type": "link", "required": true, "readOnly": true},
+    "financialSnapshot": {"type": "link", "required": true, "readOnly": true},
+    "user": {"type": "link", "required": true, "readOnly": true},
+    "team": {"type": "link", "required": true, "readOnly": true},
+    "productionProducerId": {"type": "varchar", "maxLength": 36, "required": true, "readOnly": true},
+    "subjectUserId": {"type": "varchar", "maxLength": 36, "readOnly": true},
+    "category": {
+      "type": "enum",
+      "options": ["Model", "Operator", "Producer", "TechnicalDirector", "Recruiter"],
+      "required": true,
+      "readOnly": true,
+      "index": true
+    },
+    "rewardMode": {
+      "type": "enum",
+      "options": ["", "FlatAfterFiveShifts", "PercentPerShift"],
+      "default": "",
+      "readOnly": true
+    },
+    "amount": {"type": "decimal", "precision": 18, "scale": 2, "decimalPlaces": 2, "required": true, "readOnly": true},
+    "percentage": {"type": "decimal", "precision": 7, "scale": 4, "decimalPlaces": 4, "readOnly": true},
+    "currency": {"type": "varchar", "maxLength": 3, "required": true, "readOnly": true},
+    "incurredAt": {"type": "datetime", "required": true, "readOnly": true, "index": true},
+    "details": {"type": "jsonObject", "readOnly": true},
+    "createdAt": {"type": "datetime", "readOnly": true}
+  },
+  "links": {
+    "shift": {"type": "belongsTo", "entity": "SmShift", "foreign": "expenses"},
+    "financialSnapshot": {"type": "belongsTo", "entity": "SmShiftFinancialSnapshot", "foreign": "expenses"},
+    "user": {"type": "belongsTo", "entity": "User", "foreign": "smShiftExpenses"},
+    "team": {"type": "belongsTo", "entity": "Team", "foreign": "smShiftExpenses"}
+  },
+  "indexes": {
+    "userIncurredAt": {"columns": ["userId", "incurredAt", "deleted"]},
+    "shiftCategory": {"columns": ["shiftId", "category", "deleted"]},
+    "snapshot": {"columns": ["financialSnapshotId", "deleted"]},
+    "productionProducerIncurredAt": {"columns": ["productionProducerId", "incurredAt", "deleted"]}
+  },
+  "collection": {"orderBy": "incurredAt", "order": "desc", "textFilterFields": ["name"]}
+}

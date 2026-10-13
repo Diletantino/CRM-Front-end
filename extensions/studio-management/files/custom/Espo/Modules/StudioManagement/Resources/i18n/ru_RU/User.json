@@ -2,6 +2,14 @@
   "fields": {
     "smAccountType": "Тип аккаунта студии",
     "smSharePercentOverride": "Персональный процент",
+    "smOperatorSharePercentOverride": "Процент как оператора",
+    "smProducerSharePercentOverride": "Процент как продюсера",
+    "smTechnicalDirectorSharePercentOverride": "Процент техдиректора",
+    "smRecruiter": "Рекрутер",
+    "smRecruiterRewardMode": "Схема выплаты рекрутеру",
+    "smRecruiterPercent": "Процент рекрутера со смены",
+    "smRecruiterFlatAmount": "Бонус рекрутеру после 5 смен",
+    "smRecruiterMilestonePaid": "Бонус за 5 смен выплачен",
     "smBirthDate": "Дата рождения",
     "smStartDate": "Дата начала работы",
     "smContact": "Контакт",
@@ -14,9 +22,12 @@
   },
   "tooltips": {
     "smSharePercentOverride": "Необязательный персональный процент. Если поле пустое, используется максимальный процент назначенных ролей.",
+    "smOperatorSharePercentOverride": "Отдельный процент для работы оператором, в том числе когда оператором в смене выступает продюсер.",
+    "smProducerSharePercentOverride": "Процент продюсера только от смен собственного продакшена.",
+    "smTechnicalDirectorSharePercentOverride": "Процент техдиректора применяется ко всем закрываемым сменам.",
     "smSiteAccess": "Доступы можно вести в свободном текстовом или табличном формате."
   },
-  "options": {"smAccountType": {"": "Не задан", "Model": "Модель", "Operator": "Оператор", "ProducerAdmin": "Продюсер / Админ"}},
-  "labels": {"Profile Photos": "Фотографии", "Document Photos": "Документы", "Comments": "Комментарии", "Shift History and Earnings": "История смен и доход", "Write a comment": "Введите комментарий", "Add Comment": "Добавить комментарий", "Shift History": "Список смен за последний период", "Income by Payout Day": "График дохода по дням выплат", "Operator": "Оператор", "Team": "Команда", "Start": "Начало", "End": "Конец", "Result": "Результат", "Personal Income": "Личный доход"},
+  "options": {"smAccountType": {"": "Не задан", "Model": "Модель", "Operator": "Оператор", "ProducerAdmin": "Продюсер / Админ", "TechnicalDirector": "Технический директор", "Recruiter": "Рекрутер"}, "smRecruiterRewardMode": {"None": "Без выплаты", "FlatAfterFiveShifts": "$150 после 5 смен", "PercentPerShift": "Процент с каждой смены"}},
+  "labels": {"Recruitment": "Рекрутинг", "Profile Photos": "Фотографии", "Document Photos": "Документы", "Comments": "Комментарии", "Shift History and Earnings": "История смен и доход", "Write a comment": "Введите комментарий", "Add Comment": "Добавить комментарий", "Shift History": "Список смен за последний период", "Income by Payout Day": "График дохода по дням выплат", "Operator": "Оператор", "Team": "Команда", "Start": "Начало", "End": "Конец", "Result": "Результат", "Personal Income": "Личный доход"},
   "messages": {"staffProfileUnavailable": "Профиль доступен только продюсеру команды или администратору.", "commentRequired": "Введите комментарий.", "commentSaveFailed": "Не удалось сохранить комментарий.", "noStaffComments": "Комментариев пока нет.", "noStaffShifts": "Закрытых смен пока нет."}
 }

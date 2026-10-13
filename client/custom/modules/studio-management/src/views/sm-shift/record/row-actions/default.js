@@ -4,7 +4,7 @@ define(['views/record/row-actions/default'], function (DefaultRowActionsView) {
             const status = this.model.get('status');
             const accountType = this.getUser().get('smAccountType');
             const isAdmin = this.getUser().isAdmin();
-            const isAssignedOperator = accountType === 'Operator' &&
+            const isAssignedOperator = ['Operator', 'ProducerAdmin'].includes(accountType) &&
                 this.model.get('operatorId') === this.getUser().id;
             const isManager = isAdmin || accountType === 'ProducerAdmin';
             const list = [{

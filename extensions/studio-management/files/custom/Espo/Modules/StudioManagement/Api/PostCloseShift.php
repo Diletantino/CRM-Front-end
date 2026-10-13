@@ -46,7 +46,7 @@ final class PostCloseShift implements Action
         if (
             !$this->user->isAdmin() &&
             (
-                $this->user->get('smAccountType') !== 'Operator' ||
+                !in_array($this->user->get('smAccountType'), ['Operator', 'ProducerAdmin'], true) ||
                 $shift->get('operatorId') !== $this->user->getId()
             )
         ) {

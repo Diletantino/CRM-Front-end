@@ -29,6 +29,7 @@
 !/custom/Espo/Modules/StudioManagement/
 !/custom/Espo/Modules/StudioManagement/**
 /install/config.php
+/.env
 
 client/css/espo/*
 client/lib/*

@@ -1,0 +1,103 @@
+name: studio-crm
+
+x-crm-image: &crm-image
+  image: studio-crm:${ESPOCRM_VERSION:-10.0.9}
+
+x-crm-volumes: &crm-volumes
+  - crm-data:/var/www/html/data
+  - crm-custom:/var/www/html/custom
+  - crm-client-custom:/var/www/html/client/custom
+
+services:
+  db:
+    image: mariadb:11.4
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: ${MARIADB_DATABASE:-espocrm}
+      MARIADB_USER: ${MARIADB_USER:-espocrm}
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD:?Set MARIADB_PASSWORD in .env}
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD:?Set MARIADB_ROOT_PASSWORD in .env}
+    volumes:
+      - crm-db:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  crm:
+    <<: *crm-image
+    build:
+      context: .
+      dockerfile: docker/runtime/Dockerfile
+      args:
+        ESPOCRM_VERSION: ${ESPOCRM_VERSION:-10.0.9}
+    restart: unless-stopped
+    environment:
+      ESPOCRM_DATABASE_PLATFORM: Mysql
+      ESPOCRM_DATABASE_HOST: db
+      ESPOCRM_DATABASE_NAME: ${MARIADB_DATABASE:-espocrm}
+      ESPOCRM_DATABASE_USER: ${MARIADB_USER:-espocrm}
+      ESPOCRM_DATABASE_PASSWORD: ${MARIADB_PASSWORD:?Set MARIADB_PASSWORD in .env}
+      ESPOCRM_ADMIN_USERNAME: ${CRM_ADMIN_USERNAME:-admin}
+      ESPOCRM_ADMIN_PASSWORD: ${CRM_ADMIN_PASSWORD:?Set CRM_ADMIN_PASSWORD in .env}
+      ESPOCRM_SITE_URL: ${CRM_SITE_URL:-http://localhost:8080}
+      ESPOCRM_LANGUAGE: ${CRM_LANGUAGE:-ru_RU}
+      ESPOCRM_TIME_ZONE: ${CRM_TIME_ZONE:-Europe/Berlin}
+      ESPOCRM_DEFAULT_CURRENCY: ${CRM_DEFAULT_CURRENCY:-USD}
+    volumes: *crm-volumes
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "bin/command", "app-check"]
+      interval: 30s
+      timeout: 15s
+      retries: 10
+      start_period: 90s
+    ports:
+      - "${CRM_HTTP_PORT:-8080}:80"
+
+  daemon:
+    <<: *crm-image
+    restart: unless-stopped
+    entrypoint: docker-daemon.sh
+    volumes: *crm-volumes
+    depends_on:
+      crm:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "bin/command", "app-check"]
+      interval: 180s
+      timeout: 20s
+      retries: 3
+      start_period: 30s
+
+  websocket:
+    <<: *crm-image
+    restart: unless-stopped
+    entrypoint: docker-websocket.sh
+    environment:
+      ESPOCRM_CONFIG_USE_WEB_SOCKET: "true"
+      ESPOCRM_CONFIG_WEB_SOCKET_URL: ${CRM_WEBSOCKET_URL:-ws://localhost:8081}
+      ESPOCRM_CONFIG_WEB_SOCKET_ZERO_M_Q_SUBSCRIBER_DSN: tcp://*:7777
+      ESPOCRM_CONFIG_WEB_SOCKET_ZERO_M_Q_SUBMISSION_DSN: tcp://websocket:7777
+    volumes: *crm-volumes
+    depends_on:
+      crm:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "bin/command", "app-check"]
+      interval: 180s
+      timeout: 20s
+      retries: 3
+      start_period: 30s
+    ports:
+      - "${CRM_WEBSOCKET_PORT:-8081}:8080"
+
+volumes:
+  crm-db:
+  crm-data:
+  crm-custom:
+  crm-client-custom:

@@ -7,6 +7,7 @@ use Espo\Core\Exceptions\Conflict;
 use Espo\Core\Exceptions\NotFound;
 use Espo\Entities\User;
 use Espo\Modules\StudioManagement\Entities\SmShift;
+use Espo\Modules\StudioManagement\Entities\SmShiftExpense;
 use Espo\Modules\StudioManagement\Entities\SmShiftFinancialSnapshot;
 use Espo\ORM\Entity;
 use Espo\ORM\EntityManager;
@@ -36,8 +37,8 @@ final class ShiftService
                 throw new BadRequest('A team is required before starting the shift.');
             }
 
-            $model = $this->getParticipant($shift, 'modelId', 'Model');
-            $operator = $this->getParticipant($shift, 'operatorId', 'Operator');
+            $model = $this->getParticipant($shift, 'modelId', ['Model']);
+            $operator = $this->getParticipant($shift, 'operatorId', ['Operator', 'ProducerAdmin']);
             [$siteData] = $this->normalizeSiteData((array) ($shift->get('siteData') ?? []));
             $now = gmdate('Y-m-d H:i:s');
 
@@ -99,6 +100,12 @@ final class ShiftService
                 ]));
 
                 $this->entityManager->saveEntity($snapshot);
+                $this->syncExpenseRows(
+                    $shift,
+                    $snapshot,
+                    $financial['snapshot']['expenseBreakdown'],
+                    $closedAt,
+                );
 
                 $shift->set(array_merge($financial['shift'], [
                     'status' => SmShift::STATUS_CLOSED,
@@ -108,6 +115,19 @@ final class ShiftService
                 ]));
 
                 $this->entityManager->saveEntity($shift, ['skipBeforeSave' => true]);
+
+                foreach ($financial['milestoneUserIds'] as $userId) {
+                    $recruitedUser = $this->entityManager
+                        ->getRDBRepository(User::ENTITY_TYPE)
+                        ->where(['id' => $userId])
+                        ->forUpdate()
+                        ->findOne();
+
+                    if ($recruitedUser instanceof User) {
+                        $recruitedUser->set('smRecruiterMilestonePaid', true);
+                        $this->entityManager->saveEntity($recruitedUser);
+                    }
+                }
 
                 return $shift;
             }
@@ -131,7 +151,6 @@ final class ShiftService
                     throw new Conflict('Only a completed shift can be revised.');
                 }
 
-                $financial = $this->calculateFinancials($shift, $siteData, $revisedBy);
                 $snapshot = $this->entityManager
                     ->getRDBRepository(SmShiftFinancialSnapshot::ENTITY_TYPE)
                     ->where(['shiftId' => $shift->getId()])
@@ -142,9 +161,23 @@ final class ShiftService
                     throw new NotFound('Financial snapshot not found.');
                 }
 
+                $financial = $this->calculateFinancials(
+                    $shift,
+                    $siteData,
+                    $revisedBy,
+                    true,
+                    (array) ($snapshot->get('recruiterBreakdown') ?? []),
+                );
+
                 $financial['snapshot']['closedById'] = $snapshot->get('closedById');
                 $snapshot->set($financial['snapshot']);
                 $this->entityManager->saveEntity($snapshot, ['skipBeforeSave' => true]);
+                $this->syncExpenseRows(
+                    $shift,
+                    $snapshot,
+                    $financial['snapshot']['expenseBreakdown'],
+                    (string) $snapshot->get('closedAt'),
+                );
 
                 $shift->set(array_merge($financial['shift'], [
                     'screenshotsIds' => $this->normalizeAttachmentIds($screenshotIds),
@@ -158,10 +191,16 @@ final class ShiftService
 
     /**
      * @param array<int, mixed> $siteData
-     * @return array{shift: array<string, mixed>, snapshot: array<string, mixed>}
+     * @param array<int, mixed> $existingRecruiterBreakdown
+     * @return array{shift: array<string, mixed>, snapshot: array<string, mixed>, milestoneUserIds: array<int, string>}
      */
-    private function calculateFinancials(Entity $shift, array $siteData, User $closedBy): array
-    {
+    private function calculateFinancials(
+        Entity $shift,
+        array $siteData,
+        User $closedBy,
+        bool $isRevision = false,
+        array $existingRecruiterBreakdown = [],
+    ): array {
         [$normalizedRows, $earnedCents, $bonusCents] = $this->normalizeSiteData($siteData);
         $grossCents = $earnedCents + $bonusCents;
         $teamId = $shift->get('teamId');
@@ -185,8 +224,8 @@ final class ShiftService
         }
 
         $participants = [
-            $this->getParticipant($shift, 'modelId', 'Model'),
-            $this->getParticipant($shift, 'operatorId', 'Operator'),
+            'Model' => $this->getParticipant($shift, 'modelId', ['Model']),
+            'Operator' => $this->getParticipant($shift, 'operatorId', ['Operator', 'ProducerAdmin']),
         ];
         $breakdown = [];
         $participantCents = 0;
@@ -194,13 +233,13 @@ final class ShiftService
         $operatorCents = 0;
         $percentUnitsTotal = 0;
 
-        foreach ($participants as $participant) {
-            $percentUnits = $this->getEffectivePercentUnits($participant);
+        foreach ($participants as $category => $participant) {
+            $percentUnits = $this->getEffectivePercentUnits($participant, $category);
             $shareCents = $this->money->share($grossCents, $percentUnits);
             $participantCents += $shareCents;
             $percentUnitsTotal += $percentUnits;
 
-            if ($participant->get('smAccountType') === 'Model') {
+            if ($category === 'Model') {
                 $modelCents += $shareCents;
             } else {
                 $operatorCents += $shareCents;
@@ -210,20 +249,56 @@ final class ShiftService
                 'userId' => $participant->getId(),
                 'name' => (string) $participant->get('name'),
                 'accountType' => (string) $participant->get('smAccountType'),
+                'category' => $category,
                 'percent' => $this->money->unitsToPercent($percentUnits),
                 'amount' => $this->money->centsToAmount($shareCents),
             ];
         }
 
-        $producerPercentUnits = $this->getEffectivePercentUnits($producer);
+        $producerPercentUnits = $this->getEffectivePercentUnits($producer, 'Producer');
         $percentUnitsTotal += $producerPercentUnits;
 
+        $technicalDirectorBreakdown = [];
+        $technicalDirectorCents = 0;
+        $technicalDirectors = $this->entityManager
+            ->getRDBRepository(User::ENTITY_TYPE)
+            ->where(['isActive' => true, 'smAccountType' => 'TechnicalDirector'])
+            ->find();
+
+        foreach ($technicalDirectors as $technicalDirector) {
+            if (!$technicalDirector instanceof User) {
+                continue;
+            }
+
+            $percentUnits = $this->getEffectivePercentUnits($technicalDirector, 'TechnicalDirector');
+            $shareCents = $this->money->share($grossCents, $percentUnits);
+            $technicalDirectorCents += $shareCents;
+            $percentUnitsTotal += $percentUnits;
+            $technicalDirectorBreakdown[] = [
+                'userId' => $technicalDirector->getId(),
+                'name' => (string) $technicalDirector->get('name'),
+                'category' => 'TechnicalDirector',
+                'percent' => $this->money->unitsToPercent($percentUnits),
+                'amount' => $this->money->centsToAmount($shareCents),
+            ];
+        }
+
+        $recruiterResult = $this->calculateRecruiterExpenses(
+            $participants,
+            $grossCents,
+            $isRevision,
+            $existingRecruiterBreakdown,
+        );
+        $percentUnitsTotal += $recruiterResult['percentUnits'];
+
         if ($percentUnitsTotal > 1_000_000) {
-            throw new BadRequest('The total participant and producer percentage exceeds 100%.');
+            throw new BadRequest('The total shift expense percentage exceeds 100%.');
         }
 
         $producerCents = $this->money->share($grossCents, $producerPercentUnits);
-        $studioCents = $grossCents - $participantCents - $producerCents;
+        $recruiterCents = $recruiterResult['amountCents'];
+        $expensesCents = $participantCents + $producerCents + $technicalDirectorCents + $recruiterCents;
+        $studioCents = $grossCents - $expensesCents;
         $currency = strtoupper((string) ($shift->get('currency') ?: 'USD'));
         $platformMetrics = (object) [
             'sites' => array_map(
@@ -242,7 +317,22 @@ final class ShiftService
             'modelShare' => $this->money->centsToAmount($modelCents),
             'operatorShare' => $this->money->centsToAmount($operatorCents),
             'producerShare' => $this->money->centsToAmount($producerCents),
+            'technicalDirectorShare' => $this->money->centsToAmount($technicalDirectorCents),
+            'recruiterShare' => $this->money->centsToAmount($recruiterCents),
+            'expensesTotal' => $this->money->centsToAmount($expensesCents),
             'studioShare' => $this->money->centsToAmount($studioCents),
+            'expenseBreakdown' => array_merge(
+                $breakdown,
+                [[
+                    'userId' => $producer->getId(),
+                    'name' => (string) $producer->get('name'),
+                    'category' => 'Producer',
+                    'percent' => $this->money->unitsToPercent($producerPercentUnits),
+                    'amount' => $this->money->centsToAmount($producerCents),
+                ]],
+                $technicalDirectorBreakdown,
+                $recruiterResult['breakdown'],
+            ),
             'platformMetrics' => $platformMetrics,
         ];
 
@@ -256,13 +346,214 @@ final class ShiftService
             'snapshot' => array_merge($common, [
                 'teamId' => $team->getId(),
                 'producerId' => $producer->getId(),
+                'modelId' => $participants['Model']->getId(),
+                'operatorId' => $participants['Operator']->getId(),
                 'closedById' => $closedBy->getId(),
                 'participantShare' => $this->money->centsToAmount($participantCents),
                 'participantBreakdown' => $breakdown,
+                'technicalDirectorBreakdown' => $technicalDirectorBreakdown,
+                'recruiterBreakdown' => $recruiterResult['breakdown'],
                 'assignedUserId' => $producer->getId(),
                 'teamsIds' => [$team->getId()],
             ]),
+            'milestoneUserIds' => $recruiterResult['milestoneUserIds'],
         ];
+    }
+
+    /**
+     * @param array<string, User> $participants
+     * @param array<int, mixed> $existingBreakdown
+     * @return array{amountCents: int, percentUnits: int, breakdown: array<int, array<string, mixed>>, milestoneUserIds: array<int, string>}
+     */
+    private function calculateRecruiterExpenses(
+        array $participants,
+        int $grossCents,
+        bool $isRevision,
+        array $existingBreakdown,
+    ): array {
+        $amountCents = 0;
+        $percentUnitsTotal = 0;
+        $breakdown = [];
+        $milestoneUserIds = [];
+
+        foreach ($participants as $category => $participant) {
+            $existingFlatLine = $isRevision
+                ? $this->findExistingFlatRecruiterLine($existingBreakdown, $participant->getId())
+                : null;
+
+            if ($existingFlatLine !== null) {
+                try {
+                    $lineCents = $this->money->amountToCents((string) $existingFlatLine['amount']);
+                } catch (InvalidArgumentException $e) {
+                    throw new BadRequest($e->getMessage());
+                }
+
+                $amountCents += $lineCents;
+                $breakdown[] = $existingFlatLine;
+
+                continue;
+            }
+
+            if ($participant->get('smAccountType') === 'ProducerAdmin') {
+                continue;
+            }
+
+            $recruiterId = $participant->get('smRecruiterId');
+            $mode = (string) ($participant->get('smRecruiterRewardMode') ?: 'None');
+
+            if (!is_string($recruiterId) || $recruiterId === '' || $mode === 'None') {
+                continue;
+            }
+
+            $recruiter = $this->entityManager->getEntityById(User::ENTITY_TYPE, $recruiterId);
+
+            if (
+                !$recruiter instanceof User ||
+                !$recruiter->isActive() ||
+                $recruiter->get('smAccountType') !== 'Recruiter'
+            ) {
+                throw new BadRequest('A recruitment reward requires an active recruiter account.');
+            }
+
+            $lineCents = 0;
+            $percentUnits = 0;
+
+            try {
+                if ($mode === 'PercentPerShift') {
+                    $percentUnits = $this->money->percentToUnits($participant->get('smRecruiterPercent') ?: 5);
+                    $lineCents = $this->money->share($grossCents, $percentUnits);
+                    $percentUnitsTotal += $percentUnits;
+                } elseif ($mode === 'FlatAfterFiveShifts') {
+                    if (
+                        !$isRevision &&
+                        !$participant->get('smRecruiterMilestonePaid') &&
+                        $this->getClosedShiftCount($participant, $category) >= 4
+                    ) {
+                        $lineCents = $this->money->amountToCents(
+                            $participant->get('smRecruiterFlatAmount') ?: 150,
+                        );
+                        $milestoneUserIds[] = $participant->getId();
+                    }
+                } else {
+                    throw new BadRequest('Unknown recruiter reward mode.');
+                }
+            } catch (InvalidArgumentException $e) {
+                throw new BadRequest($e->getMessage());
+            }
+
+            if ($lineCents === 0) {
+                continue;
+            }
+
+            $amountCents += $lineCents;
+            $breakdown[] = [
+                'userId' => $recruiter->getId(),
+                'name' => (string) $recruiter->get('name'),
+                'category' => 'Recruiter',
+                'mode' => $mode,
+                'subjectUserId' => $participant->getId(),
+                'subjectName' => (string) $participant->get('name'),
+                'subjectCategory' => $category,
+                'percent' => $percentUnits > 0 ? $this->money->unitsToPercent($percentUnits) : null,
+                'amount' => $this->money->centsToAmount($lineCents),
+            ];
+        }
+
+        return [
+            'amountCents' => $amountCents,
+            'percentUnits' => $percentUnitsTotal,
+            'breakdown' => $breakdown,
+            'milestoneUserIds' => array_values(array_unique($milestoneUserIds)),
+        ];
+    }
+
+    /** @param array<int, mixed> $rows @return array<string, mixed>|null */
+    private function findExistingFlatRecruiterLine(array $rows, string $subjectUserId): ?array
+    {
+        foreach ($rows as $row) {
+            if ($row instanceof stdClass) {
+                $row = (array) $row;
+            }
+
+            if (
+                is_array($row) &&
+                ($row['mode'] ?? null) === 'FlatAfterFiveShifts' &&
+                ($row['subjectUserId'] ?? null) === $subjectUserId &&
+                isset($row['amount']) &&
+                (is_string($row['amount']) || is_int($row['amount']) || is_float($row['amount']))
+            ) {
+                return $row;
+            }
+        }
+
+        return null;
+    }
+
+    private function getClosedShiftCount(User $participant, string $category): int
+    {
+        $field = $category === 'Model' ? 'modelId' : 'operatorId';
+
+        return $this->entityManager
+            ->getRDBRepository(SmShift::ENTITY_TYPE)
+            ->where([
+                'deleted' => false,
+                'status' => SmShift::STATUS_CLOSED,
+                $field => $participant->getId(),
+            ])
+            ->count();
+    }
+
+    /** @param array<int, array<string, mixed>> $breakdown */
+    private function syncExpenseRows(
+        Entity $shift,
+        Entity $snapshot,
+        array $breakdown,
+        string $incurredAt,
+    ): void {
+        $existing = $this->entityManager
+            ->getRDBRepository(SmShiftExpense::ENTITY_TYPE)
+            ->where(['financialSnapshotId' => $snapshot->getId()])
+            ->find();
+
+        foreach ($existing as $expense) {
+            $this->entityManager->removeEntity($expense);
+        }
+
+        foreach ($breakdown as $line) {
+            $userId = $line['userId'] ?? null;
+            $category = $line['category'] ?? null;
+            $amount = $line['amount'] ?? null;
+
+            if (!is_string($userId) || !is_string($category) || !is_string($amount)) {
+                throw new BadRequest('A generated expense line is invalid.');
+            }
+
+            $expense = $this->entityManager->getNewEntity(SmShiftExpense::ENTITY_TYPE);
+            $expense->set([
+                'name' => mb_substr(sprintf(
+                    '%s — %s — %s',
+                    $category,
+                    (string) $shift->get('name'),
+                    (string) ($line['name'] ?? ''),
+                ), 0, 190),
+                'shiftId' => $shift->getId(),
+                'financialSnapshotId' => $snapshot->getId(),
+                'userId' => $userId,
+                'teamId' => (string) $snapshot->get('teamId'),
+                'productionProducerId' => (string) $snapshot->get('producerId'),
+                'subjectUserId' => is_string($line['subjectUserId'] ?? null)
+                    ? $line['subjectUserId']
+                    : null,
+                'category' => $category,
+                'rewardMode' => is_string($line['mode'] ?? null) ? $line['mode'] : '',
+                'amount' => $amount,
+                'percentage' => is_string($line['percent'] ?? null) ? $line['percent'] : null,
+                'currency' => (string) $snapshot->get('currency'),
+                'incurredAt' => $incurredAt,
+                'details' => (object) $line,
+            ]);
+            $this->entityManager->saveEntity($expense);
+        }
     }
 
     /**
@@ -365,17 +656,27 @@ final class ShiftService
         return array_values($result);
     }
 
-    private function getParticipant(Entity $shift, string $field, string $expectedType): User
+    /** @param array<int, string> $allowedTypes */
+    private function getParticipant(Entity $shift, string $field, array $allowedTypes): User
     {
         $id = $shift->get($field);
-        $participant = is_string($id) ? $this->entityManager->getEntityById('User', $id) : null;
+        $participant = is_string($id)
+            ? $this->entityManager
+                ->getRDBRepository(User::ENTITY_TYPE)
+                ->where(['id' => $id])
+                ->forUpdate()
+                ->findOne()
+            : null;
 
         if (
             !$participant instanceof User ||
             !$participant->isActive() ||
-            $participant->get('smAccountType') !== $expectedType
+            !in_array($participant->get('smAccountType'), $allowedTypes, true)
         ) {
-            throw new BadRequest(sprintf('The shift must have an active %s.', strtolower($expectedType)));
+            throw new BadRequest(sprintf(
+                'The shift must have an active %s.',
+                strtolower(implode(' or ', $allowedTypes)),
+            ));
         }
 
         return $participant;
@@ -396,9 +697,27 @@ final class ShiftService
         return $shift;
     }
 
-    private function getEffectivePercentUnits(User $user): int
+    private function getEffectivePercentUnits(User $user, string $category): int
     {
-        $override = $user->get('smSharePercentOverride');
+        $categoryOverrideField = match ($category) {
+            'Operator' => 'smOperatorSharePercentOverride',
+            'Producer' => 'smProducerSharePercentOverride',
+            'TechnicalDirector' => 'smTechnicalDirectorSharePercentOverride',
+            default => null,
+        };
+        $override = $categoryOverrideField ? $user->get($categoryOverrideField) : null;
+
+        if (
+            $category === 'Operator' &&
+            $user->get('smAccountType') === 'ProducerAdmin' &&
+            ($override === null || $override === '')
+        ) {
+            return 0;
+        }
+
+        if ($override === null || $override === '') {
+            $override = $user->get('smSharePercentOverride');
+        }
 
         try {
             if ($override !== null && $override !== '') {

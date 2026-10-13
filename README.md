@@ -3,7 +3,8 @@
 > This repository contains the complete EspoCRM application with the custom
 > **Studio Management** module integrated into the backend and frontend.
 > Module features include shifts, teams, RBAC fields, one-time registration
-> links, immutable financial snapshots, and studio/producer analytics.
+> links, immutable financial snapshots, recruiter/technical-director expenses,
+> and role-scoped studio analytics.
 > See [the module documentation](extensions/studio-management/README.md).
 
 [![PHPStan level 8](https://img.shields.io/badge/PHPStan-level%208-brightgreen)](#espocrm)
@@ -73,6 +74,36 @@ Create a [GitHub issue](https://github.com/espocrm/espocrm/issues/new/choose) or
 ### Development
 
 See the [developer documentation](https://docs.espocrm.com/development/).
+
+#### Run the complete CRM with Docker
+
+The runtime stack contains MariaDB, the EspoCRM web application, the background
+daemon and the WebSocket service. The Studio Management backend and frontend
+are baked into the local image and refreshed in the persistent custom volumes
+each time the web container starts.
+
+1. Copy `.env.example` to `.env` and replace all three example passwords.
+2. Start the stack:
+
+```bash
+docker compose up -d --build
+```
+
+3. Wait until the application is healthy, then open
+   `http://localhost:8080` and sign in with `CRM_ADMIN_USERNAME` and
+   `CRM_ADMIN_PASSWORD` from `.env`.
+
+Useful commands:
+
+```bash
+docker compose ps
+docker compose logs -f crm
+docker compose down
+```
+
+`docker compose down` preserves the database and uploaded files. Removing the
+named volumes also removes all CRM data, so do that only when a clean install
+is intended.
 
 #### Reproducible Linux build
 

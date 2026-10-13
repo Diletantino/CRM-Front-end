@@ -55,6 +55,7 @@ define(['view'], function (View) {
 
             try {
                 const data = await Espo.Ajax.getRequest('StudioManagement/analytics', {from, to});
+                this.renderPersonalTotals(data.personalTotals || []);
                 this.renderTotals(data.totals || []);
                 this.renderRows(data.rows || []);
                 $status.text('');
@@ -82,8 +83,34 @@ define(['view'], function (View) {
                 $('<div>').text(`${this.translate('Studio', 'labels', 'SmAnalytics')}: ${this.formatMoney(total.studioShare, total.currency)}`).appendTo($body);
                 $('<div>').text(`${this.translate('Producers', 'labels', 'SmAnalytics')}: ${this.formatMoney(total.producerShare, total.currency)}`).appendTo($body);
                 $('<div>').text(`${this.translate('Participants', 'labels', 'SmAnalytics')}: ${this.formatMoney(total.participantShare, total.currency)}`).appendTo($body);
+                $('<div>').text(`${this.translate('Technical Directors', 'labels', 'SmAnalytics')}: ${this.formatMoney(total.technicalDirectorShare, total.currency)}`).appendTo($body);
+                $('<div>').text(`${this.translate('Recruiters', 'labels', 'SmAnalytics')}: ${this.formatMoney(total.recruiterShare, total.currency)}`).appendTo($body);
+                $('<div>').text(`${this.translate('Expenses', 'labels', 'SmAnalytics')}: ${this.formatMoney(total.expensesTotal, total.currency)}`).appendTo($body);
                 $('<div>').addClass('text-muted').text(`${this.translate('Shifts', 'labels', 'SmAnalytics')}: ${total.shiftCount}`).appendTo($body);
                 $panel.appendTo($container);
+            });
+        }
+
+        renderPersonalTotals(totals) {
+            const $container = this.$el.find('.analytics-personal').empty();
+
+            if (!totals.length) {
+                $container.hide();
+                return;
+            }
+
+            $container.show();
+
+            $('<strong>')
+                .text(`${this.translate('Personal Earnings', 'labels', 'SmAnalytics')}: `)
+                .appendTo($container);
+
+            totals.forEach((total, index) => {
+                if (index) {
+                    $container.append(document.createTextNode(' · '));
+                }
+
+                $('<span>').text(this.formatMoney(total.amount, total.currency)).appendTo($container);
             });
         }
 
@@ -99,6 +126,9 @@ define(['view'], function (View) {
                 $('<td>').text(this.formatMoney(row.studioShare, row.currency)).appendTo($tr);
                 $('<td>').text(this.formatMoney(row.producerShare, row.currency)).appendTo($tr);
                 $('<td>').text(this.formatMoney(row.participantShare, row.currency)).appendTo($tr);
+                $('<td>').text(this.formatMoney(row.technicalDirectorShare, row.currency)).appendTo($tr);
+                $('<td>').text(this.formatMoney(row.recruiterShare, row.currency)).appendTo($tr);
+                $('<td>').text(this.formatMoney(row.expensesTotal, row.currency)).appendTo($tr);
                 $tr.appendTo($body);
             });
         }

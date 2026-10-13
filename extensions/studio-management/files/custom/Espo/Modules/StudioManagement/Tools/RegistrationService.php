@@ -100,6 +100,7 @@ final class RegistrationService
                         'isActive' => true,
                         'password' => $this->passwordHash->hash($password),
                         'smAccountType' => $invitation->get('accountType'),
+                        'smRecruiterId' => $invitation->get('recruiterId'),
                     ]);
 
                     $this->entityManager->saveEntity($user);

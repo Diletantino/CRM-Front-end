@@ -2,6 +2,7 @@
   {"name": "name", "link": true},
   {"name": "accountType", "width": 14},
   {"name": "targetRole", "width": 20},
+  {"name": "recruiter", "width": 18},
   {"name": "expiresAt", "width": 18},
   {"name": "isUsed", "width": 10},
   {"name": "registrationUrl", "width": 30}

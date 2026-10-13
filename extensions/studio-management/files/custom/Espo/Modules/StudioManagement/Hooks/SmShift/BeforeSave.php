@@ -37,7 +37,7 @@ class BeforeSave implements BeforeSaveHook
             if (
                 !$this->user->isAdmin() &&
                 (
-                    $this->user->get('smAccountType') !== 'Operator' ||
+                    !in_array($this->user->get('smAccountType'), ['Operator', 'ProducerAdmin'], true) ||
                     $entity->get('operatorId') !== $this->user->getId()
                 )
             ) {
@@ -64,6 +64,15 @@ class BeforeSave implements BeforeSaveHook
             'offlineBonus',
             'result',
             'totalGross',
+            'modelShare',
+            'operatorShare',
+            'producerShare',
+            'technicalDirectorShare',
+            'recruiterShare',
+            'expensesTotal',
+            'studioShare',
+            'expenseBreakdown',
+            'platformMetrics',
             'closedById',
             'financialSnapshotId',
         ] as $attribute) {

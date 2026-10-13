@@ -12,6 +12,7 @@
         <span class="analytics-status text-danger" style="margin-left: 12px"></span>
     </div>
 </div>
+<div class="alert alert-info analytics-personal" style="display:block"></div>
 <div class="analytics-totals"></div>
 <div class="panel panel-default">
     <div class="panel-heading"><strong>{{translate 'Producer Earnings' scope='SmAnalytics'}}</strong></div>
@@ -25,6 +26,9 @@
                 <th>{{translate 'Studio' category='labels' scope='SmAnalytics'}}</th>
                 <th>{{translate 'Producer Share' scope='SmAnalytics'}}</th>
                 <th>{{translate 'Participants' category='labels' scope='SmAnalytics'}}</th>
+                <th>{{translate 'Technical Directors' category='labels' scope='SmAnalytics'}}</th>
+                <th>{{translate 'Recruiters' category='labels' scope='SmAnalytics'}}</th>
+                <th>{{translate 'Expenses' category='labels' scope='SmAnalytics'}}</th>
             </tr></thead>
             <tbody class="analytics-rows"></tbody>
         </table>

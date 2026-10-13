@@ -1,4 +1,4 @@
 {
-  "labels": {"Gross": "Gross", "Studio": "Studio", "Producers": "Producers", "Participants": "Participants", "Shifts": "Shifts", "Producer Earnings": "Producer Earnings"},
+  "labels": {"Gross": "Gross", "Studio": "Studio Net", "Producers": "Producers", "Participants": "Models and Operators", "Technical Directors": "Technical Directors", "Recruiters": "Recruiters", "Expenses": "Total Expenses", "Personal Earnings": "Personal Earnings", "Shifts": "Shifts", "Producer Earnings": "Production Finances"},
   "messages": {"noData": "No closed shifts in this period.", "analyticsFailed": "Could not load analytics."}
 }

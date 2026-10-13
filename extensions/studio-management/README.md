@@ -1,6 +1,6 @@
 # Studio Management for EspoCRM
 
-Installable EspoCRM 10 extension implementing studio shifts, model/operator profiles, role-based payout percentages, expiring registration links, immutable financial snapshots, and studio/producer analytics.
+Installable EspoCRM 10 extension implementing studio shifts, model/operator profiles, role-based payout percentages, recruiter and technical-director expenses, expiring registration links, immutable financial snapshots, and production-scoped analytics.
 
 ## Installation
 
@@ -14,10 +14,12 @@ The extension is developed against EspoCRM `10.0.x` / PHP `8.3+` and does not mo
 ## Initial setup
 
 1. Open **Administration → Roles** and create the needed roles. Configure normal EspoCRM entity permissions for `SmShift`, `SmShiftFinancialSnapshot`, `SmRegistrationLink`, and boolean access to `SmModels`, `SmOperators`, and `SmAnalytics`.
-2. Set **Percent of shift income** (`smSharePercent`) on model, operator, and producer roles. If a user has several roles, the highest percentage is used.
-3. Open users and set **Studio Account Type**. A personal percentage can optionally override role percentages.
+2. Set **Percent of shift income** (`smSharePercent`) on model, operator, producer, and technical-director roles. If a user has several roles, the highest percentage is used.
+3. Open users and set **Studio Account Type**. A personal percentage can optionally override role percentages. For a producer who also works as an operator, set separate **Operator Share Percent** and **Producer Share Percent** values.
 4. Open **Teams**, select the producer, and add model/operator users to the team.
 5. Restrict creation of registration links to trusted producer/admin roles. Registration links default to 24 hours if their expiry is omitted or invalid.
+6. For recruited employees, select the recruiter and one reward mode: **$150 after 5 shifts** or **Percent per Shift**. The amount and percentage are editable per employee.
+7. Create the technical director as a user with account type **Technical Director**. Their configured percentage is charged on every completed shift.
 
 ## Shift flow
 
@@ -29,15 +31,17 @@ The extension is developed against EspoCRM `10.0.x` / PHP `8.3+` and does not mo
 6. The server validates every amount, calculates exact cent totals, writes a `SmShiftFinancialSnapshot`, and closes the shift in one transaction.
 7. A producer assigned to the shift team (or an administrator) can revise the financial rows and screenshots through the privileged correction endpoint. The shift and its snapshot are updated in the same transaction.
 
-The sum of the model, operator, and producer percentages must not exceed 100%. Studio share is the remainder. Ordinary users cannot mutate completed shifts or snapshots; corrections are restricted to the producer of the team and administrators.
+The sum of model, operator, producer, technical-director, and percentage-based recruiter expenses must not exceed 100%. The one-time recruiter reward is a fixed expense and can make studio net negative. Every payout is stored as a separate line in the financial snapshot; studio share is gross less all expenses. Ordinary users cannot mutate completed shifts or snapshots; corrections are restricted to the producer of the team and administrators.
+
+A producer can be assigned as the shift operator. In that case the same user is recorded as shift creator/producer/operator, can execute the normal operator workflow, and receives the independently configured operator and producer payouts. Recruiter rewards are never paid for a user whose current account type is producer.
 
 ## Registration flow
 
-Create a **Registration Link** record and choose account type, role, and expiry. EspoCRM generates a cryptographically random 256-bit token and a copyable public URL. The public form validates email/name/password on the server, assigns the preset role, and consumes the token transactionally. A unique redemption marker prevents concurrent double use.
+Create a **Registration Link** record and choose account type, role, optional recruiter, and expiry. EspoCRM generates a cryptographically random 256-bit token and a copyable public URL. The public form validates email/name/password on the server, assigns the preset role and recruiter, and consumes the token transactionally. A unique redemption marker prevents concurrent double use. The recruiter relationship on `User` is intentionally reusable by a future personal-link implementation without changing financial calculations.
 
 ## Analytics
 
-The **Studio Analytics** tab offers today/week/month and custom date filters. Aggregation is executed by the database over immutable snapshot rows. Producer accounts are additionally hard-restricted to their own snapshots in the service, even if a role was configured too broadly.
+The **Studio Analytics** tab offers today/week/month and custom date filters. Production aggregation is executed by the database over immutable snapshot rows, while personal earnings use indexed `SmShiftExpense` rows. Producers are restricted to their production, models and operators to their own shifts, and technical directors to all shifts. Recruiters receive only their personal payout total. These restrictions are enforced in the service even if an Espo role was configured too broadly.
 
 ## Model and operator profiles
 

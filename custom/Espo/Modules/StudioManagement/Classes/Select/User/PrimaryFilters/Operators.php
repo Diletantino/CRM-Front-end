@@ -11,7 +11,7 @@ final class Operators implements Filter
     {
         $queryBuilder->where([
             'isActive' => true,
-            'smAccountType' => 'Operator',
+            'smAccountType' => ['Operator', 'ProducerAdmin'],
         ]);
     }
 }

@@ -2,6 +2,14 @@
   "fields": {
     "smAccountType": "Studio Account Type",
     "smSharePercentOverride": "Share Percent Override",
+    "smOperatorSharePercentOverride": "Operator Share Percent",
+    "smProducerSharePercentOverride": "Producer Share Percent",
+    "smTechnicalDirectorSharePercentOverride": "Technical Director Share Percent",
+    "smRecruiter": "Recruiter",
+    "smRecruiterRewardMode": "Recruiter Reward Mode",
+    "smRecruiterPercent": "Recruiter Percent per Shift",
+    "smRecruiterFlatAmount": "Recruiter Bonus after 5 Shifts",
+    "smRecruiterMilestonePaid": "Five-shift Bonus Paid",
     "smBirthDate": "Birth Date",
     "smStartDate": "Employment Start Date",
     "smContact": "Contact",
@@ -14,9 +22,12 @@
   },
   "tooltips": {
     "smSharePercentOverride": "Optional individual percentage. When empty, the highest percentage from assigned roles is used.",
+    "smOperatorSharePercentOverride": "Separate rate for operator work, including a producer assigned as the operator.",
+    "smProducerSharePercentOverride": "Producer percentage applied only to shifts in the producer's own production.",
+    "smTechnicalDirectorSharePercentOverride": "Technical director percentage applied to every completed shift.",
     "smSiteAccess": "Access details can be kept as free text or a manually formatted table."
   },
-  "options": {"smAccountType": {"": "Not Set", "Model": "Model", "Operator": "Operator", "ProducerAdmin": "Producer / Admin"}},
-  "labels": {"Profile Photos": "Photos", "Document Photos": "Documents", "Comments": "Comments", "Shift History and Earnings": "Shift History and Earnings", "Write a comment": "Write a comment", "Add Comment": "Add Comment", "Shift History": "Recent Shift History", "Income by Payout Day": "Income by Payout Day", "Operator": "Operator", "Team": "Team", "Start": "Start", "End": "End", "Result": "Result", "Personal Income": "Personal Income"},
+  "options": {"smAccountType": {"": "Not Set", "Model": "Model", "Operator": "Operator", "ProducerAdmin": "Producer / Admin", "TechnicalDirector": "Technical Director", "Recruiter": "Recruiter"}, "smRecruiterRewardMode": {"None": "No Reward", "FlatAfterFiveShifts": "$150 after 5 shifts", "PercentPerShift": "Percent per Shift"}},
+  "labels": {"Recruitment": "Recruitment", "Profile Photos": "Photos", "Document Photos": "Documents", "Comments": "Comments", "Shift History and Earnings": "Shift History and Earnings", "Write a comment": "Write a comment", "Add Comment": "Add Comment", "Shift History": "Recent Shift History", "Income by Payout Day": "Income by Payout Day", "Operator": "Operator", "Team": "Team", "Start": "Start", "End": "End", "Result": "Result", "Personal Income": "Personal Income"},
   "messages": {"staffProfileUnavailable": "This profile is available only to its team producer or an administrator.", "commentRequired": "Enter a comment.", "commentSaveFailed": "Could not save the comment.", "noStaffComments": "There are no comments yet.", "noStaffShifts": "There are no completed shifts yet."}
 }

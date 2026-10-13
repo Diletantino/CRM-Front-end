@@ -40,6 +40,20 @@ class BeforeSave implements BeforeSaveHook
             throw new BadRequest('Target role not found.');
         }
 
+        $recruiterId = $entity->get('recruiterId');
+
+        if (is_string($recruiterId) && $recruiterId !== '') {
+            $recruiter = $this->entityManager->getEntityById('User', $recruiterId);
+
+            if (
+                !$recruiter ||
+                !$recruiter->get('isActive') ||
+                $recruiter->get('smAccountType') !== 'Recruiter'
+            ) {
+                throw new BadRequest('The recruiter must be an active recruiter account.');
+            }
+        }
+
         $token = bin2hex(random_bytes(32));
         $expiresAt = $entity->get('expiresAt');
 

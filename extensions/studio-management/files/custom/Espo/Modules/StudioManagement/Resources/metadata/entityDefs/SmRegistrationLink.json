@@ -4,6 +4,7 @@
     "token": {"type": "varchar", "maxLength": 64, "readOnly": true, "copyToClipboard": true},
     "registrationUrl": {"type": "url", "readOnly": true, "copyToClipboard": true},
     "targetRole": {"type": "link", "required": true, "readOnlyAfterCreate": true},
+    "recruiter": {"type": "link", "readOnlyAfterCreate": true, "audited": true},
     "accountType": {
       "type": "enum",
       "options": ["Model", "Operator"],
@@ -27,6 +28,7 @@
   },
   "links": {
     "targetRole": {"type": "belongsTo", "entity": "Role"},
+    "recruiter": {"type": "belongsTo", "entity": "User", "foreign": "smRecruiterRegistrationLinks"},
     "usedByUser": {"type": "belongsTo", "entity": "User"},
     "createdBy": {"type": "belongsTo", "entity": "User"}
   },

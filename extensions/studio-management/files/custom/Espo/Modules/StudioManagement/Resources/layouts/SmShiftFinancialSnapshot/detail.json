@@ -4,11 +4,17 @@
       [{"name": "name"}, {"name": "closedAt"}],
       [{"name": "shift"}, {"name": "team"}],
       [{"name": "producer"}, {"name": "closedBy"}],
+      [{"name": "model"}, {"name": "operator"}],
       [{"name": "totalGross"}, {"name": "studioShare"}],
       [{"name": "modelShare"}, {"name": "operatorShare"}],
       [{"name": "producerShare"}, {"name": "participantShare"}],
+      [{"name": "technicalDirectorShare"}, {"name": "recruiterShare"}],
+      [{"name": "expensesTotal"}, false],
       [{"name": "currency"}, false],
       [{"name": "participantBreakdown"}],
+      [{"name": "technicalDirectorBreakdown"}],
+      [{"name": "recruiterBreakdown"}],
+      [{"name": "expenseBreakdown"}],
       [{"name": "platformMetrics"}]
     ]
   }

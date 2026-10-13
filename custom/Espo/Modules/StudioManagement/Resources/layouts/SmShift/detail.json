@@ -19,7 +19,10 @@
       [{"name": "currency"}, {"name": "closedBy"}],
       [{"name": "totalGross"}, {"name": "studioShare"}],
       [{"name": "modelShare"}, {"name": "operatorShare"}],
-      [{"name": "producerShare"}, {"name": "financialSnapshot"}]
+      [{"name": "producerShare"}, {"name": "technicalDirectorShare"}],
+      [{"name": "recruiterShare"}, {"name": "expensesTotal"}],
+      [{"name": "financialSnapshot"}, false],
+      [{"name": "expenseBreakdown", "fullWidth": true}]
     ]
   },
   {

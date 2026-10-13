@@ -10,8 +10,8 @@
     "Register": "Register",
     "Go to Login": "Go to Login"
   },
-  "fields": {"name": "Name", "token": "Token", "registrationUrl": "Registration URL", "targetRole": "Target Role", "accountType": "Account Type", "expiresAt": "Expires At", "isUsed": "Used", "usedAt": "Used At", "usedByUser": "Registered User"},
-  "links": {"targetRole": "Target Role", "usedByUser": "Registered User"},
+  "fields": {"name": "Name", "token": "Token", "registrationUrl": "Registration URL", "targetRole": "Target Role", "recruiter": "Recruiter", "accountType": "Account Type", "expiresAt": "Expires At", "isUsed": "Used", "usedAt": "Used At", "usedByUser": "Registered User"},
+  "links": {"targetRole": "Target Role", "recruiter": "Recruiter", "usedByUser": "Registered User"},
   "options": {"accountType": {"Model": "Model", "Operator": "Operator"}},
   "messages": {
     "invitationUnavailable": "This invitation is invalid, expired or already used.",
