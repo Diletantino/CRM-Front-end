@@ -1,0 +1,31 @@
+[
+  {
+    "label": "Shift details",
+    "rows": [
+      [{"name": "name"}, {"name": "status"}],
+      [{"name": "operator"}, {"name": "model"}],
+      [{"name": "modelBirthDate"}, {"name": "team"}],
+      [{"name": "startTime"}, {"name": "endTime"}],
+      [{"name": "siteData", "fullWidth": true}],
+      [{"name": "modelImages", "fullWidth": true}]
+    ]
+  },
+  {
+    "label": "Shift calculation",
+    "rows": [
+      [{"name": "screenshots", "fullWidth": true}],
+      [{"name": "currency"}, {"name": "closedBy"}],
+      [{"name": "botTotal"}, {"name": "calculatedTotal"}],
+      [{"name": "result"}, {"name": "offlineBonus"}],
+      [{"name": "totalGross"}, {"name": "studioShare"}],
+      [{"name": "modelShare"}, {"name": "operatorShare"}],
+      [{"name": "producerShare"}, {"name": "technicalDirectorShare"}],
+      [{"name": "recruiterShare"}, {"name": "expensesTotal"}]
+    ]
+  },
+  {
+    "rows": [
+      [{"name": "description"}]
+    ]
+  }
+]

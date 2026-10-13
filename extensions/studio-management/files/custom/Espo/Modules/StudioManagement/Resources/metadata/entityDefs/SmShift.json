@@ -91,7 +91,11 @@
     "recruiterShare": {"type": "decimal", "precision": 18, "scale": 2, "decimalPlaces": 2, "readOnly": true},
     "expensesTotal": {"type": "decimal", "precision": 18, "scale": 2, "decimalPlaces": 2, "readOnly": true},
     "studioShare": {"type": "decimal", "precision": 18, "scale": 2, "decimalPlaces": 2, "readOnly": true},
-    "expenseBreakdown": {"type": "jsonArray", "readOnly": true},
+    "expenseBreakdown": {
+      "type": "jsonArray",
+      "readOnly": true,
+      "view": "studio-management:views/sm-shift/fields/expense-breakdown"
+    },
     "platformMetrics": {"type": "jsonObject", "readOnly": true},
     "closedBy": {"type": "link", "readOnly": true},
     "financialSnapshot": {"type": "linkOne", "readOnly": true},
