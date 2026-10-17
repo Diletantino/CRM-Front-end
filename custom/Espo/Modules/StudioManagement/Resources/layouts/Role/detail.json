@@ -1,7 +1,7 @@
 [
   {
     "rows": [
-      [{"name": "name"}, {"name": "smSharePercent"}, false]
+      [{"name": "name"}, {"name": "smSharePercent"}, {"name": "smAccountType"}]
     ]
   },
   {

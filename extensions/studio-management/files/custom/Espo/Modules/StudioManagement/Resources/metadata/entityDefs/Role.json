@@ -1,5 +1,9 @@
 {
   "fields": {
+    "smAccountType": {
+      "type": "enum", "options": ["", "Model", "Operator", "ProducerAdmin", "TechnicalDirector", "Recruiter"],
+      "default": "", "tooltip": true
+    },
     "smSharePercent": {
       "type": "decimal",
       "precision": 7,

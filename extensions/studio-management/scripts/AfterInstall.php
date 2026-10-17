@@ -21,5 +21,8 @@ class AfterInstall
 
         $writer->set('tabList', $tabList);
         $writer->save();
+        $container->getByClass(InjectableFactory::class)
+            ->create(\Espo\Modules\StudioManagement\Tools\StaffMigration::class)
+            ->run();
     }
 }

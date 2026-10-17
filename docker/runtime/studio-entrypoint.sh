@@ -20,9 +20,12 @@ if [ "$(bin/command config:get isInstalled 2>/dev/null || true)" = "true" ]; the
     bin/command config:set theme StudioDark
     bin/command config:set themeParams '{"navbar":"side"}' --type=json
     bin/command config:set userThemesDisabled true --type=bool
+    bin/command config:set timeFormat 'HH:mm'
     bin/command config:set tabList '["SmShift","SmModels","SmOperators","Team","SmAnalytics","SmRegistrationLink","User","Role"]' --type=json
     bin/command config:set quickCreateList '["SmShift","SmRegistrationLink","User","Team"]' --type=json
     bin/command rebuild >/dev/null
+    bin/command studio-sync-staff
+    bin/command update-app-timestamp >/dev/null
 fi
 
 exec docker-entrypoint.sh "$@"

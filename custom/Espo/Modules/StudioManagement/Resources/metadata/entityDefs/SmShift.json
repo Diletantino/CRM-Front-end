@@ -22,11 +22,12 @@
       "style": {"Draft": "default", "Open": "success", "Counting": "warning", "Closed": "info"},
       "displayAsLabel": true
     },
-    "startTime": {"type": "datetime", "readOnly": true, "index": true},
+    "startTime": {"type": "datetime", "index": true},
     "endTime": {"type": "datetime", "readOnly": true, "index": true},
     "team": {"type": "link", "required": true, "audited": true},
     "operator": {
       "type": "link",
+      "view": "studio-management:views/sm-shift/fields/participant",
       "required": true,
       "audited": true,
       "selectFilterType": "primary",
@@ -34,6 +35,7 @@
     },
     "model": {
       "type": "link",
+      "view": "studio-management:views/sm-shift/fields/participant",
       "required": true,
       "audited": true,
       "selectFilterType": "primary",
@@ -43,7 +45,7 @@
     "siteData": {
       "type": "jsonArray",
       "view": "studio-management:views/sm-shift/fields/site-data",
-      "audited": true
+      "audited": false
     },
     "modelImages": {
       "type": "attachmentMultiple",

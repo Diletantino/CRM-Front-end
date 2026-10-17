@@ -4,7 +4,10 @@
     "token": {"type": "varchar", "maxLength": 64, "readOnly": true, "copyToClipboard": true},
     "registrationUrl": {"type": "url", "readOnly": true, "copyToClipboard": true},
     "targetRole": {"type": "link", "required": true, "readOnlyAfterCreate": true},
-    "recruiter": {"type": "link", "readOnlyAfterCreate": true, "audited": true},
+    "recruiter": {
+      "type": "link", "readOnlyAfterCreate": true, "audited": true, "tooltip": true,
+      "selectFilterType": "primary", "selectPrimaryFilterName": "smRecruiters"
+    },
     "accountType": {
       "type": "enum",
       "options": ["Model", "Operator"],

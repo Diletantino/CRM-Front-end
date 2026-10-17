@@ -8,7 +8,8 @@
       [{"name": "modelBirthDate"}, {"name": "team"}],
       [{"name": "startTime"}, {"name": "endTime"}],
       [{"name": "siteData", "fullWidth": true}],
-      [{"name": "modelImages", "fullWidth": true}]
+      [{"name": "modelImages", "fullWidth": true}],
+      [{"name": "screenshots", "fullWidth": true}]
     ]
   },
   {
@@ -24,7 +25,6 @@
       ]
     },
     "rows": [
-      [{"name": "screenshots", "fullWidth": true}],
       [{"name": "currency"}, {"name": "closedBy"}],
       [{"name": "botTotal"}, {"name": "calculatedTotal"}],
       [{"name": "result"}, {"name": "offlineBonus"}],
@@ -37,7 +37,8 @@
   {
     "name": "shiftNotes",
     "rows": [
-      [{"name": "description"}]
+      [{"name": "description"}],
+      [{"name": "workflowFooter", "fullWidth": true, "noLabel": true}]
     ]
   }
 ]

@@ -1,0 +1,49 @@
+[
+  {
+    "label": "",
+    "rows": [
+      [{"name": "userName"}, {"name": "smAccountType"}],
+      [{"name": "name"}, {"name": "title"}],
+      [{"name": "emailAddress"}, {"name": "phoneNumber"}],
+      [{"name": "smBirthDate"}, {"name": "smStartDate"}],
+      [{"name": "smContact"}, {"name": "smSharePercentOverride"}],
+      [{"name": "smOperatorSharePercentOverride"}, {"name": "smProducerSharePercentOverride"}],
+      [{"name": "smTechnicalDirectorSharePercentOverride"}, false],
+      [{"name": "smProfileBio", "fullWidth": true}],
+      [{"name": "smSiteData", "fullWidth": true}],
+      [{"name": "smSiteAccess", "fullWidth": true}]
+    ]
+  },
+  {
+    "label": "Recruitment",
+    "rows": [
+      [{"name": "smRecruiter"}, {"name": "smRecruiterRewardMode"}],
+      [{"name": "smRecruiterPercent"}, {"name": "smRecruiterFlatAmount"}],
+      [{"name": "smRecruiterMilestonePaid"}, false]
+    ]
+  },
+  {
+    "label": "Profile Photos",
+    "rows": [
+      [{"name": "smProfilePhotos", "fullWidth": true}]
+    ]
+  },
+  {
+    "label": "Document Photos",
+    "rows": [
+      [{"name": "smDocumentPhotos", "fullWidth": true}]
+    ]
+  },
+  {
+    "label": "Comments",
+    "rows": [
+      [{"name": "smCommentsWidget", "fullWidth": true}]
+    ]
+  },
+  {
+    "label": "Shift History and Earnings",
+    "rows": [
+      [{"name": "smProfileDashboard", "fullWidth": true}]
+    ]
+  }
+]

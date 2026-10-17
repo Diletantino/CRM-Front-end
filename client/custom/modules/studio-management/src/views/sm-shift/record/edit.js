@@ -7,8 +7,15 @@ define(['views/record/edit'], function (EditRecordView) {
             super.setup();
 
             const params = this.options.params || {};
+            this.model.studioWorkflowMode = params.start ? 'start' : params.count ? 'count' : params.revise ? 'revise' : '';
             const status = this.model.get('status');
             const saveButton = this.buttonList.find(item => item.name === 'save');
+
+            this.listenTo(this.model, 'change:modelId', () => this.loadModelDefaults());
+
+            if (!this.model.isNew() && status === 'Draft' && !this.model.get('siteData')?.length) {
+                this.once('after:render', () => this.loadModelDefaults());
+            }
 
             if (status && status !== 'Draft') {
                 [
@@ -18,12 +25,13 @@ define(['views/record/edit'], function (EditRecordView) {
                     'modelBirthDate',
                     'team',
                     'modelImages',
+                    'startTime',
                     'currency',
                     'description',
                 ].forEach(field => this.setFieldReadOnly(field, true));
             }
 
-            if (!saveButton || this.isNew) {
+            if (!saveButton || this.model.isNew()) {
                 return;
             }
 
@@ -39,11 +47,27 @@ define(['views/record/edit'], function (EditRecordView) {
             }
         }
 
+        async loadModelDefaults() {
+            const id = this.model.get('modelId');
+            if (!id || this.model.get('status') !== 'Draft') {
+                return;
+            }
+            const query = this.model.id ? {shiftId: this.model.id} : {};
+            try {
+                const values = await Espo.Ajax.getRequest(`StudioManagement/models/${id}/shiftDefaults`, query);
+                if (this.model.get('modelId') === id) {
+                    this.model.set(values);
+                }
+            } catch (error) {
+                Espo.Ui.error(this.translate('modelDefaultsFailed', 'messages', 'SmShift'));
+            }
+        }
+
         async actionSave(data) {
             const params = this.options.params || {};
             const status = this.model.get('status');
 
-            if (this.isNew || (status === 'Draft' && !params.start)) {
+            if (this.model.isNew() || (status === 'Draft' && !params.start)) {
                 return super.actionSave(data);
             }
 
@@ -51,7 +75,14 @@ define(['views/record/edit'], function (EditRecordView) {
 
             if (status === 'Draft' && params.start) {
                 try {
-                    await this.save(data?.options);
+                    try {
+                        await this.save({...data?.options, skipNotModifiedWarning: true});
+                    } catch (reason) {
+                        // Starting an already-prepared draft does not require editing a field.
+                        if (reason !== 'notModified') {
+                            throw reason;
+                        }
+                    }
                     const response = await Espo.Ajax.postRequest(`SmShift/${this.model.id}/open`);
                     this.model.set(response);
                     Espo.Ui.success(this.translate('shiftOpened', 'messages', 'SmShift'));

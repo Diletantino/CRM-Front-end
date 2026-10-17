@@ -23,7 +23,7 @@
                     {{#if ../canEditCredentials}}<input class="form-control input-sm" data-field="login" value="{{login}}">{{else}}{{login}}{{/if}}
                 </td>
                 <td>
-                    {{#if ../canEditCredentials}}<input type="password" class="form-control input-sm" data-field="password" value="{{password}}" autocomplete="new-password">{{else}}<code>{{password}}</code>{{/if}}
+                    {{#if ../canEditCredentials}}<input type="text" class="form-control input-sm" data-field="password" value="{{password}}" autocomplete="off">{{else}}<code>{{password}}</code>{{/if}}
                 </td>
                 <td>{{stateLabel}}</td>
                 {{#if ../showFinancial}}

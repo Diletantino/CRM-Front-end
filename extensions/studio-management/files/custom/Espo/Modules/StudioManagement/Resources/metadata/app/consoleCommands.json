@@ -1,0 +1,6 @@
+{
+  "studioSyncStaff": {
+    "className": "Espo\\Modules\\StudioManagement\\Classes\\ConsoleCommands\\SyncStaff",
+    "listed": true
+  }
+}

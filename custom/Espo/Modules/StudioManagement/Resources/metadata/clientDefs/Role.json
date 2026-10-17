@@ -1,3 +1,7 @@
 {
-  "additionalRecordFields": ["smSharePercent"]
+  "recordViews": {
+    "detail": "studio-management:views/role/record/detail",
+    "edit": "studio-management:views/role/record/edit"
+  },
+  "additionalRecordFields": ["smSharePercent", "smAccountType"]
 }

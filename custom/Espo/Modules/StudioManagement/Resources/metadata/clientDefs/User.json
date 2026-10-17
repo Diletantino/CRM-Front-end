@@ -1,4 +1,8 @@
 {
+  "recordViews": {
+    "detail": "studio-management:views/user/record/detail",
+    "edit": "studio-management:views/user/record/edit"
+  },
   "additionalRecordFields": [
     "smAccountType",
     "smSharePercentOverride",
@@ -15,6 +19,7 @@
     "smContact",
     "smProfileBio",
     "smSiteAccess",
+    "smSiteData",
     "smProfilePhotos",
     "smDocumentPhotos",
     "smProfileComments"

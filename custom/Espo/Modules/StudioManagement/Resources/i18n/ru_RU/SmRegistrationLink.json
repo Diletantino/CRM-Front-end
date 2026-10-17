@@ -3,5 +3,6 @@
   "fields": {"name": "Название", "token": "Токен", "registrationUrl": "Ссылка регистрации", "targetRole": "Роль", "recruiter": "Рекрутер", "accountType": "Тип аккаунта", "expiresAt": "Истекает", "isUsed": "Использована", "usedAt": "Использована в", "usedByUser": "Созданный пользователь"},
   "links": {"targetRole": "Роль", "recruiter": "Рекрутер", "usedByUser": "Созданный пользователь"},
   "options": {"accountType": {"Model": "Модель", "Operator": "Оператор"}},
+  "tooltips": {"recruiter": "Необязательное поле. Выберите активного сотрудника с типом аккаунта «Рекрутер». Если рекрутера нет, оставьте пустым."},
   "messages": {"invitationUnavailable": "Ссылка недействительна, просрочена или уже использована.", "allFieldsRequired": "Заполните все обязательные поля.", "passwordsDoNotMatch": "Пароли не совпадают.", "registrationComplete": "Регистрация завершена. Теперь можно войти.", "registrationFailed": "Не удалось зарегистрироваться. Проверьте введённые данные."}
 }

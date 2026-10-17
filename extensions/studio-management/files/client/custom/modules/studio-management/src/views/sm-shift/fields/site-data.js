@@ -9,7 +9,7 @@ define(['views/fields/base'], function (BaseFieldView) {
             const status = this.model.get('status') || 'Draft';
             const accountType = this.getUser().get('smAccountType');
             const isManager = this.getUser().isAdmin() || accountType === 'ProducerAdmin';
-            const isAssignedOperator = accountType === 'Operator' &&
+            const isAssignedOperator = ['Operator', 'ProducerAdmin'].includes(accountType) &&
                 this.model.get('operatorId') === this.getUser().id;
             const rows = this.getRows().map((row, index) => ({
                 ...row,
@@ -37,6 +37,7 @@ define(['views/fields/base'], function (BaseFieldView) {
             super.afterRender();
 
             this.$el.off('.smSiteData');
+            this.$el.on('input.smSiteData', '[data-field]', () => this.trigger('change'));
             this.$el.on('click.smSiteData', '[data-action="add-site-row"]', () => this.addRow());
             this.$el.on('click.smSiteData', '[data-action="remove-site-row"]', event => {
                 this.removeRow(Number(event.currentTarget.dataset.index));

@@ -1,5 +1,10 @@
 [
   {
+    "route": "/StudioManagement/models/:id/shiftDefaults",
+    "method": "get",
+    "actionClassName": "Espo\\Modules\\StudioManagement\\Api\\GetModelShiftDefaults"
+  },
+  {
     "route": "/SmShift/:id/open",
     "method": "post",
     "actionClassName": "Espo\\Modules\\StudioManagement\\Api\\PostOpenShift"

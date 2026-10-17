@@ -48,7 +48,7 @@
       "audited": true,
       "tooltip": true
     },
-    "smRecruiter": {"type": "link", "audited": true},
+    "smRecruiter": {"type": "link", "audited": true, "selectFilterType": "primary", "selectPrimaryFilterName": "smRecruiters"},
     "smRecruits": {"type": "linkMultiple", "readOnly": true},
     "smRecruiterRewardMode": {
       "type": "enum",
@@ -98,6 +98,11 @@
     "smSiteAccess": {
       "type": "text",
       "audited": true
+    },
+    "smSiteData": {
+      "type": "jsonArray",
+      "view": "studio-management:views/sm-shift/fields/site-data",
+      "audited": false
     },
     "smProfilePhotos": {
       "type": "attachmentMultiple",

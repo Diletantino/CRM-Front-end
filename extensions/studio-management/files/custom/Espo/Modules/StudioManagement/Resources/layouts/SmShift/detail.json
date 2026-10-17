@@ -8,7 +8,8 @@
       [{"name": "modelBirthDate"}, {"name": "team"}],
       [{"name": "startTime"}, {"name": "endTime"}],
       [{"name": "siteData", "fullWidth": true}],
-      [{"name": "modelImages", "fullWidth": true}]
+      [{"name": "modelImages", "fullWidth": true}],
+      [{"name": "screenshots", "fullWidth": true}]
     ]
   },
   {
@@ -26,7 +27,6 @@
     "rows": [
       [{"name": "botTotal"}, {"name": "calculatedTotal"}],
       [{"name": "result"}, {"name": "offlineBonus"}],
-      [{"name": "screenshots", "fullWidth": true}],
       [{"name": "currency"}, {"name": "closedBy"}],
       [{"name": "totalGross"}, {"name": "studioShare"}],
       [{"name": "modelShare"}, {"name": "operatorShare"}],

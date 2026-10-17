@@ -40,10 +40,10 @@ final class ShiftService
             $model = $this->getParticipant($shift, 'modelId', ['Model']);
             $operator = $this->getParticipant($shift, 'operatorId', ['Operator', 'ProducerAdmin']);
             [$siteData] = $this->normalizeSiteData((array) ($shift->get('siteData') ?? []));
-            $now = gmdate('Y-m-d H:i:s');
+            $now = gmdate('Y-m-d H:i:00');
 
             $shift->set([
-                'name' => sprintf('Shift %s — %s', $now, (string) $model->get('name')),
+                'name' => sprintf('Смена №%s — %s', (string) $shift->get('number'), (string) $model->get('name')),
                 'status' => SmShift::STATUS_OPEN,
                 'startTime' => $now,
                 'siteData' => $siteData,

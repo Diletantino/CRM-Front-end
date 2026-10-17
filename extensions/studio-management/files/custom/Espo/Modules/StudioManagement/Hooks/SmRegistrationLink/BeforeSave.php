@@ -50,7 +50,7 @@ class BeforeSave implements BeforeSaveHook
                 !$recruiter->get('isActive') ||
                 $recruiter->get('smAccountType') !== 'Recruiter'
             ) {
-                throw new BadRequest('The recruiter must be an active recruiter account.');
+                throw new BadRequest('Выберите активного пользователя с типом аккаунта «Рекрутер» или оставьте поле пустым. Тип аккаунта задаётся в профиле пользователя.');
             }
         }
 

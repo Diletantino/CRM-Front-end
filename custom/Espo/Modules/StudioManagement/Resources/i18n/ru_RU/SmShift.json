@@ -4,8 +4,8 @@
     "Open Shift": "Открыть смену",
     "Close Shift": "Закрыть смену",
     "Start Shift": "Старт",
-    "Finish Shift": "Конец",
-    "Complete Calculation": "Завершить подсчёт",
+    "Finish Shift": "Перейти к подсчёту смены",
+    "Complete Calculation": "Завершить смену",
     "Save Changes": "Сохранить изменения",
     "Add Site": "Добавить сайт",
     "Start Site": "Начать",
@@ -67,7 +67,7 @@
   "options": {
     "status": {
       "Draft": "Предварительно",
-      "Open": "Смена идёт",
+      "Open": "Идёт смена",
       "Counting": "Идёт подсчёт",
       "Closed": "Подсчитана"
     }
@@ -78,6 +78,7 @@
     "Banned": "Забанен"
   },
   "messages": {
+    "modelDefaultsFailed": "Не удалось загрузить доступы из профиля модели. Проверьте, что модель и оператор состоят в команде.",
     "openShiftConfirmation": "Начать смену сейчас? Время начала будет записано автоматически.",
     "finishShiftConfirmation": "Завершить смену и перейти к подсчёту?",
     "closeShiftConfirmation": "Завершить подсчёт и зафиксировать финансовый результат?",
