@@ -82,16 +82,45 @@ daemon and the WebSocket service. The Studio Management backend and frontend
 are baked into the local image and refreshed in the persistent custom volumes
 each time the web container starts.
 
-1. Copy `.env.example` to `.env` and replace all three example passwords.
+1. Copy `.env.example` to `.env`, replace all three example passwords, and set
+   `CRM_ADMIN_HOSTS` plus `CRM_ADMIN_ALLOWED_IPS`.
 2. Start the stack:
 
 ```bash
 docker compose up -d --build
 ```
 
-3. Wait until the application is healthy, then open
-   `http://localhost:8080` and sign in with `CRM_ADMIN_USERNAME` and
-   `CRM_ADMIN_PASSWORD` from `.env`.
+3. Wait until the application is healthy, then open a host allowed by
+   `CRM_ADMIN_HOSTS` from an address allowed by `CRM_ADMIN_ALLOWED_IPS` and
+   sign in with `CRM_ADMIN_USERNAME` and `CRM_ADMIN_PASSWORD` from `.env`.
+
+Regular users cannot use the standard login page. A Registration Link opens
+registration on first use and becomes the same user's account-bound login page
+after registration. The secret is carried in a URL fragment (`#access=...`),
+which is not sent in an HTTP request or Referer header, and is removed from the
+address bar immediately. The user must still enter their password. One link
+cannot be used to authenticate another account.
+
+For production, copy `.env.production.example` to `.env`, replace every
+`GENERATE_...` / `CHANGE_ME_...` value, create an A/AAAA record for the
+administrator hostname (for example `wesperr.studio`), and enforce HTTPS. An
+MX record is only for mail and does not control web access. Keep real passwords
+and IP addresses in the untracked `.env` file or in the deployment platform's
+secret storage.
+
+The Compose file binds CRM ports to `127.0.0.1` by default. Put a trusted HTTPS
+reverse proxy on the same server in front of them. The proxy must overwrite
+`X-Real-IP`, pass the original `Host`, support WebSocket upgrades, and rate-limit
+at least `/api/v1/StudioManagement/invitation`,
+`/api/v1/StudioManagement/register`, and `/api/v1/App/user`. Do not expose ports
+8080/8081 directly when `CRM_IP_ADDRESS_SERVER_PARAM=HTTP_X_REAL_IP`, because a
+direct client could otherwise spoof that header.
+
+Before the first production start, back up the database and persistent volumes.
+After deployment, verify HTTPS, the administrator host/IP restriction, a new
+registration link, logout and repeat login through that link. Existing links
+are automatically migrated from `?token=...` to `#access=...` when the CRM
+container starts.
 
 Useful commands:
 

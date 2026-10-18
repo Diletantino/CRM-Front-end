@@ -45,6 +45,18 @@
     "actionClassName": "Espo\\Modules\\StudioManagement\\Api\\PostStaffComment"
   },
   {
+    "route": "/StudioManagement/access-policy",
+    "method": "get",
+    "noAuth": true,
+    "actionClassName": "Espo\\Modules\\StudioManagement\\Api\\GetAccessPolicy"
+  },
+  {
+    "route": "/StudioManagement/invitation",
+    "method": "get",
+    "noAuth": true,
+    "actionClassName": "Espo\\Modules\\StudioManagement\\Api\\GetInvitation"
+  },
+  {
     "route": "/StudioManagement/register",
     "method": "post",
     "noAuth": true,

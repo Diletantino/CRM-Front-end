@@ -25,6 +25,7 @@ if [ "$(bin/command config:get isInstalled 2>/dev/null || true)" = "true" ]; the
     bin/command config:set quickCreateList '["SmShift","SmRegistrationLink","User","Team"]' --type=json
     bin/command rebuild >/dev/null
     bin/command studio-sync-staff
+    bin/command studio-migrate-registration-links
     bin/command update-app-timestamp >/dev/null
 fi
 

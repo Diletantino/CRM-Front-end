@@ -1,7 +1,7 @@
 name: studio-crm
 
 x-crm-image: &crm-image
-  image: studio-crm:${ESPOCRM_VERSION:-10.0.9}
+  image: studio-crm:${ESPOCRM_VERSION:-10.0.10}
 
 x-crm-volumes: &crm-volumes
   - crm-data:/var/www/html/data
@@ -32,7 +32,7 @@ services:
       context: .
       dockerfile: docker/runtime/Dockerfile
       args:
-        ESPOCRM_VERSION: ${ESPOCRM_VERSION:-10.0.9}
+        ESPOCRM_VERSION: ${ESPOCRM_VERSION:-10.0.10}
     restart: unless-stopped
     environment:
       ESPOCRM_DATABASE_PLATFORM: Mysql
@@ -48,6 +48,17 @@ services:
       ESPOCRM_DEFAULT_CURRENCY: ${CRM_DEFAULT_CURRENCY:-USD}
       ESPOCRM_CONFIG_THEME: StudioDark
       ESPOCRM_CONFIG_USER_THEMES_DISABLED: "true"
+      ESPOCRM_CONFIG_STUDIO_ADMIN_HOSTS: ${CRM_ADMIN_HOSTS:-localhost,127.0.0.1}
+      ESPOCRM_CONFIG_STUDIO_ADMIN_ALLOWED_IPS: ${CRM_ADMIN_ALLOWED_IPS:-127.0.0.1,::1,172.16.0.0/12}
+      ESPOCRM_CONFIG_IP_ADDRESS_SERVER_PARAM: ${CRM_IP_ADDRESS_SERVER_PARAM:-REMOTE_ADDR}
+      ESPOCRM_CONFIG_AUTH_TOKEN_LIFETIME: ${CRM_AUTH_TOKEN_LIFETIME:-24}
+      ESPOCRM_CONFIG_AUTH_TOKEN_MAX_IDLE_TIME: ${CRM_AUTH_TOKEN_MAX_IDLE_TIME:-8}
+      ESPOCRM_CONFIG_PASSWORD_STRENGTH_LENGTH: ${CRM_PASSWORD_MIN_LENGTH:-10}
+      ESPOCRM_CONFIG_PASSWORD_STRENGTH_LETTER_COUNT: ${CRM_PASSWORD_MIN_LETTERS:-1}
+      ESPOCRM_CONFIG_PASSWORD_STRENGTH_NUMBER_COUNT: ${CRM_PASSWORD_MIN_NUMBERS:-1}
+      ESPOCRM_CONFIG_PASSWORD_STRENGTH_BOTH_CASES: ${CRM_PASSWORD_BOTH_CASES:-true}
+      ESPOCRM_CONFIG_PASSWORD_RECOVERY_FOR_ADMIN_DISABLED: ${CRM_ADMIN_PASSWORD_RECOVERY_DISABLED:-true}
+      ESPOCRM_CONFIG_ADMIN_UPGRADE_DISABLED: ${CRM_ADMIN_UPGRADE_DISABLED:-true}
     volumes: *crm-volumes
     depends_on:
       db:
@@ -59,7 +70,7 @@ services:
       retries: 10
       start_period: 90s
     ports:
-      - "${CRM_HTTP_PORT:-8080}:80"
+      - "${CRM_BIND_ADDRESS:-127.0.0.1}:${CRM_HTTP_PORT:-8080}:80"
 
   daemon:
     <<: *crm-image
@@ -96,7 +107,7 @@ services:
       retries: 3
       start_period: 30s
     ports:
-      - "${CRM_WEBSOCKET_PORT:-8081}:8080"
+      - "${CRM_BIND_ADDRESS:-127.0.0.1}:${CRM_WEBSOCKET_PORT:-8081}:8080"
 
 volumes:
   crm-db:

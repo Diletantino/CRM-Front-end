@@ -26,7 +26,26 @@ final class RegistrationService
     {
         $invitation = $this->findInvitation($token);
 
-        if (!$invitation || !$this->isAvailable($invitation)) {
+        if (!$invitation) {
+            return null;
+        }
+
+        if ($invitation->get('isUsed')) {
+            $userId = $invitation->get('usedByUserId');
+            $user = is_string($userId) ? $this->entityManager->getEntityById('User', $userId) : null;
+
+            if (!$user instanceof User || !$user->isActive() || !$user->isRegular()) {
+                return null;
+            }
+
+            return [
+                'mode' => 'login',
+                'userName' => $user->getUserName(),
+                'displayName' => (string) $user->get('name'),
+            ];
+        }
+
+        if (!$this->isAvailable($invitation)) {
             return null;
         }
 
@@ -37,6 +56,7 @@ final class RegistrationService
         }
 
         return [
+            'mode' => 'register',
             'accountType' => (string) $invitation->get('accountType'),
             'roleName' => (string) $role->get('name'),
             'expiresAt' => (string) $invitation->get('expiresAt'),
@@ -61,7 +81,14 @@ final class RegistrationService
             throw new BadRequest('Full name must contain between 2 and 150 characters.');
         }
 
-        if (strlen($password) > 255 || !$this->passwordChecker->checkStrength($password)) {
+        if (
+            mb_strlen($password) < 10 ||
+            strlen($password) > 255 ||
+            !preg_match('/[a-z]/', $password) ||
+            !preg_match('/[A-Z]/', $password) ||
+            !preg_match('/[0-9]/', $password) ||
+            !$this->passwordChecker->checkStrength($password)
+        ) {
             throw new BadRequest('The password does not meet the configured strength requirements.');
         }
 

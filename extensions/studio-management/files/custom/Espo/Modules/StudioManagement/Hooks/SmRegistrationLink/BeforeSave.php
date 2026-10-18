@@ -3,8 +3,10 @@
 namespace Espo\Modules\StudioManagement\Hooks\SmRegistrationLink;
 
 use Espo\Core\Exceptions\BadRequest;
+use Espo\Core\Exceptions\Forbidden;
 use Espo\Core\Hook\Hook\BeforeSave as BeforeSaveHook;
-use Espo\Core\Utils\Config;
+use Espo\Entities\User;
+use Espo\Modules\StudioManagement\Tools\RegistrationLinkUrl;
 use Espo\ORM\Entity;
 use Espo\ORM\EntityManager;
 use Espo\ORM\Repository\Option\SaveOptions;
@@ -13,14 +15,19 @@ use Espo\ORM\Repository\Option\SaveOptions;
 class BeforeSave implements BeforeSaveHook
 {
     public function __construct(
-        private Config $config,
         private EntityManager $entityManager,
+        private RegistrationLinkUrl $registrationLinkUrl,
+        private User $user,
     ) {}
 
     public function beforeSave(Entity $entity, SaveOptions $options): void
     {
         if (!$entity->isNew()) {
             return;
+        }
+
+        if (!$this->user->isAdmin()) {
+            throw new Forbidden('Only an administrator can create registration links.');
         }
 
         $roleId = $entity->get('targetRoleId');
@@ -63,16 +70,10 @@ class BeforeSave implements BeforeSaveHook
             throw new BadRequest('Expiration must be in the future.');
         }
 
-        $siteUrl = rtrim((string) $this->config->get('siteUrl'), '/');
-
-        if ($siteUrl === '') {
-            throw new BadRequest('The EspoCRM siteUrl setting is required.');
-        }
-
         $entity->set([
             'name' => sprintf('%s — %s', $accountType, (string) $role->get('name')),
             'token' => $token,
-            'registrationUrl' => $siteUrl . '/?entryPoint=studioRegister&token=' . rawurlencode($token),
+            'registrationUrl' => $this->registrationLinkUrl->build($token),
             'expiresAt' => $expiresAt,
             'isUsed' => false,
         ]);

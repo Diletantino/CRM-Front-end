@@ -24,5 +24,8 @@ class AfterInstall
         $container->getByClass(InjectableFactory::class)
             ->create(\Espo\Modules\StudioManagement\Tools\StaffMigration::class)
             ->run();
+        $container->getByClass(InjectableFactory::class)
+            ->create(\Espo\Modules\StudioManagement\Tools\RegistrationLinkMigration::class)
+            ->run();
     }
 }

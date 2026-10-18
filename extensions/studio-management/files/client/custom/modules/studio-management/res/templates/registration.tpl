@@ -2,12 +2,19 @@
     <div class="block-center">
         <div class="panel panel-default">
             <div class="panel-heading">
-                <h4 class="panel-title">{{translate 'Registration' scope='SmRegistrationLink'}}</h4>
+                <h4 class="panel-title">
+                    {{#if isLogin}}
+                        {{translate 'Log in'}}
+                    {{else}}
+                        {{translate 'Registration' scope='SmRegistrationLink'}}
+                    {{/if}}
+                </h4>
             </div>
             <div class="panel-body">
                 {{#if notFound}}
-                    <p class="text-danger">{{translate 'invitationUnavailable' category='messages' scope='SmRegistrationLink'}}</p>
+                    <p class="text-danger">{{translate 'linkUnavailable' category='messages' scope='SmRegistrationLink'}}</p>
                 {{else}}
+                    {{#if isRegistration}}
                     <p class="text-muted">
                         {{translate 'Account Type' scope='SmRegistrationLink'}}: <strong>{{accountType}}</strong><br>
                         {{translate 'Target Role' scope='SmRegistrationLink'}}: <strong>{{roleName}}</strong><br>
@@ -35,7 +42,32 @@
                         </button>
                     </div>
                     <p class="registration-message" style="margin-top: 15px"></p>
-                    <p class="login-link hidden"><a href="./">{{translate 'Go to Login' scope='SmRegistrationLink'}}</a></p>
+                    {{else}}
+                        {{#if isLogin}}
+                    <p class="text-muted">
+                        {{translate 'Personal Login Description' scope='SmRegistrationLink'}}
+                    </p>
+                    <div class="login-form">
+                        <div class="form-group">
+                            <label>{{translate 'Username'}}</label>
+                            <input class="form-control" type="text" name="loginUserName" value="{{userName}}" readonly autocomplete="username">
+                        </div>
+                        <div class="form-group">
+                            <label>{{translate 'Password'}}</label>
+                            <input class="form-control" type="password" name="loginPassword" maxlength="255" autocomplete="current-password">
+                        </div>
+                        <button type="button" class="btn btn-primary" data-action="login">
+                            {{translate 'Log in'}}
+                        </button>
+                    </div>
+                    {{#if justRegistered}}
+                        <p class="text-success" style="margin-top: 15px">
+                            {{translate 'registrationComplete' category='messages' scope='SmRegistrationLink'}}
+                        </p>
+                    {{/if}}
+                    <p class="login-message" style="margin-top: 15px"></p>
+                        {{/if}}
+                    {{/if}}
                 {{/if}}
             </div>
         </div>

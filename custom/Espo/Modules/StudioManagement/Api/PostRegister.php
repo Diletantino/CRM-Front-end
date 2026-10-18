@@ -25,6 +25,10 @@ final class PostRegister implements Action
 
         $user = $this->service->register($data->token, $data->email, $data->fullName, $data->password);
 
-        return ResponseComposer::json(['success' => true, 'userId' => $user->getId()]);
+        return ResponseComposer::json([
+            'success' => true,
+            'userId' => $user->getId(),
+            'userName' => $user->getUserName(),
+        ]);
     }
 }

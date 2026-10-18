@@ -2,5 +2,9 @@
   "studioSyncStaff": {
     "className": "Espo\\Modules\\StudioManagement\\Classes\\ConsoleCommands\\SyncStaff",
     "listed": true
+  },
+  "studioMigrateRegistrationLinks": {
+    "className": "Espo\\Modules\\StudioManagement\\Classes\\ConsoleCommands\\MigrateRegistrationLinks",
+    "listed": false
   }
 }

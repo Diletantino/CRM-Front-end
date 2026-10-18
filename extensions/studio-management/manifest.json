@@ -1,9 +1,9 @@
 {
   "name": "Studio Management",
-  "version": "1.3.0",
+  "version": "1.5.0",
   "acceptableVersions": [">=10.0.0"],
   "php": [">=8.3"],
-  "releaseDate": "2026-10-13",
+  "releaseDate": "2026-10-18",
   "author": "NoDiletant",
-  "description": "Role-aware shifts, production-scoped analytics, technical-director and recruiter expenses, registration links and financial snapshots for EspoCRM."
+  "description": "Role-aware shifts, production-scoped analytics, personal registration/login links, technical-director and recruiter expenses, and financial snapshots for EspoCRM."
 }

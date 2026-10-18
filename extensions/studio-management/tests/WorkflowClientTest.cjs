@@ -4,10 +4,10 @@ const vm = require('node:vm');
 const path = require('node:path');
 
 const root = path.resolve(__dirname, '../../..');
-function load(relative, Base, Espo = {}) {
+function load(relative, Base, Espo = {}, context = {}) {
     let Result;
     vm.runInNewContext(fs.readFileSync(path.join(root, relative), 'utf8'), {
-        define: (_dependencies, factory) => { Result = factory(Base); }, Espo,
+        define: (_dependencies, factory) => { Result = factory(Base); }, Espo, ...context,
     });
     return Result;
 }
@@ -96,6 +96,35 @@ let checks = 0;
     assert.equal(saved, 1);
     assert.equal(button.disabled, false);
     checks += 2;
+
+    class View {}
+    const stored = new Map();
+    const cleanUrls = [];
+    const window = {
+        location: {
+            hash: '#access=' + 'a'.repeat(64),
+            search: '?entryPoint=studioRegister',
+            pathname: '/',
+        },
+        sessionStorage: {
+            setItem: (key, value) => stored.set(key, value),
+            getItem: key => stored.get(key) || null,
+        },
+        history: {
+            replaceState: (_state, _title, url) => cleanUrls.push(url),
+        },
+    };
+    const Registration = load(prefix + 'registration.js', View, {}, {
+        window,
+        document: {title: 'CRM'},
+        URLSearchParams,
+        TextEncoder,
+    });
+    const registration = new Registration();
+    assert.equal(registration.consumeTokenFromLocation(), 'a'.repeat(64));
+    assert.equal(stored.get('studioAccessToken'), 'a'.repeat(64));
+    assert.equal(cleanUrls.at(-1), '/?entryPoint=studioRegister');
+    checks += 3;
 
     console.log(`Workflow client: ${checks} checks passed.`);
 })().catch(error => { console.error(error); process.exitCode = 1; });

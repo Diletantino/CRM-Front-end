@@ -3,21 +3,83 @@ define(['view'], function (View) {
         template = 'studio-management:registration'
 
         data() {
+            const mode = this.options.invitation?.mode || '';
+
             return {
                 notFound: this.options.notFound,
+                isRegistration: mode === 'register',
+                isLogin: mode === 'login',
                 accountType: this.options.invitation?.accountType || '',
                 roleName: this.options.invitation?.roleName || '',
                 expiresAt: this.options.invitation?.expiresAt || '',
+                userName: this.options.invitation?.userName || '',
+                displayName: this.options.invitation?.displayName || '',
+                justRegistered: Boolean(this.options.justRegistered),
             };
         }
 
         setup() {
+            this.options.notFound = true;
+            this.wait(this.loadInvitation());
+
             this.addHandler('click', '[data-action="register"]', () => this.submit());
+            this.addHandler('click', '[data-action="login"]', () => this.login());
             this.addHandler('keydown', 'input', event => {
                 if (event.key === 'Enter') {
-                    this.submit();
+                    if (this.options.invitation?.mode === 'login') {
+                        this.login();
+                    } else {
+                        this.submit();
+                    }
                 }
             });
+        }
+
+        async loadInvitation() {
+            const token = this.consumeTokenFromLocation();
+
+            this.options.token = token;
+
+            if (!/^[a-f0-9]{64}$/.test(token)) {
+                return;
+            }
+
+            try {
+                this.options.invitation = await Espo.Ajax.getRequest(
+                    'StudioManagement/invitation',
+                    null,
+                    {headers: {'X-Studio-Access-Token': token}}
+                );
+                this.options.notFound = false;
+            } catch (e) {
+                this.options.invitation = null;
+                this.options.notFound = true;
+            }
+        }
+
+        consumeTokenFromLocation() {
+            const fragment = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+            const query = new URLSearchParams(window.location.search);
+            const locationToken = fragment.get('access') || query.get('token') || '';
+            let token = locationToken;
+
+            try {
+                if (locationToken) {
+                    window.sessionStorage.setItem('studioAccessToken', locationToken);
+                } else {
+                    token = window.sessionStorage.getItem('studioAccessToken') || '';
+                }
+            } catch (e) {
+                // Session storage can be unavailable in hardened browsers.
+            }
+
+            query.delete('token');
+            const search = query.toString();
+            const cleanUrl = window.location.pathname + (search ? `?${search}` : '');
+
+            window.history.replaceState(null, document.title, cleanUrl);
+
+            return token.trim();
         }
 
         async submit() {
@@ -42,19 +104,21 @@ define(['view'], function (View) {
             const $button = this.$el.find('[data-action="register"]').prop('disabled', true);
 
             try {
-                await Espo.Ajax.postRequest('StudioManagement/register', {
+                const response = await Espo.Ajax.postRequest('StudioManagement/register', {
                     token: this.options.token,
                     fullName,
                     email,
                     password,
                 });
 
-                this.$el.find('.registration-form').addClass('hidden');
-                $message
-                    .removeClass('text-danger')
-                    .addClass('text-success')
-                    .text(this.translate('registrationComplete', 'messages', 'SmRegistrationLink'));
-                this.$el.find('.login-link').removeClass('hidden');
+                this.options.invitation = {
+                    mode: 'login',
+                    userName: response.userName,
+                    displayName: fullName,
+                };
+                this.options.justRegistered = true;
+
+                await this.reRender();
             } catch (e) {
                 $message.text(
                     e?.xhr?.getResponseHeader('X-Status-Reason') ||
@@ -62,6 +126,56 @@ define(['view'], function (View) {
                 );
                 $button.prop('disabled', false);
             }
+        }
+
+        async login() {
+            const userName = String(this.options.invitation?.userName || '').trim();
+            const password = this.$el.find('[name="loginPassword"]').val();
+            const $message = this.$el.find('.login-message');
+            const $button = this.$el.find('[data-action="login"]').prop('disabled', true);
+
+            $message.removeClass('text-success').addClass('text-danger').text('');
+
+            if (!userName || !password) {
+                $message.text(this.translate('allFieldsRequired', 'messages', 'SmRegistrationLink'));
+                $button.prop('disabled', false);
+                return;
+            }
+
+            const authString = this.encodeBase64(`${userName}:${password}`);
+
+            try {
+                const data = await Espo.Ajax.getRequest('App/user', null, {
+                    login: true,
+                    headers: {
+                        'Authorization': `Basic ${authString}`,
+                        'Espo-Authorization': authString,
+                        'Espo-Authorization-By-Token': 'false',
+                        'Espo-Authorization-Create-Token-Secret': 'true',
+                        'X-Studio-Access-Token': this.options.token,
+                    },
+                });
+
+                try {
+                    window.sessionStorage.removeItem('studioAccessToken');
+                } catch (e) {
+                    // Session storage can be unavailable in hardened browsers.
+                }
+
+                this.trigger('login', userName, data);
+            } catch (e) {
+                $message.text(this.translate('loginFailed', 'messages', 'SmRegistrationLink'));
+                $button.prop('disabled', false);
+            }
+        }
+
+        encodeBase64(value) {
+            const bytes = new TextEncoder().encode(value);
+            let binary = '';
+
+            bytes.forEach(byte => binary += String.fromCharCode(byte));
+
+            return window.btoa(binary);
         }
     };
 });

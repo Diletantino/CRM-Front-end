@@ -17,7 +17,7 @@ The extension is developed against EspoCRM `10.0.x` / PHP `8.3+` and does not mo
 2. Set **Percent of shift income** (`smSharePercent`) on model, operator, producer, and technical-director roles. If a user has several roles, the highest percentage is used.
 3. Open users and set **Studio Account Type**. A personal percentage can optionally override role percentages. For a producer who also works as an operator, set separate **Operator Share Percent** and **Producer Share Percent** values.
 4. Open **Teams**, select the producer, and add model/operator users to the team.
-5. Restrict creation of registration links to trusted producer/admin roles. Registration links default to 24 hours if their expiry is omitted or invalid.
+5. Registration links are administrator-only. They default to 24 hours if their expiry is omitted or invalid.
 6. For recruited employees, select the recruiter and one reward mode: **$150 after 5 shifts** or **Percent per Shift**. The amount and percentage are editable per employee.
 7. Create the technical director as a user with account type **Technical Director**. Their configured percentage is charged on every completed shift.
 
@@ -37,7 +37,11 @@ A producer can be assigned as the shift operator. In that case the same user is 
 
 ## Registration flow
 
-Create a **Registration Link** record and choose account type, role, optional recruiter, and expiry. EspoCRM generates a cryptographically random 256-bit token and a copyable public URL. The public form validates email/name/password on the server, assigns the preset role and recruiter, and consumes the token transactionally. A unique redemption marker prevents concurrent double use. The recruiter relationship on `User` is intentionally reusable by a future personal-link implementation without changing financial calculations.
+An administrator creates a **Registration Link** record and chooses account type, role, optional recruiter, and expiry. EspoCRM generates a cryptographically random 256-bit token and a copyable public URL. The secret is placed after `#access=`: URL fragments are not sent in HTTP requests or Referer headers, and the client removes it from the address bar immediately after placing it in same-tab session storage. Old `?token=` links are accepted once and cleaned immediately. Before redemption, the URL opens the registration form, validates email/name/password on the server, assigns the preset role and recruiter, and consumes the registration step transactionally. A unique redemption marker prevents concurrent double use.
+
+After registration the same URL becomes that user's only password-login page. It displays the account login as read-only, accepts the password, and sends the link token in a dedicated header. A server-side authentication hook verifies that the token belongs to exactly that user; hiding the standard form is not the security boundary. Existing session tokens continue to work until logout or expiry. Deleting the Registration Link blocks future password logins through it.
+
+The standard login page is reserved for administrators and is shown only when both `studioAdminHosts` and `studioAdminAllowedIps` match the current request. Docker maps these values from `CRM_ADMIN_HOSTS` and `CRM_ADMIN_ALLOWED_IPS`. IP ranges in CIDR notation are supported.
 
 ## Analytics
 
@@ -53,11 +57,11 @@ Each list contains the requested employment dates, current/previous week figures
 
 - All persistence uses EspoCRM ORM/query builders; no request value is interpolated into SQL.
 - Backend validation is authoritative. Frontend validation is convenience only.
-- Passwords use EspoCRM's configured strength checker and bcrypt hash service.
-- Invite tokens contain 256 bits of randomness, expire, and are single-use.
+- Passwords must be at least 10 characters and contain lower-case, upper-case, and numeric characters, in addition to EspoCRM's configured strength policy. They use EspoCRM's bcrypt hash service.
+- Invite tokens contain 256 bits of randomness. Registration is expiring and single-use; after redemption the same token becomes the account-bound login link.
 - Site rows and screenshot IDs are validated on the backend and have strict count and length limits.
 - Start/finish actions are restricted to the assigned operator (or an administrator). Completed-shift corrections are restricted to the team producer (or an administrator).
 - Staff lists, profiles, and comments are restricted on the backend to the owning producer or an administrator.
 - Financial calculations use integer cents and fixed-point percentage units.
 
-For internet-facing deployments, enable HTTPS and apply normal reverse-proxy rate limiting to `/api/v1/StudioManagement/register`.
+For internet-facing deployments, enable HTTPS and apply reverse-proxy rate limiting to `/api/v1/StudioManagement/invitation`, `/api/v1/StudioManagement/register`, and `/api/v1/App/user`. Configure the reverse proxy so that only it can reach the CRM container and make it overwrite the forwarded client-IP header before changing `CRM_IP_ADDRESS_SERVER_PARAM` to that header. Administrator sessions are checked against the configured host/IP policy on every authenticated request, not only when the password is entered.

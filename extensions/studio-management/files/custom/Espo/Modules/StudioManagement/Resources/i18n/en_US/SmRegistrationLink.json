@@ -8,7 +8,8 @@
     "Full Name": "Full Name",
     "Confirm Password": "Confirm Password",
     "Register": "Register",
-    "Go to Login": "Go to Login"
+    "Go to Login": "Go to Login",
+    "Personal Login Description": "This personal link permits login only to the account assigned to it."
   },
   "fields": {"name": "Name", "token": "Token", "registrationUrl": "Registration URL", "targetRole": "Target Role", "recruiter": "Recruiter", "accountType": "Account Type", "expiresAt": "Expires At", "isUsed": "Used", "usedAt": "Used At", "usedByUser": "Registered User"},
   "links": {"targetRole": "Target Role", "recruiter": "Recruiter", "usedByUser": "Registered User"},
@@ -18,6 +19,9 @@
     "allFieldsRequired": "Complete all required fields.",
     "passwordsDoNotMatch": "Passwords do not match.",
     "registrationComplete": "Registration completed. You can now sign in.",
-    "registrationFailed": "Registration failed. Check the entered data."
+    "registrationFailed": "Registration failed. Check the entered data.",
+    "linkUnavailable": "This personal link is invalid, expired or disabled.",
+    "loginFailed": "Wrong password or access through this link is not allowed.",
+    "personalLinkRequired": "Use your personal link to sign in. The standard login form is disabled."
   }
 }

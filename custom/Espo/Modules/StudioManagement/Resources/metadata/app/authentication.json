@@ -1,0 +1,6 @@
+{
+  "beforeLoginHookClassNameList": [
+    "__APPEND__",
+    "Espo\\Modules\\StudioManagement\\Authentication\\PersonalLinkGuard"
+  ]
+}
