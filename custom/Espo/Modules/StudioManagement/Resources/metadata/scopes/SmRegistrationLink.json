@@ -1,5 +1,7 @@
 {
   "module": "StudioManagement",
+  "languageIsGlobal": true,
+  "languageAclDisabled": true,
   "entity": true,
   "object": true,
   "acl": true,

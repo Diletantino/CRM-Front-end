@@ -172,6 +172,98 @@ let checks = 0;
     assert.equal(cleanUrls.at(-1), '/?entryPoint=studioRegister');
     checks += 3;
 
+    // A personal-link login must leave the no-router entry point before F5.
+    const events = [];
+    const redirects = [];
+    let session = null;
+    let sessionResponse = {user: {id: 'session-user'}};
+    let sessionError;
+    let requestCount = 0;
+    const loginHandlers = {};
+    const entryWindow = {
+        location: {pathname: '/crm/', search: '?entryPoint=studioRegister', hash: '',
+            replace: url => { events.push('redirect'); redirects.push(url); }},
+        sessionStorage: {getItem: key => stored.get(key) || null},
+    };
+    class Controller {
+        getStorage() { return {get: () => session}; }
+        entire(_viewName, _options, callback) {
+            events.push('view');
+            callback({
+                once: (event, handler) => { loginHandlers[event] = handler; },
+                render: () => events.push('render'),
+            });
+        }
+        baseController = {
+            normalizeLoginData: (userName, data) => ({userName, data}),
+            trigger: (event, data) => { events.push(event); session = data; },
+        };
+    }
+    const RegistrationController = load('client/custom/modules/studio-management/src/controllers/registration.js',
+        Controller, {Ajax: {getRequest: async url => {
+            assert.equal(url, 'App/user');
+            requestCount++;
+            if (sessionError) { throw sessionError; }
+            return sessionResponse;
+        }}}, {window: entryWindow, URLSearchParams});
+    const entry = new RegistrationController();
+    stored.clear();
+    await entry.actionRegister();
+    assert.equal(requestCount, 0);
+    assert(events.includes('render'));
+    loginHandlers.login('user@example.invalid', {token: 'test-session'});
+    assert.deepEqual(events.slice(-2), ['login', 'redirect']);
+    assert.equal(redirects.at(-1), '/crm/');
+    assert(session);
+    checks += 3;
+
+    events.length = 0;
+    redirects.length = 0;
+    await entry.actionRegister();
+    assert.equal(requestCount, 1);
+    assert.equal(redirects.at(-1), '/crm/');
+    assert(!events.includes('view'));
+    checks++;
+
+    // An existing session must never swallow another (including invalid) explicit personal link.
+    for (const location of [
+        {hash: '#access=' + 'b'.repeat(64), search: '?entryPoint=studioRegister'},
+        {hash: '#access=invalid', search: '?entryPoint=studioRegister'},
+        {hash: '', search: '?entryPoint=studioRegister&token=legacy-token'},
+    ]) {
+        Object.assign(entryWindow.location, location);
+        events.length = 0;
+        redirects.length = 0;
+        await entry.actionRegister();
+        assert(events.includes('view'));
+        assert.equal(redirects.length, 0);
+        assert.equal(requestCount, 1);
+        checks++;
+    }
+    entryWindow.location.hash = '';
+    entryWindow.location.search = '?entryPoint=studioRegister';
+    stored.set('studioAccessToken', 'c'.repeat(64));
+    events.length = 0;
+    await entry.actionRegister();
+    assert(events.includes('view'));
+    assert.equal(requestCount, 1);
+    checks++;
+    stored.clear();
+    sessionError = {xhr: {status: 401}};
+    redirects.length = 0;
+    events.length = 0;
+    await entry.actionRegister();
+    assert.equal(redirects.length, 0);
+    assert(events.includes('view'));
+    assert.equal(sessionError.xhr.errorIsHandled, true);
+    checks++;
+    sessionError = null;
+    sessionResponse = {};
+    redirects.length = 0;
+    await entry.actionRegister();
+    assert.equal(redirects.length, 0);
+    checks++;
+
     let response = {operatorId: 'operator', modelId: 'model', producerId: 'producer',
         siteData: [{site: 'CB', login: 'model', password: 'fixture'}]};
     const TeamEdit = load(prefix + 'sm-shift/record/edit.js', Record, {
@@ -199,6 +291,12 @@ let checks = 0;
     resolveDefaults({modelId: 'stale-model'});
     await pending;
     assert.notEqual(values.modelId, 'stale-model');
+    checks++;
+
+    const publicLinkScope = JSON.parse(fs.readFileSync(path.join(root,
+        'custom/Espo/Modules/StudioManagement/Resources/metadata/scopes/SmRegistrationLink.json'), 'utf8'));
+    assert.equal(publicLinkScope.languageIsGlobal, true);
+    assert.equal(publicLinkScope.languageAclDisabled, true);
     checks++;
 
     console.log(`Workflow client: ${checks} checks passed.`);
