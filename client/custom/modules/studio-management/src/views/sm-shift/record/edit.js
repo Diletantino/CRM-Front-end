@@ -128,7 +128,10 @@ define(['views/record/edit'], function (EditRecordView) {
                     Espo.Ui.success(this.translate('shiftOpened', 'messages', 'SmShift'));
                     this.leaveToDetail();
                 } catch (error) {
-                    return Promise.reject(error);
+                    // /open bypasses Espo's save error handler; restore the standard toolbar too.
+                    this.enableActionItems();
+                    Espo.Ui.notify(false);
+                    throw error;
                 }
 
                 return;

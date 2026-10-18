@@ -26,6 +26,8 @@ let checks = 0;
     checks++;
 
     const calls = [];
+    const notifications = [];
+    let postError;
     class Record {
         setup() {}
         listenTo() {}
@@ -34,13 +36,20 @@ let checks = 0;
         fetch() { return {}; }
         translate(value) { return value; }
         setIsNotChanged() {}
+        enableActionItems() { this.actionsEnabled = true; }
         confirm() { return Promise.resolve(); }
         getUser() { return {isAdmin: () => true}; }
         getRouter() { return {navigate: url => calls.push(['navigate', url])}; }
     }
     const Edit = load(prefix + 'sm-shift/record/edit.js', Record, {
-        Ajax: {postRequest: async (url, data) => { calls.push([url, data]); return {}; }},
-        Ui: {success() {}},
+        Ajax: {postRequest: async (url, data) => {
+            calls.push([url, data]);
+            if (postError) {
+                throw postError;
+            }
+            return {};
+        }},
+        Ui: {success() {}, notify: value => notifications.push(value)},
     });
     const create = (status, params) => {
         const view = new Edit();
@@ -67,6 +76,8 @@ let checks = 0;
     invalid.save = () => Promise.reject('invalid');
     await assert.rejects(invalid.actionSave(), error => error === 'invalid');
     assert.equal(calls.length, 0);
+    assert.equal(invalid.actionsEnabled, true);
+    assert.equal(notifications.at(-1), false);
     checks++;
 
     const count = create('Counting', {count: true});
@@ -96,6 +107,41 @@ let checks = 0;
     assert.equal(saved, 1);
     assert.equal(button.disabled, false);
     checks += 2;
+
+    // Both entry points must recover after validation/save failures and failed /open requests.
+    for (const failure of ['invalid', {status: 400}, {status: 500}]) {
+        const failed = create('Draft', {start: true});
+        failed.save = async () => {
+            failed.actionsEnabled = false; // Espo disables the toolbar before save.
+            if (failure === 'invalid') {
+                throw failure;
+            }
+        };
+        postError = failure === 'invalid' ? undefined : failure;
+        calls.length = 0;
+        notifications.length = 0;
+        await assert.rejects(failed.actionSave(), error => error === failure);
+        assert.equal(failed.actionsEnabled, true);
+        assert.equal(notifications.at(-1), false);
+        assert(!calls.some(([url]) => url === 'navigate'));
+        assert.equal(calls.filter(([url]) => url.endsWith('/open')).length, failure === 'invalid' ? 0 : 1);
+        checks++;
+
+        footer.getParentView = () => failed;
+        await footer.runWorkflow({preventDefault() {}, stopPropagation() {}, currentTarget: button}, 'actionSave');
+        assert.equal(button.disabled, false);
+        assert.equal(failed.actionsEnabled, true);
+        checks++;
+
+        // A corrected form can start without refreshing the page.
+        postError = undefined;
+        failed.save = () => Promise.reject('notModified');
+        calls.length = 0;
+        await failed.actionSave();
+        assert(calls.some(([url]) => url === 'SmShift/test-shift/open'));
+        assert(calls.some(([url, target]) => url === 'navigate' && target === '#SmShift/view/test-shift'));
+        checks++;
+    }
 
     class View {}
     const stored = new Map();
