@@ -1,1 +1,12 @@
-{"fields": {"smProducer": "Producer"}, "links": {"smProducer": "Producer"}}
+{
+  "fields": {
+    "smProducer": "Producer",
+    "smOperator": "Operator",
+    "smModel": "Model"
+  },
+  "links": {
+    "smProducer": "Producer",
+    "smOperator": "Operator",
+    "smModel": "Model"
+  }
+}

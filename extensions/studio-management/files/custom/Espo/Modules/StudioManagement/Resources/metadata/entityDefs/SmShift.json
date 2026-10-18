@@ -10,25 +10,46 @@
       "type": "varchar",
       "maxLength": 150,
       "required": true,
-      "default": "New shift",
+      "default": "Новая смена",
       "pattern": "$noBadCharacters"
     },
     "status": {
       "type": "enum",
-      "options": ["Draft", "Open", "Counting", "Closed"],
+      "options": [
+        "Draft",
+        "Open",
+        "Counting",
+        "Closed"
+      ],
       "default": "Draft",
       "readOnly": true,
       "index": true,
-      "style": {"Draft": "default", "Open": "success", "Counting": "warning", "Closed": "info"},
+      "style": {
+        "Draft": "default",
+        "Open": "success",
+        "Counting": "warning",
+        "Closed": "info"
+      },
       "displayAsLabel": true
     },
-    "startTime": {"type": "datetime", "index": true},
-    "endTime": {"type": "datetime", "readOnly": true, "index": true},
-    "team": {"type": "link", "required": true, "audited": true},
+    "startTime": {
+      "type": "datetime",
+      "index": true
+    },
+    "endTime": {
+      "type": "datetime",
+      "readOnly": true,
+      "index": true
+    },
+    "team": {
+      "type": "link",
+      "required": true,
+      "audited": true
+    },
     "operator": {
       "type": "link",
       "view": "studio-management:views/sm-shift/fields/participant",
-      "required": true,
+      "required": false,
       "audited": true,
       "selectFilterType": "primary",
       "selectPrimaryFilterName": "smOperators"
@@ -36,12 +57,15 @@
     "model": {
       "type": "link",
       "view": "studio-management:views/sm-shift/fields/participant",
-      "required": true,
+      "required": false,
       "audited": true,
       "selectFilterType": "primary",
       "selectPrimaryFilterName": "smModels"
     },
-    "modelBirthDate": {"type": "date", "audited": true},
+    "modelBirthDate": {
+      "type": "date",
+      "audited": true
+    },
     "siteData": {
       "type": "jsonArray",
       "view": "studio-management:views/sm-shift/fields/site-data",
@@ -49,13 +73,21 @@
     },
     "modelImages": {
       "type": "attachmentMultiple",
-      "sourceList": ["Document"],
-      "accept": ["image/*"]
+      "sourceList": [
+        "Document"
+      ],
+      "accept": [
+        "image/*"
+      ]
     },
     "screenshots": {
       "type": "attachmentMultiple",
-      "sourceList": ["Document"],
-      "accept": ["image/*"]
+      "sourceList": [
+        "Document"
+      ],
+      "accept": [
+        "image/*"
+      ]
     },
     "workflowActions": {
       "type": "varchar",
@@ -81,55 +113,251 @@
       "required": true,
       "readOnlyAfterCreate": true
     },
-    "botTotal": {"type": "decimal", "precision": 18, "scale": 2, "decimalPlaces": 2, "readOnly": true},
-    "calculatedTotal": {"type": "decimal", "precision": 18, "scale": 2, "decimalPlaces": 2, "readOnly": true},
-    "result": {"type": "decimal", "precision": 18, "scale": 2, "decimalPlaces": 2, "readOnly": true},
-    "offlineBonus": {"type": "decimal", "precision": 18, "scale": 2, "decimalPlaces": 2, "readOnly": true},
-    "totalGross": {"type": "decimal", "precision": 18, "scale": 2, "decimalPlaces": 2, "readOnly": true},
-    "modelShare": {"type": "decimal", "precision": 18, "scale": 2, "decimalPlaces": 2, "readOnly": true},
-    "operatorShare": {"type": "decimal", "precision": 18, "scale": 2, "decimalPlaces": 2, "readOnly": true},
-    "producerShare": {"type": "decimal", "precision": 18, "scale": 2, "decimalPlaces": 2, "readOnly": true},
-    "technicalDirectorShare": {"type": "decimal", "precision": 18, "scale": 2, "decimalPlaces": 2, "readOnly": true},
-    "recruiterShare": {"type": "decimal", "precision": 18, "scale": 2, "decimalPlaces": 2, "readOnly": true},
-    "expensesTotal": {"type": "decimal", "precision": 18, "scale": 2, "decimalPlaces": 2, "readOnly": true},
-    "studioShare": {"type": "decimal", "precision": 18, "scale": 2, "decimalPlaces": 2, "readOnly": true},
+    "botTotal": {
+      "type": "decimal",
+      "precision": 18,
+      "scale": 2,
+      "decimalPlaces": 2,
+      "readOnly": true
+    },
+    "calculatedTotal": {
+      "type": "decimal",
+      "precision": 18,
+      "scale": 2,
+      "decimalPlaces": 2,
+      "readOnly": true
+    },
+    "result": {
+      "type": "decimal",
+      "precision": 18,
+      "scale": 2,
+      "decimalPlaces": 2,
+      "readOnly": true
+    },
+    "offlineBonus": {
+      "type": "decimal",
+      "precision": 18,
+      "scale": 2,
+      "decimalPlaces": 2,
+      "readOnly": true
+    },
+    "totalGross": {
+      "type": "decimal",
+      "precision": 18,
+      "scale": 2,
+      "decimalPlaces": 2,
+      "readOnly": true
+    },
+    "modelShare": {
+      "type": "decimal",
+      "precision": 18,
+      "scale": 2,
+      "decimalPlaces": 2,
+      "readOnly": true
+    },
+    "operatorShare": {
+      "type": "decimal",
+      "precision": 18,
+      "scale": 2,
+      "decimalPlaces": 2,
+      "readOnly": true
+    },
+    "producerShare": {
+      "type": "decimal",
+      "precision": 18,
+      "scale": 2,
+      "decimalPlaces": 2,
+      "readOnly": true
+    },
+    "technicalDirectorShare": {
+      "type": "decimal",
+      "precision": 18,
+      "scale": 2,
+      "decimalPlaces": 2,
+      "readOnly": true
+    },
+    "recruiterShare": {
+      "type": "decimal",
+      "precision": 18,
+      "scale": 2,
+      "decimalPlaces": 2,
+      "readOnly": true
+    },
+    "expensesTotal": {
+      "type": "decimal",
+      "precision": 18,
+      "scale": 2,
+      "decimalPlaces": 2,
+      "readOnly": true
+    },
+    "studioShare": {
+      "type": "decimal",
+      "precision": 18,
+      "scale": 2,
+      "decimalPlaces": 2,
+      "readOnly": true
+    },
     "expenseBreakdown": {
       "type": "jsonArray",
       "readOnly": true,
       "view": "studio-management:views/sm-shift/fields/expense-breakdown"
     },
-    "platformMetrics": {"type": "jsonObject", "readOnly": true},
-    "closedBy": {"type": "link", "readOnly": true},
-    "financialSnapshot": {"type": "linkOne", "readOnly": true},
-    "expenses": {"type": "linkMultiple", "readOnly": true},
-    "assignedUser": {"type": "link", "view": "views/fields/assigned-user"},
-    "teams": {"type": "linkMultiple", "view": "views/fields/teams"},
-    "description": {"type": "text"},
-    "createdAt": {"type": "datetime", "readOnly": true},
-    "modifiedAt": {"type": "datetime", "readOnly": true},
-    "createdBy": {"type": "link", "readOnly": true},
-    "modifiedBy": {"type": "link", "readOnly": true}
+    "platformMetrics": {
+      "type": "jsonObject",
+      "readOnly": true
+    },
+    "closedBy": {
+      "type": "link",
+      "readOnly": true
+    },
+    "financialSnapshot": {
+      "type": "linkOne",
+      "readOnly": true
+    },
+    "expenses": {
+      "type": "linkMultiple",
+      "readOnly": true
+    },
+    "assignedUser": {
+      "type": "link",
+      "view": "views/fields/assigned-user"
+    },
+    "teams": {
+      "type": "linkMultiple",
+      "view": "views/fields/teams"
+    },
+    "description": {
+      "type": "text"
+    },
+    "createdAt": {
+      "type": "datetime",
+      "readOnly": true
+    },
+    "modifiedAt": {
+      "type": "datetime",
+      "readOnly": true
+    },
+    "createdBy": {
+      "type": "link",
+      "readOnly": true
+    },
+    "modifiedBy": {
+      "type": "link",
+      "readOnly": true
+    },
+    "producer": {
+      "type": "link",
+      "view": "studio-management:views/sm-shift/fields/participant",
+      "audited": true
+    }
   },
   "links": {
-    "team": {"type": "belongsTo", "entity": "Team", "foreign": "smShifts"},
-    "operator": {"type": "belongsTo", "entity": "User", "foreign": "smOperatorShifts"},
-    "model": {"type": "belongsTo", "entity": "User", "foreign": "smModelShifts"},
-    "participants": {"type": "hasMany", "entity": "User", "foreign": "smShifts", "relationName": "SmShiftUser"},
-    "closedBy": {"type": "belongsTo", "entity": "User", "foreign": "smClosedShifts"},
-    "financialSnapshot": {"type": "hasOne", "entity": "SmShiftFinancialSnapshot", "foreign": "shift"},
-    "expenses": {"type": "hasMany", "entity": "SmShiftExpense", "foreign": "shift"},
-    "assignedUser": {"type": "belongsTo", "entity": "User"},
-    "teams": {"type": "hasMany", "entity": "Team", "relationName": "entityTeam", "layoutRelationshipsDisabled": true},
-    "createdBy": {"type": "belongsTo", "entity": "User"},
-    "modifiedBy": {"type": "belongsTo", "entity": "User"}
+    "team": {
+      "type": "belongsTo",
+      "entity": "Team",
+      "foreign": "smShifts"
+    },
+    "operator": {
+      "type": "belongsTo",
+      "entity": "User",
+      "foreign": "smOperatorShifts"
+    },
+    "model": {
+      "type": "belongsTo",
+      "entity": "User",
+      "foreign": "smModelShifts"
+    },
+    "participants": {
+      "type": "hasMany",
+      "entity": "User",
+      "foreign": "smShifts",
+      "relationName": "SmShiftUser"
+    },
+    "closedBy": {
+      "type": "belongsTo",
+      "entity": "User",
+      "foreign": "smClosedShifts"
+    },
+    "financialSnapshot": {
+      "type": "hasOne",
+      "entity": "SmShiftFinancialSnapshot",
+      "foreign": "shift"
+    },
+    "expenses": {
+      "type": "hasMany",
+      "entity": "SmShiftExpense",
+      "foreign": "shift"
+    },
+    "assignedUser": {
+      "type": "belongsTo",
+      "entity": "User"
+    },
+    "teams": {
+      "type": "hasMany",
+      "entity": "Team",
+      "relationName": "entityTeam",
+      "layoutRelationshipsDisabled": true
+    },
+    "createdBy": {
+      "type": "belongsTo",
+      "entity": "User"
+    },
+    "modifiedBy": {
+      "type": "belongsTo",
+      "entity": "User"
+    },
+    "producer": {
+      "type": "belongsTo",
+      "entity": "User",
+      "foreign": "smProducedShifts"
+    }
   },
   "indexes": {
-    "status": {"columns": ["status", "deleted"]},
-    "teamStart": {"columns": ["teamId", "startTime", "deleted"]},
-    "operatorStart": {"columns": ["operatorId", "startTime", "deleted"]},
-    "modelStart": {"columns": ["modelId", "startTime", "deleted"]},
-    "endTime": {"columns": ["endTime", "deleted"]},
-    "assignedUser": {"columns": ["assignedUserId", "deleted"]}
+    "status": {
+      "columns": [
+        "status",
+        "deleted"
+      ]
+    },
+    "teamStart": {
+      "columns": [
+        "teamId",
+        "startTime",
+        "deleted"
+      ]
+    },
+    "operatorStart": {
+      "columns": [
+        "operatorId",
+        "startTime",
+        "deleted"
+      ]
+    },
+    "modelStart": {
+      "columns": [
+        "modelId",
+        "startTime",
+        "deleted"
+      ]
+    },
+    "endTime": {
+      "columns": [
+        "endTime",
+        "deleted"
+      ]
+    },
+    "assignedUser": {
+      "columns": [
+        "assignedUserId",
+        "deleted"
+      ]
+    }
   },
-  "collection": {"orderBy": "number", "order": "desc", "textFilterFields": ["name"]}
+  "collection": {
+    "orderBy": "number",
+    "order": "desc",
+    "textFilterFields": [
+      "name"
+    ]
+  }
 }

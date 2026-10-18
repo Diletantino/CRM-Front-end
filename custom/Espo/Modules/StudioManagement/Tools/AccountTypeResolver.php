@@ -41,7 +41,7 @@ final class AccountTypeResolver
         return match (mb_strtolower(trim($label))) {
             'model', 'модель' => 'Model',
             'operator', 'оператор' => 'Operator',
-            'producer', 'продюсер', 'продюссер', 'продюсер / админ' => 'ProducerAdmin',
+            'producer', 'produceradmin', 'прод', 'продюсер', 'продюссер', 'продюсер / админ' => 'ProducerAdmin',
             'technical director', 'технический директор', 'техдиректор' => 'TechnicalDirector',
             'recruiter', 'рекрутер', 'рекрутёр' => 'Recruiter',
             default => '',

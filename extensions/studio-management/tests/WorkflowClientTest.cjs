@@ -126,5 +126,34 @@ let checks = 0;
     assert.equal(cleanUrls.at(-1), '/?entryPoint=studioRegister');
     checks += 3;
 
+    let response = {operatorId: 'operator', modelId: 'model', producerId: 'producer',
+        siteData: [{site: 'CB', login: 'model', password: 'fixture'}]};
+    const TeamEdit = load(prefix + 'sm-shift/record/edit.js', Record, {
+        Ajax: {getRequest: async () => response}, Ui: {error() {}},
+    });
+    const teamView = new TeamEdit();
+    const values = {teamId: 'group', status: 'Draft', modelId: 'old-model'};
+    teamView.model = {get: name => values[name], set: data => Object.assign(values, data)};
+    await teamView.loadTeamDefaults();
+    assert.equal(values.operatorId, 'operator');
+    assert.equal(values.producerId, 'producer');
+    assert.equal(values.siteData[0].login, 'model');
+    checks++;
+    values.teamId = null;
+    await teamView.loadTeamDefaults();
+    assert.equal(values.modelId, null);
+    assert.equal(values.producerId, null);
+    assert.equal(values.siteData.length, 0);
+    checks++;
+    values.teamId = 'group-a';
+    let resolveDefaults;
+    response = new Promise(resolve => { resolveDefaults = resolve; });
+    const pending = teamView.loadTeamDefaults();
+    values.teamId = 'group-b';
+    resolveDefaults({modelId: 'stale-model'});
+    await pending;
+    assert.notEqual(values.modelId, 'stale-model');
+    checks++;
+
     console.log(`Workflow client: ${checks} checks passed.`);
 })().catch(error => { console.error(error); process.exitCode = 1; });

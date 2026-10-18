@@ -12,6 +12,11 @@ define(['views/record/edit'], function (EditRecordView) {
             const saveButton = this.buttonList.find(item => item.name === 'save');
 
             this.listenTo(this.model, 'change:modelId', () => this.loadModelDefaults());
+            this.listenTo(this.model, 'change:teamId', () => this.loadTeamDefaults());
+            ['operator', 'model', 'producer', 'assignedUser', 'teams'].forEach(field => this.setFieldReadOnly(field, true));
+            if (this.model.isNew() && this.model.get('teamId')) {
+                this.once('after:render', () => this.loadTeamDefaults());
+            }
 
             if (!this.model.isNew() && status === 'Draft' && !this.model.get('siteData')?.length) {
                 this.once('after:render', () => this.loadModelDefaults());
@@ -22,6 +27,7 @@ define(['views/record/edit'], function (EditRecordView) {
                     'name',
                     'operator',
                     'model',
+                    'producer',
                     'modelBirthDate',
                     'team',
                     'modelImages',
@@ -47,7 +53,38 @@ define(['views/record/edit'], function (EditRecordView) {
             }
         }
 
+        async loadTeamDefaults() {
+            const id = this.model.get('teamId');
+            if (this.model.get('status') && this.model.get('status') !== 'Draft') {
+                return;
+            }
+            // Immediately discard the previous team's users, including when the request fails.
+            this.model.set({
+                operatorId: null, operatorName: null, modelId: null, modelName: null,
+                producerId: null, producerName: null, modelBirthDate: null, siteData: [],
+            });
+            if (!id) {
+                return;
+            }
+            this.teamDefaultsLoading = true;
+            try {
+                const values = await Espo.Ajax.getRequest(`StudioManagement/teams/${id}/shiftDefaults`);
+                if (this.model.get('teamId') === id) {
+                    this.applyingTeamDefaults = true;
+                    this.model.set(values);
+                    this.applyingTeamDefaults = false;
+                }
+            } catch (error) {
+                Espo.Ui.error(this.translate('teamDefaultsFailed', 'messages', 'SmShift'));
+            } finally {
+                this.teamDefaultsLoading = false;
+            }
+        }
+
         async loadModelDefaults() {
+            if (this.applyingTeamDefaults) {
+                return;
+            }
             const id = this.model.get('modelId');
             if (!id || this.model.get('status') !== 'Draft') {
                 return;
@@ -64,6 +101,9 @@ define(['views/record/edit'], function (EditRecordView) {
         }
 
         async actionSave(data) {
+            if (this.teamDefaultsLoading) {
+                return;
+            }
             const params = this.options.params || {};
             const status = this.model.get('status');
 

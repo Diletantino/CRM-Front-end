@@ -15,5 +15,7 @@ class SyncStaff implements Command
     {
         $result = $this->migration->run();
         $io->writeLine(sprintf('Studio staff synchronized: %d users, %d shift owners.', $result['users'], $result['shifts']));
+        $io->writeLine(sprintf('Studio teams synchronized: %d; require manual slot selection: %d.',
+            $result['teams'], $result['incompleteTeams']));
     }
 }

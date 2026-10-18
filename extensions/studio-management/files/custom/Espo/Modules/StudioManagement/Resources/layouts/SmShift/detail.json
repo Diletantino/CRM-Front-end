@@ -3,13 +3,62 @@
     "name": "shiftDetails",
     "label": "Shift details",
     "rows": [
-      [{"name": "number"}, {"name": "status"}],
-      [{"name": "operator"}, {"name": "model"}],
-      [{"name": "modelBirthDate"}, {"name": "team"}],
-      [{"name": "startTime"}, {"name": "endTime"}],
-      [{"name": "siteData", "fullWidth": true}],
-      [{"name": "modelImages", "fullWidth": true}],
-      [{"name": "screenshots", "fullWidth": true}]
+      [
+        {
+          "name": "team"
+        },
+        {
+          "name": "producer"
+        }
+      ],
+      [
+        {
+          "name": "number"
+        },
+        {
+          "name": "status"
+        }
+      ],
+      [
+        {
+          "name": "operator"
+        },
+        {
+          "name": "model"
+        }
+      ],
+      [
+        {
+          "name": "modelBirthDate"
+        },
+        false
+      ],
+      [
+        {
+          "name": "startTime"
+        },
+        {
+          "name": "endTime"
+        }
+      ],
+      [
+        {
+          "name": "siteData",
+          "fullWidth": true
+        }
+      ],
+      [
+        {
+          "name": "modelImages",
+          "fullWidth": true
+        }
+      ],
+      [
+        {
+          "name": "screenshots",
+          "fullWidth": true
+        }
+      ]
     ]
   },
   {
@@ -20,27 +69,99 @@
         {
           "type": "in",
           "attribute": "status",
-          "value": ["Counting", "Closed"]
+          "value": [
+            "Counting",
+            "Closed"
+          ]
         }
       ]
     },
     "rows": [
-      [{"name": "botTotal"}, {"name": "calculatedTotal"}],
-      [{"name": "result"}, {"name": "offlineBonus"}],
-      [{"name": "currency"}, {"name": "closedBy"}],
-      [{"name": "totalGross"}, {"name": "studioShare"}],
-      [{"name": "modelShare"}, {"name": "operatorShare"}],
-      [{"name": "producerShare"}, {"name": "technicalDirectorShare"}],
-      [{"name": "recruiterShare"}, {"name": "expensesTotal"}],
-      [{"name": "financialSnapshot"}, false],
-      [{"name": "expenseBreakdown", "fullWidth": true}]
+      [
+        {
+          "name": "botTotal"
+        },
+        {
+          "name": "calculatedTotal"
+        }
+      ],
+      [
+        {
+          "name": "result"
+        },
+        {
+          "name": "offlineBonus"
+        }
+      ],
+      [
+        {
+          "name": "currency"
+        },
+        {
+          "name": "closedBy"
+        }
+      ],
+      [
+        {
+          "name": "totalGross"
+        },
+        {
+          "name": "studioShare"
+        }
+      ],
+      [
+        {
+          "name": "modelShare"
+        },
+        {
+          "name": "operatorShare"
+        }
+      ],
+      [
+        {
+          "name": "producerShare"
+        },
+        {
+          "name": "technicalDirectorShare"
+        }
+      ],
+      [
+        {
+          "name": "recruiterShare"
+        },
+        {
+          "name": "expensesTotal"
+        }
+      ],
+      [
+        {
+          "name": "financialSnapshot"
+        },
+        false
+      ],
+      [
+        {
+          "name": "expenseBreakdown",
+          "fullWidth": true
+        }
+      ]
     ]
   },
   {
     "name": "shiftNotes",
     "rows": [
-      [{"name": "description"}],
-      [{"name": "workflowFooter", "fullWidth": true, "noLabel": true}]
+      [
+        {
+          "name": "description"
+        }
+      ],
+      [
+        {
+          "name": "workflowFooter",
+          "fullWidth": true,
+          "noLabel": true
+        }
+      ]
     ]
   }
 ]

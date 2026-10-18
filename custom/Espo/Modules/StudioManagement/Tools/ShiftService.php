@@ -2,9 +2,6 @@
 
 namespace Espo\Modules\StudioManagement\Tools;
 
-use Espo\Core\Exceptions\BadRequest;
-use Espo\Core\Exceptions\Conflict;
-use Espo\Core\Exceptions\NotFound;
 use Espo\Entities\User;
 use Espo\Modules\StudioManagement\Entities\SmShift;
 use Espo\Modules\StudioManagement\Entities\SmShiftExpense;
@@ -22,6 +19,8 @@ final class ShiftService
     public function __construct(
         private EntityManager $entityManager,
         private MoneyCalculator $money,
+        private TeamComposition $composition,
+        private AccountTypeResolver $types,
     ) {}
 
     public function open(string $id): Entity
@@ -30,15 +29,16 @@ final class ShiftService
             $shift = $this->getShiftForUpdate($id);
 
             if ($shift->get('status') !== SmShift::STATUS_DRAFT) {
-                throw new Conflict('Only a preliminary shift can be started.');
+                throw WorkflowError::conflict('Запустить можно только предварительную смену.');
             }
 
             if (!$shift->get('teamId')) {
-                throw new BadRequest('A team is required before starting the shift.');
+                throw WorkflowError::badRequest('Перед запуском смены выберите группу.');
             }
 
             $model = $this->getParticipant($shift, 'modelId', ['Model']);
             $operator = $this->getParticipant($shift, 'operatorId', ['Operator', 'ProducerAdmin']);
+            $producer = $this->getProducer($shift);
             [$siteData] = $this->normalizeSiteData((array) ($shift->get('siteData') ?? []));
             $now = gmdate('Y-m-d H:i:00');
 
@@ -47,7 +47,8 @@ final class ShiftService
                 'status' => SmShift::STATUS_OPEN,
                 'startTime' => $now,
                 'siteData' => $siteData,
-                'participantsIds' => [$model->getId(), $operator->getId()],
+                'producerId' => $producer->getId(),
+                'participantsIds' => array_values(array_unique([$model->getId(), $operator->getId(), $producer->getId()])),
             ]);
 
             $this->entityManager->saveEntity($shift, ['skipBeforeSave' => true]);
@@ -62,7 +63,7 @@ final class ShiftService
             $shift = $this->getShiftForUpdate($id);
 
             if ($shift->get('status') !== SmShift::STATUS_OPEN) {
-                throw new Conflict('Only an active shift can be finished.');
+                throw WorkflowError::conflict('Перейти к подсчёту можно только из активной смены.');
             }
 
             $shift->set([
@@ -87,7 +88,7 @@ final class ShiftService
                 $shift = $this->getShiftForUpdate($id);
 
                 if ($shift->get('status') !== SmShift::STATUS_COUNTING) {
-                    throw new Conflict('Only a shift being counted can be completed.');
+                    throw WorkflowError::conflict('Завершить можно только смену на этапе подсчёта.');
                 }
 
                 $financial = $this->calculateFinancials($shift, $siteData, $closedBy);
@@ -148,7 +149,7 @@ final class ShiftService
                 $shift = $this->getShiftForUpdate($id);
 
                 if ($shift->get('status') !== SmShift::STATUS_CLOSED) {
-                    throw new Conflict('Only a completed shift can be revised.');
+                    throw WorkflowError::conflict('Изменять итоги можно только у подсчитанной смены.');
                 }
 
                 $snapshot = $this->entityManager
@@ -158,7 +159,7 @@ final class ShiftService
                     ->findOne();
 
                 if (!$snapshot) {
-                    throw new NotFound('Financial snapshot not found.');
+                    throw WorkflowError::notFound('Финансовый снимок смены не найден.');
                 }
 
                 $financial = $this->calculateFinancials(
@@ -207,21 +208,10 @@ final class ShiftService
         $team = is_string($teamId) ? $this->entityManager->getEntityById('Team', $teamId) : null;
 
         if (!$team) {
-            throw new BadRequest('The shift team does not exist.');
+            throw WorkflowError::badRequest('Группа смены не найдена.');
         }
 
-        $producerId = $team->get('smProducerId');
-        $producer = is_string($producerId)
-            ? $this->entityManager->getEntityById('User', $producerId)
-            : null;
-
-        if (
-            !$producer instanceof User ||
-            !$producer->isActive() ||
-            $producer->get('smAccountType') !== 'ProducerAdmin'
-        ) {
-            throw new BadRequest('The team must have an active producer.');
-        }
+        $producer = $this->getProducer($shift);
 
         $participants = [
             'Model' => $this->getParticipant($shift, 'modelId', ['Model']),
@@ -292,7 +282,7 @@ final class ShiftService
         $percentUnitsTotal += $recruiterResult['percentUnits'];
 
         if ($percentUnitsTotal > 1_000_000) {
-            throw new BadRequest('The total shift expense percentage exceeds 100%.');
+            throw WorkflowError::badRequest('Сумма долей участников и расходов превышает 100%. Проверьте проценты в профилях и ролях.');
         }
 
         $producerCents = $this->money->share($grossCents, $producerPercentUnits);
@@ -338,6 +328,7 @@ final class ShiftService
 
         return [
             'shift' => array_merge($common, [
+                'producerId' => $producer->getId(),
                 'siteData' => $normalizedRows,
                 'calculatedTotal' => $this->money->centsToAmount($earnedCents),
                 'offlineBonus' => $this->money->centsToAmount($bonusCents),
@@ -385,7 +376,7 @@ final class ShiftService
                 try {
                     $lineCents = $this->money->amountToCents((string) $existingFlatLine['amount']);
                 } catch (InvalidArgumentException $e) {
-                    throw new BadRequest($e->getMessage());
+                    throw WorkflowError::badRequest('Некорректная сумма или процент: сумма должна быть неотрицательной с точностью до 2 знаков, процент — от 0 до 100 с точностью до 4 знаков.');
                 }
 
                 $amountCents += $lineCents;
@@ -412,7 +403,7 @@ final class ShiftService
                 !$recruiter->isActive() ||
                 $recruiter->get('smAccountType') !== 'Recruiter'
             ) {
-                throw new BadRequest('A recruitment reward requires an active recruiter account.');
+                throw WorkflowError::badRequest('Для выплаты рекрутеру выберите активного пользователя с типом аккаунта «Рекрутер».');
             }
 
             $lineCents = 0;
@@ -435,10 +426,10 @@ final class ShiftService
                         $milestoneUserIds[] = $participant->getId();
                     }
                 } else {
-                    throw new BadRequest('Unknown recruiter reward mode.');
+                    throw WorkflowError::badRequest('Неизвестный способ выплаты рекрутеру.');
                 }
             } catch (InvalidArgumentException $e) {
-                throw new BadRequest($e->getMessage());
+                throw WorkflowError::badRequest('Некорректная сумма или процент: сумма должна быть неотрицательной с точностью до 2 знаков, процент — от 0 до 100 с точностью до 4 знаков.');
             }
 
             if ($lineCents === 0) {
@@ -525,7 +516,7 @@ final class ShiftService
             $amount = $line['amount'] ?? null;
 
             if (!is_string($userId) || !is_string($category) || !is_string($amount)) {
-                throw new BadRequest('A generated expense line is invalid.');
+                throw WorkflowError::badRequest('Не удалось сформировать строку расходов смены.');
             }
 
             $expense = $this->entityManager->getNewEntity(SmShiftExpense::ENTITY_TYPE);
@@ -563,7 +554,7 @@ final class ShiftService
     private function normalizeSiteData(array $rows): array
     {
         if ($rows === [] || count($rows) > self::MAX_SITE_ROWS) {
-            throw new BadRequest('Provide between 1 and 50 site access rows.');
+            throw WorkflowError::badRequest('Укажите доступы хотя бы к одному сайту (не более 50).');
         }
 
         $normalized = [];
@@ -576,7 +567,7 @@ final class ShiftService
             }
 
             if (!is_array($row)) {
-                throw new BadRequest('Every site row must be an object.');
+                throw WorkflowError::badRequest('Некорректный формат строки сайта.');
             }
 
             $siteValue = $row['site'] ?? '';
@@ -594,7 +585,7 @@ final class ShiftService
                 (!is_string($earningValue) && !is_int($earningValue) && !is_float($earningValue)) ||
                 (!is_string($bonusValue) && !is_int($bonusValue) && !is_float($bonusValue))
             ) {
-                throw new BadRequest('Site row fields have invalid types.');
+                throw WorkflowError::badRequest('Некорректный формат полей сайта.');
             }
 
             $site = trim($siteValue);
@@ -603,22 +594,22 @@ final class ShiftService
             $state = $stateValue;
 
             if ($site === '' || $login === '' || $password === '' || mb_strlen($site) > 80) {
-                throw new BadRequest('Site, login and password are required for every access row.');
+                throw WorkflowError::badRequest('В каждой строке заполните сайт, логин и пароль.');
             }
 
             if (mb_strlen($login) > 150 || mb_strlen($password) > 500) {
-                throw new BadRequest('Site credentials are too long.');
+                throw WorkflowError::badRequest('Логин или пароль сайта превышает допустимую длину.');
             }
 
             if (!in_array($state, ['Pending', 'Started', 'Banned'], true)) {
-                throw new BadRequest('Unknown site state.');
+                throw WorkflowError::badRequest('Неизвестное состояние сайта.');
             }
 
             try {
                 $earning = $this->money->amountToCents($earningValue);
                 $bonus = $this->money->amountToCents($bonusValue);
             } catch (InvalidArgumentException $e) {
-                throw new BadRequest($e->getMessage());
+                throw WorkflowError::badRequest('Некорректная сумма или процент: сумма должна быть неотрицательной с точностью до 2 знаков, процент — от 0 до 100 с точностью до 4 знаков.');
             }
 
             $earnedCents += $earning;
@@ -643,14 +634,14 @@ final class ShiftService
 
         foreach ($ids as $id) {
             if (!is_string($id) || !preg_match('/^[a-zA-Z0-9_-]{1,36}$/', $id)) {
-                throw new BadRequest('Invalid screenshot attachment ID.');
+                throw WorkflowError::badRequest('Некорректный идентификатор скриншота.');
             }
 
             $result[$id] = $id;
         }
 
         if (count($result) > self::MAX_SCREENSHOTS) {
-            throw new BadRequest('No more than 50 screenshots are allowed.');
+            throw WorkflowError::badRequest('Можно загрузить не более 50 скриншотов.');
         }
 
         return array_values($result);
@@ -671,15 +662,36 @@ final class ShiftService
         if (
             !$participant instanceof User ||
             !$participant->isActive() ||
-            !in_array($participant->get('smAccountType'), $allowedTypes, true)
+            !in_array($this->types->resolve($participant), $allowedTypes, true)
         ) {
-            throw new BadRequest(sprintf(
-                'The shift must have an active %s.',
-                strtolower(implode(' or ', $allowedTypes)),
+            throw WorkflowError::badRequest(sprintf(
+                'Для смены требуется активный %s. Проверьте тип аккаунта студии в профиле.',
+                $field === 'modelId' ? 'пользователь-модель' : 'оператор (или продюсер в слоте оператора)',
             ));
         }
 
+        $participant->set('smAccountType', $this->types->resolve($participant));
         return $participant;
+    }
+
+    private function getProducer(Entity $shift): User
+    {
+        // Once started, the shift owns its producer. Later team edits must not reroute earnings.
+        $id = $shift->get('producerId');
+        if (!$id && $shift->get('status') === SmShift::STATUS_CLOSED) {
+            $snapshot = $this->entityManager->getRDBRepository(SmShiftFinancialSnapshot::ENTITY_TYPE)
+                ->where(['shiftId' => $shift->getId()])->findOne();
+            $id = $snapshot?->get('producerId');
+        }
+        if (!$id) {
+            $team = $this->entityManager->getEntityById('Team', (string) $shift->get('teamId'));
+            if (!$team) {
+                throw WorkflowError::badRequest('Группа смены не найдена.');
+            }
+            $members = $this->composition->resolve($team);
+            $id = isset($members['smProducer']) ? $members['smProducer']->getId() : null;
+        }
+        return $this->composition->participant($id, 'smProducer');
     }
 
     private function getShiftForUpdate(string $id): Entity
@@ -691,7 +703,7 @@ final class ShiftService
             ->findOne();
 
         if (!$shift) {
-            throw new NotFound('Shift not found.');
+            throw WorkflowError::notFound('Смена не найдена.');
         }
 
         return $shift;
@@ -736,7 +748,7 @@ final class ShiftService
 
             return $result;
         } catch (InvalidArgumentException $e) {
-            throw new BadRequest($e->getMessage());
+            throw WorkflowError::badRequest('Некорректная сумма или процент: сумма должна быть неотрицательной с точностью до 2 знаков, процент — от 0 до 100 с точностью до 4 знаков.');
         }
     }
 }

@@ -1,3 +1,17 @@
 {
-  "additionalRecordFields": ["smProducer"]
+  "additionalRecordFields": [
+    "smProducer",
+    "smOperator",
+    "smModel"
+  ],
+  "recordViews": {
+    "detail": "studio-management:views/team/record/detail",
+    "edit": "studio-management:views/team/record/edit"
+  },
+  "relationshipPanels": {
+    "users": {
+      "removeDisabled": false
+    }
+  },
+  "inlineEditDisabled": true
 }

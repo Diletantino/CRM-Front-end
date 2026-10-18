@@ -2,11 +2,24 @@
   "fields": {
     "smAccountType": {
       "type": "enum",
-      "options": ["", "Model", "Operator", "ProducerAdmin", "TechnicalDirector", "Recruiter"],
+      "options": [
+        "",
+        "Model",
+        "Operator",
+        "ProducerAdmin",
+        "TechnicalDirector",
+        "Recruiter"
+      ],
       "default": "",
       "audited": true,
       "displayAsLabel": true,
-      "style": {"Model": "primary", "Operator": "info", "ProducerAdmin": "warning", "TechnicalDirector": "danger", "Recruiter": "success"}
+      "style": {
+        "Model": "primary",
+        "Operator": "info",
+        "ProducerAdmin": "warning",
+        "TechnicalDirector": "danger",
+        "Recruiter": "success"
+      }
     },
     "smSharePercentOverride": {
       "type": "decimal",
@@ -48,15 +61,31 @@
       "audited": true,
       "tooltip": true
     },
-    "smRecruiter": {"type": "link", "audited": true, "selectFilterType": "primary", "selectPrimaryFilterName": "smRecruiters"},
-    "smRecruits": {"type": "linkMultiple", "readOnly": true},
+    "smRecruiter": {
+      "type": "link",
+      "audited": true,
+      "selectFilterType": "primary",
+      "selectPrimaryFilterName": "smRecruiters"
+    },
+    "smRecruits": {
+      "type": "linkMultiple",
+      "readOnly": true
+    },
     "smRecruiterRewardMode": {
       "type": "enum",
-      "options": ["None", "FlatAfterFiveShifts", "PercentPerShift"],
+      "options": [
+        "None",
+        "FlatAfterFiveShifts",
+        "PercentPerShift"
+      ],
       "default": "None",
       "audited": true,
       "displayAsLabel": true,
-      "style": {"None": "default", "FlatAfterFiveShifts": "warning", "PercentPerShift": "success"}
+      "style": {
+        "None": "default",
+        "FlatAfterFiveShifts": "warning",
+        "PercentPerShift": "success"
+      }
     },
     "smRecruiterPercent": {
       "type": "decimal",
@@ -77,7 +106,12 @@
       "default": 150,
       "audited": true
     },
-    "smRecruiterMilestonePaid": {"type": "bool", "default": false, "readOnly": true, "audited": true},
+    "smRecruiterMilestonePaid": {
+      "type": "bool",
+      "default": false,
+      "readOnly": true,
+      "audited": true
+    },
     "smBirthDate": {
       "type": "date",
       "audited": true
@@ -106,14 +140,23 @@
     },
     "smProfilePhotos": {
       "type": "attachmentMultiple",
-      "sourceList": ["Document"],
-      "accept": ["image/*"],
+      "sourceList": [
+        "Document"
+      ],
+      "accept": [
+        "image/*"
+      ],
       "maxCount": 50
     },
     "smDocumentPhotos": {
       "type": "attachmentMultiple",
-      "sourceList": ["Document"],
-      "accept": ["image/*", "application/pdf"],
+      "sourceList": [
+        "Document"
+      ],
+      "accept": [
+        "image/*",
+        "application/pdf"
+      ],
       "maxCount": 50
     },
     "smProfileComments": {
@@ -132,25 +175,113 @@
       "readOnly": true,
       "view": "studio-management:views/user/fields/staff-dashboard"
     },
-    "smShifts": {"type": "linkMultiple", "readOnly": true},
-    "smOperatorShifts": {"type": "linkMultiple", "readOnly": true},
-    "smModelShifts": {"type": "linkMultiple", "readOnly": true},
-    "smClosedShifts": {"type": "linkMultiple", "readOnly": true},
-    "smProducerTeams": {"type": "linkMultiple", "readOnly": true},
-    "smProducerFinancialSnapshots": {"type": "linkMultiple", "readOnly": true},
-    "smRecruiterRegistrationLinks": {"type": "linkMultiple", "readOnly": true},
-    "smShiftExpenses": {"type": "linkMultiple", "readOnly": true}
+    "smShifts": {
+      "type": "linkMultiple",
+      "readOnly": true
+    },
+    "smOperatorShifts": {
+      "type": "linkMultiple",
+      "readOnly": true
+    },
+    "smModelShifts": {
+      "type": "linkMultiple",
+      "readOnly": true
+    },
+    "smClosedShifts": {
+      "type": "linkMultiple",
+      "readOnly": true
+    },
+    "smProducerTeams": {
+      "type": "linkMultiple",
+      "readOnly": true
+    },
+    "smProducerFinancialSnapshots": {
+      "type": "linkMultiple",
+      "readOnly": true
+    },
+    "smRecruiterRegistrationLinks": {
+      "type": "linkMultiple",
+      "readOnly": true
+    },
+    "smShiftExpenses": {
+      "type": "linkMultiple",
+      "readOnly": true
+    },
+    "smOperatorTeams": {
+      "type": "linkMultiple",
+      "readOnly": true
+    },
+    "smModelTeams": {
+      "type": "linkMultiple",
+      "readOnly": true
+    }
   },
   "links": {
-    "smShifts": {"type": "hasMany", "entity": "SmShift", "foreign": "participants", "relationName": "SmShiftUser"},
-    "smOperatorShifts": {"type": "hasMany", "entity": "SmShift", "foreign": "operator"},
-    "smModelShifts": {"type": "hasMany", "entity": "SmShift", "foreign": "model"},
-    "smClosedShifts": {"type": "hasMany", "entity": "SmShift", "foreign": "closedBy"},
-    "smProducerTeams": {"type": "hasMany", "entity": "Team", "foreign": "smProducer"},
-    "smProducerFinancialSnapshots": {"type": "hasMany", "entity": "SmShiftFinancialSnapshot", "foreign": "producer"},
-    "smRecruiter": {"type": "belongsTo", "entity": "User", "foreign": "smRecruits"},
-    "smRecruits": {"type": "hasMany", "entity": "User", "foreign": "smRecruiter"},
-    "smRecruiterRegistrationLinks": {"type": "hasMany", "entity": "SmRegistrationLink", "foreign": "recruiter"},
-    "smShiftExpenses": {"type": "hasMany", "entity": "SmShiftExpense", "foreign": "user"}
+    "smShifts": {
+      "type": "hasMany",
+      "entity": "SmShift",
+      "foreign": "participants",
+      "relationName": "SmShiftUser"
+    },
+    "smOperatorShifts": {
+      "type": "hasMany",
+      "entity": "SmShift",
+      "foreign": "operator"
+    },
+    "smModelShifts": {
+      "type": "hasMany",
+      "entity": "SmShift",
+      "foreign": "model"
+    },
+    "smClosedShifts": {
+      "type": "hasMany",
+      "entity": "SmShift",
+      "foreign": "closedBy"
+    },
+    "smProducerTeams": {
+      "type": "hasMany",
+      "entity": "Team",
+      "foreign": "smProducer"
+    },
+    "smProducerFinancialSnapshots": {
+      "type": "hasMany",
+      "entity": "SmShiftFinancialSnapshot",
+      "foreign": "producer"
+    },
+    "smRecruiter": {
+      "type": "belongsTo",
+      "entity": "User",
+      "foreign": "smRecruits"
+    },
+    "smRecruits": {
+      "type": "hasMany",
+      "entity": "User",
+      "foreign": "smRecruiter"
+    },
+    "smRecruiterRegistrationLinks": {
+      "type": "hasMany",
+      "entity": "SmRegistrationLink",
+      "foreign": "recruiter"
+    },
+    "smShiftExpenses": {
+      "type": "hasMany",
+      "entity": "SmShiftExpense",
+      "foreign": "user"
+    },
+    "smOperatorTeams": {
+      "type": "hasMany",
+      "entity": "Team",
+      "foreign": "smOperator"
+    },
+    "smModelTeams": {
+      "type": "hasMany",
+      "entity": "Team",
+      "foreign": "smModel"
+    },
+    "smProducedShifts": {
+      "type": "hasMany",
+      "entity": "SmShift",
+      "foreign": "producer"
+    }
   }
 }

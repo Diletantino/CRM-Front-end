@@ -2,15 +2,14 @@
 
 namespace Espo\Modules\StudioManagement\Hooks\SmShift;
 
-use Espo\Core\Exceptions\Conflict;
-use Espo\Core\Exceptions\BadRequest;
-use Espo\Core\Exceptions\Forbidden;
 use Espo\Core\Hook\Hook\BeforeSave as BeforeSaveHook;
 use Espo\Entities\User;
 use Espo\Modules\StudioManagement\Entities\SmShift;
 use Espo\ORM\Entity;
 use Espo\ORM\EntityManager;
+use Espo\Modules\StudioManagement\Tools\WorkflowError;
 use Espo\Modules\StudioManagement\Tools\ModelShiftDefaults;
+use Espo\Modules\StudioManagement\Tools\TeamComposition;
 use Espo\ORM\Repository\Option\SaveOptions;
 
 /** @implements BeforeSaveHook<Entity> */
@@ -20,6 +19,7 @@ class BeforeSave implements BeforeSaveHook
         private User $user,
         private EntityManager $entityManager,
         private ModelShiftDefaults $defaults,
+        private TeamComposition $composition,
     ) {}
 
     public function beforeSave(Entity $entity, SaveOptions $options): void
@@ -37,7 +37,7 @@ class BeforeSave implements BeforeSaveHook
 
         if ($previousStatus === SmShift::STATUS_DRAFT) {
             if ($entity->isAttributeChanged('status') || $entity->isAttributeChanged('endTime')) {
-                throw new Conflict('Статус смены изменяется только кнопками запуска и завершения.');
+                throw WorkflowError::conflict('Статус смены изменяется только кнопками запуска и завершения.');
             }
             $this->prepareDraft($entity);
             $this->syncRelations($entity);
@@ -53,22 +53,22 @@ class BeforeSave implements BeforeSaveHook
                     $entity->get('operatorId') !== $this->user->getId()
                 )
             ) {
-                throw new Forbidden('Only the assigned operator can update site states.');
+                throw WorkflowError::forbidden('Только назначенный оператор может менять состояние сайтов.');
             }
             $oldRows = (array) ($entity->getFetched('siteData') ?? []);
             $newRows = (array) ($entity->get('siteData') ?? []);
             if (count($oldRows) !== count($newRows)) {
-                throw new Conflict('Во время смены можно менять только состояние сайтов.');
+                throw WorkflowError::conflict('Во время смены можно менять только состояние сайтов.');
             }
             foreach ($newRows as $index => $row) {
                 $row = (array) $row;
                 $old = (array) ($oldRows[$index] ?? []);
                 if (!in_array($row['state'] ?? null, ['Pending', 'Started', 'Banned'], true)) {
-                    throw new BadRequest('Некорректное состояние сайта.');
+                    throw WorkflowError::badRequest('Некорректное состояние сайта.');
                 }
                 unset($row['state'], $old['state']);
                 if ($row != $old) {
-                    throw new Conflict('Во время смены можно менять только состояние сайтов.');
+                    throw WorkflowError::conflict('Во время смены можно менять только состояние сайтов.');
                 }
             }
         }
@@ -81,6 +81,7 @@ class BeforeSave implements BeforeSaveHook
             'teamId',
             'operatorId',
             'modelId',
+            'producerId',
             'modelBirthDate',
             'modelImagesIds',
             'participantsIds',
@@ -105,12 +106,12 @@ class BeforeSave implements BeforeSaveHook
             'financialSnapshotId',
         ] as $attribute) {
             if ($entity->isAttributeChanged($attribute)) {
-                throw new Conflict('This shift stage can only be changed through the shift workflow.');
+                throw WorkflowError::conflict('На этом этапе смена изменяется только кнопками запуска, подсчёта и корректировки.');
             }
         }
 
         if ($previousStatus !== SmShift::STATUS_OPEN && $entity->isAttributeChanged('siteData')) {
-            throw new Conflict('Calculation rows can only be changed through the shift workflow.');
+            throw WorkflowError::conflict('Изменяйте расчёты через кнопку подсчёта или корректировки смены.');
         }
     }
 
@@ -121,7 +122,7 @@ class BeforeSave implements BeforeSaveHook
 
         $participantIds = [];
 
-        foreach (['modelId', 'operatorId'] as $field) {
+        foreach (['modelId', 'operatorId', 'producerId'] as $field) {
             $id = $entity->get($field);
 
             if (is_string($id) && $id !== '') {
@@ -135,11 +136,16 @@ class BeforeSave implements BeforeSaveHook
 
     private function prepareDraft(Entity $entity): void
     {
+        $this->composition->applyToDraft($entity);
+        if (!$this->user->isAdmin() && !in_array($this->user->getId(),
+            [$entity->get('operatorId'), $entity->get('producerId')], true)) {
+            throw WorkflowError::forbidden('Создать или изменить предварительную смену могут только её оператор и продюсер.');
+        }
         if ($entity->get('startTime')) {
             $value = (string) $entity->get('startTime');
             $date = \DateTimeImmutable::createFromFormat('!Y-m-d H:i:s', $value, new \DateTimeZone('UTC'));
             if (!$date || $date->format('Y-m-d H:i:s') !== $value) {
-                throw new BadRequest('Укажите корректные дату и время начала смены.');
+                throw WorkflowError::badRequest('Укажите корректные дату и время начала смены.');
             }
             $entity->set('startTime', $date->format('Y-m-d H:i:00'));
         }

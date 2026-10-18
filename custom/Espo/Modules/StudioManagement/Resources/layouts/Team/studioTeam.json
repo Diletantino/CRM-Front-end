@@ -1,0 +1,47 @@
+[
+  {
+    "rows": [
+      [
+        {
+          "name": "name"
+        },
+        {
+          "name": "smProducer"
+        }
+      ],
+      [
+        {
+          "name": "smOperator"
+        },
+        {
+          "name": "smModel"
+        }
+      ],
+      [
+        {
+          "name": "roles"
+        },
+        {
+          "name": "positionList"
+        }
+      ],
+      [
+        {
+          "name": "layoutSet"
+        },
+        {
+          "name": "workingTimeCalendar"
+        }
+      ]
+    ]
+  },
+  {
+    "rows": [
+      [
+        {
+          "name": "description"
+        }
+      ]
+    ]
+  }
+]

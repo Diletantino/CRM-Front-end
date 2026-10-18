@@ -2,6 +2,7 @@
   "primaryFilterClassNameMap": {
     "smRecruiters": "Espo\\Modules\\StudioManagement\\Classes\\Select\\User\\PrimaryFilters\\Recruiters",
     "smModels": "Espo\\Modules\\StudioManagement\\Classes\\Select\\User\\PrimaryFilters\\Models",
-    "smOperators": "Espo\\Modules\\StudioManagement\\Classes\\Select\\User\\PrimaryFilters\\Operators"
+    "smOperators": "Espo\\Modules\\StudioManagement\\Classes\\Select\\User\\PrimaryFilters\\Operators",
+    "smProducers": "Espo\\Modules\\StudioManagement\\Classes\\Select\\User\\PrimaryFilters\\Producers"
   }
 }

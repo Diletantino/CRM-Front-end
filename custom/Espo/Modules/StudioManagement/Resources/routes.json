@@ -1,5 +1,10 @@
 [
   {
+    "route": "/StudioManagement/teams/:id/shiftDefaults",
+    "method": "get",
+    "actionClassName": "Espo\\Modules\\StudioManagement\\Api\\GetTeamShiftDefaults"
+  },
+  {
     "route": "/StudioManagement/models/:id/shiftDefaults",
     "method": "get",
     "actionClassName": "Espo\\Modules\\StudioManagement\\Api\\GetModelShiftDefaults"

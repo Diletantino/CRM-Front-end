@@ -16,14 +16,14 @@ The extension is developed against EspoCRM `10.0.x` / PHP `8.3+` and does not mo
 1. Open **Administration → Roles** and create the needed roles. Configure normal EspoCRM entity permissions for `SmShift`, `SmShiftFinancialSnapshot`, `SmRegistrationLink`, and boolean access to `SmModels`, `SmOperators`, and `SmAnalytics`.
 2. Set **Percent of shift income** (`smSharePercent`) on model, operator, producer, and technical-director roles. If a user has several roles, the highest percentage is used.
 3. Open users and set **Studio Account Type**. A personal percentage can optionally override role percentages. For a producer who also works as an operator, set separate **Operator Share Percent** and **Producer Share Percent** values.
-4. Open **Teams**, select the producer, and add model/operator users to the team.
+4. Open **Teams** and fill its three studio slots: one producer, one operator and one model. Selecting a slot also adds that person to native Espo group membership. Adding a typed user from the native Users panel fills an empty matching slot; duplicate slot assignments are rejected. A producer can also occupy the operator slot.
 5. Registration links are administrator-only. They default to 24 hours if their expiry is omitted or invalid.
 6. For recruited employees, select the recruiter and one reward mode: **$150 after 5 shifts** or **Percent per Shift**. The amount and percentage are editable per employee.
 7. Create the technical director as a user with account type **Technical Director**. Their configured percentage is charged on every completed shift.
 
 ## Shift flow
 
-1. Create a preliminary shift and choose its team, assigned operator, model, model birth date, site credentials, and model images.
+1. Create a preliminary shift and choose only its group. Operator, model, producer, birth date and site credentials are copied automatically. Add model images and optionally the planned start. Participants are validated on the server, including API requests without frontend autofill.
 2. The assigned operator opens the full-page **Start** form and presses **Start Shift**. The server records the UTC start timestamp.
 3. During an active shift, the operator can mark each site as started or banned.
 4. **Finish Shift** records the end timestamp and opens the full-page calculation form.
@@ -34,6 +34,37 @@ The extension is developed against EspoCRM `10.0.x` / PHP `8.3+` and does not mo
 The sum of model, operator, producer, technical-director, and percentage-based recruiter expenses must not exceed 100%. The one-time recruiter reward is a fixed expense and can make studio net negative. Every payout is stored as a separate line in the financial snapshot; studio share is gross less all expenses. Ordinary users cannot mutate completed shifts or snapshots; corrections are restricted to the producer of the team and administrators.
 
 A producer can be assigned as the shift operator. In that case the same user is recorded as shift creator/producer/operator, can execute the normal operator workflow, and receives the independently configured operator and producer payouts. Recruiter rewards are never paid for a user whose current account type is producer.
+
+## Обновление групп и смен (18.10.2026)
+
+«Роли» EspoCRM задают права доступа, а «Тип аккаунта студии» определяет рабочий слот. Тип аккаунта не меняется от добавления в группу. Для старых аккаунтов с пустым типом используется однозначная роль (поле типа в роли либо стандартное название).
+
+В карточке группы доступны слоты «Продюсер», «Оператор», «Модель». Группу можно собрать постепенно, но неполный состав нельзя использовать для создания смены. Чтобы заменить участника, измените его слот, а не добавляйте второго пользователя того же типа.
+
+Продюсер сохраняется в самой смене: изменение состава группы не перенаправляет выплаты уже начатой смены. Старые смены на подсчёте без этого поля поддерживаются: продюсер определяется из поля группы или её однозначного состава. При корректировке старой закрытой смены приоритет имеет продюсер финансового снимка.
+
+Обновление существующей Docker-установки без удаления данных:
+
+```sh
+git pull --ff-only
+docker compose up -d --build
+```
+
+При запуске контейнер сам выполняет Rebuild и `studio-sync-staff`. Не удаляйте volumes. При установке без Docker выполните `php command.php rebuild`, затем `php command.php studio-sync-staff`. После обновления перезагрузите браузер. Неоднозначные или неактивные старые участники требуют выбора корректного слота вручную; миграция не угадывает состав.
+
+Регрессии для отдельной локальной тестовой установки:
+
+```sh
+node extensions/studio-management/tests/WorkflowClientTest.cjs
+node extensions/studio-management/tests/TeamWorkflowHttpTest.cjs --keep
+docker compose cp extensions/studio-management/tests/WorkflowIntegrationTest.php crm:/tmp/WorkflowIntegrationTest.php
+docker compose exec -T crm php /tmp/WorkflowIntegrationTest.php
+# После UI-проверки — мягкое удаление только фикстур TeamWorkflowHttpTest:
+docker compose cp extensions/studio-management/tests/CleanupTeamWorkflowFixtures.php crm:/tmp/CleanupTeamWorkflowFixtures.php
+docker compose exec -T crm php /tmp/CleanupTeamWorkflowFixtures.php
+```
+
+HTTP-тест проверяет также персональный вход обычного оператора, полный цикл его смены, запрет чтения чужих доступов и запрет обхода прав при создании смены только по ID группы. Не запускайте тесты с фикстурами на рабочей базе.
 
 ## Registration flow
 

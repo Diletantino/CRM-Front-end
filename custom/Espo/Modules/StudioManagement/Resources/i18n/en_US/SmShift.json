@@ -54,7 +54,8 @@
     "platformMetrics": "Platform Metrics",
     "closedBy": "Closed By",
     "financialSnapshot": "Financial Snapshot",
-    "description": "Description"
+    "description": "Description",
+    "producer": "Producer"
   },
   "links": {
     "team": "Team",
@@ -84,6 +85,7 @@
     "reviseShiftConfirmation": "Save the corrected amounts and update the financial snapshot?",
     "shiftOpened": "Shift started.",
     "shiftClosed": "Calculation completed and financial result recorded.",
-    "shiftRevised": "Shift data and financial snapshot updated."
+    "shiftRevised": "Shift data and financial snapshot updated.",
+    "teamDefaultsFailed": "Unable to load team composition. Select an active model, operator and producer in the team."
   }
 }

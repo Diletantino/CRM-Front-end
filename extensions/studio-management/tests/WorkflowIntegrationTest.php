@@ -18,6 +18,7 @@ use Espo\Modules\StudioManagement\Tools\ModelShiftDefaults;
 use Espo\Modules\StudioManagement\Tools\ShiftService;
 use Espo\Modules\StudioManagement\Tools\StaffService;
 use Espo\Modules\StudioManagement\Tools\StaffMigration;
+use Espo\Modules\StudioManagement\Tools\TeamComposition;
 use Espo\ORM\EntityManager;
 
 $app = new Application();
@@ -146,6 +147,67 @@ try {
             $assert(true, 'Duplicate close rejected.');
         }
 
+        $composition = $factory->create(TeamComposition::class);
+        $storedTeam = $em->getEntityById('Team', $team->getId());
+        $assert($storedTeam->get('smModelId') === $model->getId() &&
+            $storedTeam->get('smOperatorId') === $operator->getId(), 'Native membership populates template slots.');
+        $groupOnly = $em->getNewEntity('SmShift');
+        $groupOnly->set(['teamId' => $team->getId(), 'currency' => 'USD']);
+        $em->saveEntity($groupOnly);
+        $assert($groupOnly->get('modelId') === $model->getId() &&
+            $groupOnly->get('operatorId') === $operator->getId() &&
+            $groupOnly->get('producerId') === $producer->getId(), 'Group-only ORM create resolves all participants.');
+        $producerRole = $em->getNewEntity('Role');
+        $producerRole->set(['name' => 'Продюсер', 'smAccountType' => 'ProducerAdmin', 'smSharePercent' => 10]);
+        $em->saveEntity($producerRole);
+        $linkedRoleUser = $createUser('', ['userName' => 'linked-role-' . $suffix]);
+        $em->getRDBRepository('User')->getRelation($linkedRoleUser, 'roles')->relateById($producerRole->getId());
+        $assert($em->getEntityById('User', $linkedRoleUser->getId())->get('smAccountType') === 'ProducerAdmin',
+            'Assigning a role through the native relation resolves an empty studio type.');
+        $producer->set(['rolesIds' => [$producerRole->getId()], 'smAccountType' => null]);
+        $em->saveEntity($producer, ['skipBeforeSave' => true]);
+        $groupOnly = $service->open($groupOnly->getId());
+        $groupOnly = $service->finish($groupOnly->getId());
+        // Reproduce pre-upgrade Counting records: no shift producer, member exists but the group FK is empty.
+        $groupOnly->set('producerId', null);
+        $em->saveEntity($groupOnly, ['skipBeforeSave' => true]);
+        $storedTeam->set('smProducerId', null);
+        $em->saveEntity($storedTeam, ['skipHooks' => true]);
+        $closedLegacy = $service->close($groupOnly->getId(), $sites, [], $admin);
+        $assert($closedLegacy->get('status') === 'Closed' &&
+            $closedLegacy->get('producerId') === $producer->getId(), 'Legacy Counting shift resolves producer from native group and role.');
+        $assert((float) $closedLegacy->get('producerShare') === 13.5, 'Legacy producer gets correct percentage.');
+        $expense = $em->getRDBRepository('SmShiftExpense')->where([
+            'shiftId' => $groupOnly->getId(), 'category' => 'Producer'])->findOne();
+        $assert($expense && (float) $expense->get('amount') === 13.5, 'Producer expense is persisted, not just rendered.');
+
+        $producer->set(['smAccountType' => 'ProducerAdmin', 'smOperatorSharePercentOverride' => 5]);
+        $em->saveEntity($producer);
+        $dualTeam = $em->getNewEntity('Team');
+        $dualTeam->set(['name' => 'Dual ' . $suffix, 'smProducerId' => $producer->getId(),
+            'smOperatorId' => $producer->getId(), 'smModelId' => $model->getId()]);
+        $em->saveEntity($dualTeam);
+        $dualShift = $em->getNewEntity('SmShift');
+        $dualShift->set(['teamId' => $dualTeam->getId(), 'currency' => 'USD']);
+        $em->saveEntity($dualShift);
+        $service->open($dualShift->getId());
+        $service->finish($dualShift->getId());
+        $dualClosed = $service->close($dualShift->getId(), $sites, [], $admin);
+        $assert((float) $dualClosed->get('operatorShare') === 6.75 &&
+            (float) $dualClosed->get('producerShare') === 13.5, 'Producer/operator has separate financial shares.');
+        $assert($em->getRDBRepository('SmShift')->getRelation($dualClosed, 'participants')->count() === 2,
+            'Dual role does not duplicate participants.');
+
+        $incompleteTeam = $em->getNewEntity('Team');
+        $incompleteTeam->set(['name' => 'Incomplete ' . $suffix, 'smProducerId' => $producer->getId()]);
+        $em->saveEntity($incompleteTeam);
+        try {
+            $composition->resolve($incompleteTeam, true);
+            $assert(false, 'Incomplete template must fail.');
+        } catch (BadRequest $e) {
+            $body = json_decode($e->getBody() ?? '{}', true, flags: JSON_THROW_ON_ERROR);
+            $assert(str_contains($body['message'] ?? '', 'оператор'), 'Incomplete template has readable UTF-8 JSON error.');
+        }
         $invite = $em->getNewEntity('SmRegistrationLink');
         $invite->set(['accountType' => 'Model', 'targetRoleId' => $role->getId(), 'recruiterId' => $recruiter->getId()]);
         $em->saveEntity($invite);

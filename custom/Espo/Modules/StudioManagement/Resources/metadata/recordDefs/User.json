@@ -1,0 +1,6 @@
+{
+  "beforeLinkHookClassNameList": [
+    "__APPEND__",
+    "Espo\\Modules\\StudioManagement\\Classes\\RecordHooks\\TeamMember"
+  ]
+}
