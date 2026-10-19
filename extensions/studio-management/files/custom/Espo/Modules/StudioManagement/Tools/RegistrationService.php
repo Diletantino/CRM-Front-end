@@ -161,10 +161,15 @@ final class RegistrationService
             return null;
         }
 
-        return $this->entityManager
+        $invitation = $this->entityManager
             ->getRDBRepository(SmRegistrationLink::ENTITY_TYPE)
             ->where(['token' => $token])
             ->findOne();
+
+        // An indexed lookup can be case-insensitive; never accept a different spelling of a secret.
+        return $invitation && hash_equals((string) $invitation->get('token'), $token)
+            ? $invitation
+            : null;
     }
 
     private function isAvailable(Entity $invitation): bool

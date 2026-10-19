@@ -19,6 +19,8 @@ use Espo\Modules\StudioManagement\Tools\ShiftService;
 use Espo\Modules\StudioManagement\Tools\StaffService;
 use Espo\Modules\StudioManagement\Tools\StaffMigration;
 use Espo\Modules\StudioManagement\Tools\TeamComposition;
+use Espo\Modules\StudioManagement\Tools\RegistrationService;
+use Espo\Modules\StudioManagement\Tools\RegistrationLinkMigration;
 use Espo\ORM\EntityManager;
 
 $app = new Application();
@@ -219,6 +221,41 @@ try {
             str_contains((string) $invite->get('registrationUrl'), '/?entryPoint=studioRegister#' . $invite->get('token')),
             'Invitation uses the configured domain and keeps the secret in the URL fragment.'
         );
+        $registration = $factory->create(RegistrationService::class);
+        $originalToken = (string) $invite->get('token');
+        $caseChangedToken = preg_replace_callback('/[A-Za-z]/',
+            fn ($match) => ctype_lower($match[0]) ? strtoupper($match[0]) : strtolower($match[0]), $originalToken, 1);
+        $assert($originalToken !== $caseChangedToken, 'Fixture changes the token case without changing its format.');
+        $assert(($registration->getInvitationInfo($originalToken)['mode'] ?? null) === 'register',
+            'Exact URL-safe token resolves.');
+        $assert($registration->getInvitationInfo($caseChangedToken) === null,
+            'Case-insensitive database lookup cannot authorize a differently cased token.');
+        try {
+            $registration->register($caseChangedToken, 'case-' . $suffix . '@example.invalid', 'Case Fixture', 'CaseFixture-Strong7');
+            $assert(false, 'Registration with a differently cased token must be rejected.');
+        } catch (Conflict) {
+            $assert(true, 'Registration rejects a differently cased token.');
+        }
+
+        $legacyInvite = $em->getNewEntity('SmRegistrationLink');
+        $legacyInvite->set(['accountType' => 'Model', 'targetRoleId' => $role->getId()]);
+        $em->saveEntity($legacyInvite);
+        $legacyToken = bin2hex(random_bytes(32));
+        $legacyUrl = preg_replace('/#.*$/', '#access=' . $legacyToken, (string) $legacyInvite->get('registrationUrl'));
+        $legacyInvite->set(['token' => $legacyToken, 'registrationUrl' => $legacyUrl]);
+        $em->saveEntity($legacyInvite, ['skipBeforeSave' => true]);
+        $factory->create(RegistrationLinkMigration::class)->run();
+        $migrated = $em->getEntityById('SmRegistrationLink', $legacyInvite->getId());
+        $assert($migrated->get('token') === $legacyToken &&
+            str_ends_with((string) $migrated->get('registrationUrl'), '#' . $legacyToken),
+            'Migration preserves previously issued 64-character secrets.');
+        $assert(($registration->getInvitationInfo($legacyToken)['mode'] ?? null) === 'register',
+            'Legacy token still opens registration.');
+        $legacyAccount = $registration->register($legacyToken, 'old-' . $suffix . '@example.invalid',
+            'Legacy Account', 'LegacyFixture-Strong7');
+        $assert($legacyAccount->get('smAccountType') === 'Model', 'Legacy token still registers the intended account type.');
+        $assert(($registration->getInvitationInfo($legacyToken)['mode'] ?? null) === 'login',
+            'Legacy token becomes the same account login link after registration.');
         foreach (['Operator', 'ProducerAdmin', 'TechnicalDirector', 'Recruiter'] as $allowedType) {
             $allowedRole = $em->getNewEntity('Role');
             $allowedRole->set(['name' => 'Registration ' . $allowedType . ' ' . $suffix, 'smAccountType' => $allowedType]);

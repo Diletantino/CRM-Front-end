@@ -13,7 +13,7 @@ The extension is developed against EspoCRM `10.0.x` / PHP `8.3+` and does not mo
 
 ## Initial setup
 
-1. Open **Administration → Roles** and create the needed roles. Configure normal EspoCRM entity permissions for `SmShift`, `SmShiftFinancialSnapshot`, `SmRegistrationLink`, and boolean access to `SmModels`, `SmOperators`, and `SmAnalytics`.
+1. Open **Administration → Roles** and create the needed roles. Set each role's **Studio Account Type** to the same type that will be selected when creating an account link (including existing roles before generating new links). Configure normal EspoCRM entity permissions for `SmShift`, `SmShiftFinancialSnapshot`, `SmRegistrationLink`, and boolean access to `SmModels`, `SmOperators`, and `SmAnalytics`.
 2. Set **Percent of shift income** (`smSharePercent`) on model, operator, producer, and technical-director roles. If a user has several roles, the highest percentage is used.
 3. Open users and set **Studio Account Type**. A personal percentage can optionally override role percentages. For a producer who also works as an operator, set separate **Operator Share Percent** and **Producer Share Percent** values.
 4. Open **Teams** and fill its three studio slots: one producer, one operator and one model. Selecting a slot also adds that person to native Espo group membership. Adding a typed user from the native Users panel fills an empty matching slot; duplicate slot assignments are rejected. A producer can also occupy the operator slot.
@@ -68,7 +68,7 @@ HTTP-тест проверяет также персональный вход о
 
 ## Registration flow
 
-An administrator creates a **Registration Link** record and chooses account type, role, optional recruiter, and expiry. EspoCRM generates a cryptographically random 256-bit token and a copyable public URL. The secret is placed after `#access=`: URL fragments are not sent in HTTP requests or Referer headers, and the client removes it from the address bar immediately after placing it in same-tab session storage. Old `?token=` links are accepted once and cleaned immediately. Before redemption, the URL opens the registration form, validates email/name/password on the server, assigns the preset role and recruiter, and consumes the registration step transactionally. A unique redemption marker prevents concurrent double use.
+An administrator creates a **Registration Link** record and chooses one of five staff account types (Model, Operator, Producer, Technical Director, Recruiter), a role with the matching Studio Account Type, optional recruiter, and expiry. Non-administrators cannot create or list account links. EspoCRM generates a cryptographically random 192-bit token encoded as exactly 32 URL-safe characters and a copyable public URL. The secret is placed directly after `#`: URL fragments are not sent in HTTP requests or Referer headers, and the client removes it from the address bar immediately after placing it in same-tab session storage. Previously issued 64-character tokens, `#access=...` links and old `?token=` links remain accepted; query and fragment secrets are removed from the address bar immediately. Before redemption, the URL opens the registration form, validates email/name/password on the server, assigns the preset role and recruiter, and consumes the registration step transactionally. A unique redemption marker prevents concurrent double use.
 
 After registration the same URL becomes that user's only password-login page. It displays the account login as read-only, accepts the password, and sends the link token in a dedicated header. A server-side authentication hook verifies that the token belongs to exactly that user; hiding the standard form is not the security boundary. Existing session tokens continue to work until logout or expiry. Deleting the Registration Link blocks future password logins through it.
 
@@ -89,7 +89,7 @@ Each list contains the requested employment dates, current/previous week figures
 - All persistence uses EspoCRM ORM/query builders; no request value is interpolated into SQL.
 - Backend validation is authoritative. Frontend validation is convenience only.
 - Passwords must be at least 10 characters and contain lower-case, upper-case, and numeric characters, in addition to EspoCRM's configured strength policy. They use EspoCRM's bcrypt hash service.
-- Invite tokens contain 256 bits of randomness. Registration is expiring and single-use; after redemption the same token becomes the account-bound login link.
+- New invite tokens contain 192 bits of randomness (32 URL-safe characters); previously issued 256-bit hex tokens remain valid. Both invitation lookup and password login compare secrets exactly using constant-time comparison after the indexed database lookup, independently of case-insensitive database collations. Registration is expiring and single-use; after redemption the same token becomes the account-bound login link.
 - Site rows and screenshot IDs are validated on the backend and have strict count and length limits.
 - Start/finish actions are restricted to the assigned operator (or an administrator). Completed-shift corrections are restricted to the team producer (or an administrator).
 - Staff lists, profiles, and comments are restricted on the backend to the owning producer or an administrator.

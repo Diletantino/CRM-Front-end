@@ -88,7 +88,8 @@ final class PersonalLinkGuard implements BeforeLogin
             ])
             ->findOne();
 
-        if (!$link) {
+        // Database collations may ignore case. The URL-safe secret must match byte for byte.
+        if (!$link || !hash_equals((string) $link->get('token'), $token)) {
             throw new Forbidden('The personal access link does not match this account.');
         }
     }

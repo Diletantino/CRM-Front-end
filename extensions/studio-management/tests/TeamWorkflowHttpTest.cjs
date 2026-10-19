@@ -163,6 +163,14 @@ async function cleanup(list) {
             'Copied personal link uses the configured domain and a fragment secret.');
         const email = 'team-test-login-' + suffix + '@example.invalid';
         const password = 'TestOnly-' + crypto.randomBytes(12).toString('hex') + 'Aa7';
+        const differentlyCasedToken = invite.token.replace(/[A-Za-z]/,
+            letter => letter === letter.toLowerCase() ? letter.toUpperCase() : letter.toLowerCase());
+        const caseInvitation = await request('StudioManagement/invitation', 'GET', undefined,
+            {'X-Studio-Access-Token': differentlyCasedToken});
+        expect(caseInvitation.status === 404, 'A differently cased token cannot open an invitation.');
+        const caseRegistration = await request('StudioManagement/register', 'POST', {
+            token: differentlyCasedToken, email, fullName: 'Invalid token case', password});
+        expect(caseRegistration.status === 409, 'A differently cased token cannot register an account.');
         const registration = await ok('StudioManagement/register', 'POST', {token: invite.token, email,
             fullName: 'Тест оператор со входом', password});
         fixtures.push(['User', registration.userId]);
@@ -170,6 +178,9 @@ async function cleanup(list) {
         const login = await request('App/user', 'GET', undefined, {...headers, Authorization: 'Basic ' + credentials,
             'Espo-Authorization': credentials, 'X-Studio-Access-Token': invite.token});
         expect(login.status === 200 && login.data.user?.id === registration.userId, 'Operator personal-link login works.');
+        const caseLogin = await request('App/user', 'GET', undefined, {...headers, Authorization: 'Basic ' + credentials,
+            'Espo-Authorization': credentials, 'X-Studio-Access-Token': differentlyCasedToken});
+        expect(caseLogin.status === 403, 'A differently cased token cannot authenticate an account.');
         const session = Buffer.from(email + ':' + login.data.token).toString('base64');
         const actor = {...headers, Authorization: 'Basic ' + session, 'Espo-Authorization': session,
             'Espo-Authorization-By-Token': 'true'};
