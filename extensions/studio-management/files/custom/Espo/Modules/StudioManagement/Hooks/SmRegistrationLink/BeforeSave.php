@@ -48,16 +48,6 @@ class BeforeSave implements BeforeSaveHook
             throw WorkflowError::badRequest('Выбранная роль не найдена. Выберите другую роль.');
         }
 
-        if (!$role->get('smAccountType')) {
-            throw WorkflowError::badRequest(
-                'У выбранной роли не задан тип аккаунта. Откройте «Роли», укажите тип аккаунта и повторите создание ссылки.'
-            );
-        }
-
-        if ($role->get('smAccountType') !== $accountType) {
-            throw WorkflowError::badRequest('Тип аккаунта выбранной роли должен совпадать с типом создаваемого аккаунта. Выберите подходящую роль.');
-        }
-
         $recruiterId = $entity->get('recruiterId');
 
         if (is_string($recruiterId) && $recruiterId !== '') {

@@ -267,14 +267,10 @@ try {
         }
         $mismatchedInvite = $em->getNewEntity('SmRegistrationLink');
         $mismatchedInvite->set(['accountType' => 'Operator', 'targetRoleId' => $role->getId()]);
-        try {
-            $em->saveEntity($mismatchedInvite);
-            $assert(false, 'A role with another account type must be rejected.');
-        } catch (BadRequest $e) {
-            $assert(str_contains($e->getMessage(), 'совпадать'), 'Role/account type mismatch has a readable explanation.');
-            $body = json_decode($e->getBody() ?? '{}', true, flags: JSON_THROW_ON_ERROR);
-            $assert(str_contains($body['message'] ?? '', 'совпадать'), 'Role mismatch reaches the browser as UTF-8 JSON, not a garbled header.');
-        }
+        $em->saveEntity($mismatchedInvite);
+        $assert($mismatchedInvite->get('accountType') === 'Operator' &&
+            $mismatchedInvite->get('targetRoleId') === $role->getId(),
+            'Account type and ACL role can be selected independently.');
         $badInvite = $em->getNewEntity('SmRegistrationLink');
         $badInvite->set(['accountType' => 'Model', 'targetRoleId' => $role->getId(), 'recruiterId' => $operator->getId()]);
         try {
@@ -291,13 +287,9 @@ try {
         $em->saveEntity($untypedRole);
         $untypedInvite = $em->getNewEntity('SmRegistrationLink');
         $untypedInvite->set(['accountType' => 'Model', 'targetRoleId' => $untypedRole->getId()]);
-        try {
-            $em->saveEntity($untypedInvite);
-            $assert(false, 'A legacy role without an account type must not grant unintended permissions.');
-        } catch (BadRequest $e) {
-            $body = json_decode($e->getBody() ?? '{}', true, flags: JSON_THROW_ON_ERROR);
-            $assert(str_contains($body['message'] ?? '', 'не задан тип аккаунта'), 'Untyped role explains how to repair its settings.');
-        }
+        $em->saveEntity($untypedInvite);
+        $assert($untypedInvite->get('targetRoleId') === $untypedRole->getId(),
+            'Legacy roles without a studio account type remain selectable for account links.');
 
         $model->set(['smSiteData' => [], 'smSiteAccess' => 'CB - legacy-login - legacy-pass']);
         $defaults = $factory->create(ModelShiftDefaults::class)->get($model);

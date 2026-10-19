@@ -25,44 +25,6 @@ let checks = 0;
     new Page().setup();
     checks++;
 
-    class RoleLink {
-        setup() {}
-        listenTo(model, event, handler) { this.changeHandler = handler; }
-        isEditMode() { return this.editMode; }
-        getSelectFilters() { return null; }
-        getCreateAttributes() { return {existing: true}; }
-    }
-    const TargetRole = load(prefix + 'sm-registration-link/fields/target-role.js', RoleLink);
-    const targetRole = new TargetRole();
-    let isNew = true;
-    const roleAttributes = {accountType: 'Model', targetRoleId: 'model-role', targetRoleName: 'Model role'};
-    targetRole.model = {
-        isNew: () => isNew,
-        get: name => roleAttributes[name],
-        set: attributes => Object.assign(roleAttributes, attributes),
-    };
-    targetRole.editMode = true;
-    targetRole.setup();
-    for (const type of ['Model', 'Operator', 'ProducerAdmin', 'TechnicalDirector', 'Recruiter']) {
-        roleAttributes.accountType = type;
-        assert.equal(targetRole.getSelectFilters().smAccountType.value[0], type);
-        assert.equal(targetRole.getSelectFilters().smAccountType.data.valueList[0], type);
-        assert.equal(targetRole.getSelectFilters().smAccountType.attribute, 'smAccountType');
-        assert.equal(targetRole.getCreateAttributes().smAccountType, type);
-        checks++;
-    }
-    targetRole.changeHandler();
-    assert.equal(roleAttributes.targetRoleId, null);
-    assert.equal(roleAttributes.targetRoleName, null);
-    checks++;
-    isNew = false;
-    roleAttributes.targetRoleId = 'saved-role';
-    targetRole.changeHandler();
-    assert.equal(roleAttributes.targetRoleId, 'saved-role');
-    targetRole.editMode = false;
-    assert.equal(targetRole.getSelectFilters(), null);
-    checks += 2;
-
     const calls = [];
     const notifications = [];
     let postError;

@@ -14,6 +14,7 @@
   "fields": {"name": "Name", "token": "Token", "registrationUrl": "Registration URL", "targetRole": "Target Role", "recruiter": "Recruiter", "accountType": "Account Type", "expiresAt": "Expires At", "isUsed": "Used", "usedAt": "Used At", "usedByUser": "Registered User"},
   "links": {"targetRole": "Target Role", "recruiter": "Recruiter", "usedByUser": "Registered User"},
   "options": {"accountType": {"Model": "Model", "Operator": "Operator", "ProducerAdmin": "Producer", "TechnicalDirector": "Technical Director", "Recruiter": "Recruiter"}},
+  "tooltips": {"targetRole": "The role defines access permissions and is selected independently of the account type."},
   "messages": {
     "invitationUnavailable": "This invitation is invalid, expired or already used.",
     "allFieldsRequired": "Complete all required fields.",

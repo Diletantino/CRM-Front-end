@@ -61,37 +61,32 @@ async function cleanup(fixtures) {
             roles[type] = await create('Role', {name: 'Invite UI ' + type + ' ' + suffix, smAccountType: type});
         }
         roles.Untyped = await create('Role', {name: 'Invite UI Untyped ' + suffix});
+        const availableRoles = await request('Role?' + new URLSearchParams({
+            maxSize: '100', select: 'id,name,smAccountType',
+        }));
+        assert.equal(availableRoles.status, 200);
+        assert(Object.values(roles).every(role => availableRoles.data.list.some(item => item.id === role.id)));
+        checks++;
         for (const [i, type] of types.entries()) {
-            const role = roles[type];
+            // Account type and ACL role are intentionally independent. Include an
+            // untyped legacy role and roles carrying a different studio type.
+            const role = i === 0 ? roles.Untyped : roles[types[(i + 1) % types.length]];
             const link = await create('SmRegistrationLink', {accountType: type, targetRoleId: role.id});
             assert.match(link.token, /^[A-Za-z0-9_-]{32}$/);
-            checks++;
-            const filtered = await request('Role?' + new URLSearchParams({
-                'where[0][type]': 'equals', 'where[0][attribute]': 'smAccountType',
-                'where[0][value]': type, maxSize: '100', select: 'id,name,smAccountType',
-            }));
-            assert.equal(filtered.status, 200);
-            assert(filtered.data.list.some(item => item.id === role.id));
-            assert(filtered.data.list.every(item => item.smAccountType === type));
-            checks++;
-            const mismatch = await request('SmRegistrationLink', 'POST', {
-                accountType: type, targetRoleId: roles[types[(i + 1) % types.length]].id,
-            });
-            assert.equal(mismatch.status, 400);
-            assert(mismatch.data.message?.includes('совпадать'), 'Readable mismatch in JSON body');
+            assert.equal(link.targetRoleId, role.id);
             checks++;
         }
-        for (const [extra, text] of [
-            [{targetRoleId: roles.Untyped.id}, 'не задан тип аккаунта'],
-            [{expiresAt: '2020-01-01 00:00:00'}, 'в будущем'],
-        ]) {
-            const result = await request('SmRegistrationLink', 'POST', {
-                accountType: 'Model', targetRoleId: roles.Model.id, ...extra,
-            });
-            assert.equal(result.status, 400);
-            assert(result.data.message?.includes(text), 'Readable validation in JSON body');
-            checks++;
-        }
+        const modelRoleLink = await create('SmRegistrationLink', {
+            accountType: 'Model', targetRoleId: roles.Model.id,
+        });
+        assert.equal(modelRoleLink.targetRoleId, roles.Model.id);
+        checks++;
+        const expired = await request('SmRegistrationLink', 'POST', {
+            accountType: 'Model', targetRoleId: roles.Model.id, expiresAt: '2020-01-01 00:00:00',
+        });
+        assert.equal(expired.status, 400);
+        assert(expired.data.message?.includes('в будущем'), 'Readable validation in JSON body');
+        checks++;
         const me = await request('App/user');
         assert.equal(me.status, 200);
         const invalidRecruiter = await request('SmRegistrationLink', 'POST', {
