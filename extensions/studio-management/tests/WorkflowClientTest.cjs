@@ -97,6 +97,59 @@ let checks = 0;
     assert.equal(field.data().profileLinkAllowed, true);
     checks += 2;
 
+    class LinkField {
+        setup() { this.linkSetupCalled = true; }
+        afterRender() { this.linkAfterRenderCalled = true; }
+        actionSelect() { this.modalOpened = true; }
+        isEditMode() { return true; }
+    }
+    const TargetRole = load(prefix + 'sm-registration-link/fields/target-role.js', LinkField);
+    const targetRole = new TargetRole();
+    targetRole.setup();
+    assert.equal(targetRole.autocompleteOnEmpty, true);
+    assert.equal(targetRole.linkSetupCalled, true);
+
+    let roleArrowMouseDown;
+    targetRole.$el = {
+        find: selector => {
+            assert.equal(selector, '[data-action="selectLink"]');
+            return {on: (event, handler) => {
+                assert.equal(event, 'mousedown.targetRoleDropdown');
+                roleArrowMouseDown = handler;
+            }};
+        },
+    };
+    targetRole.afterRender();
+    let roleArrowDefaultPrevented = false;
+    roleArrowMouseDown({preventDefault: () => { roleArrowDefaultPrevented = true; }});
+    assert.equal(targetRole.linkAfterRenderCalled, true);
+    assert.equal(roleArrowDefaultPrevented, true);
+
+    const roleInputCalls = [];
+    let roleInputValue = '';
+    targetRole.$elementName = {
+        is: selector => { assert.equal(selector, ':focus'); return false; },
+        val: value => {
+            if (value === undefined) { return roleInputValue; }
+            roleInputValue = value;
+            return targetRole.$elementName;
+        },
+        trigger: event => { roleInputCalls.push(['trigger', event]); return targetRole.$elementName; },
+        autocomplete: action => { roleInputCalls.push(['autocomplete', action]); },
+    };
+    targetRole.actionSelect();
+    assert.deepEqual(roleInputCalls, [['trigger', 'focus']]);
+    assert.equal(targetRole.modalOpened, undefined);
+
+    roleInputValue = 'Previous role';
+    targetRole.actionSelect();
+    assert.deepEqual(roleInputCalls.slice(-2), [
+        ['trigger', 'focus'],
+        ['autocomplete', 'onValueChange'],
+    ]);
+    assert.equal(roleInputValue, '');
+    checks += 6;
+
     const Footer = load(prefix + 'sm-shift/fields/workflow-footer.js', Field);
     const footer = new Footer();
     let saved = 0;
