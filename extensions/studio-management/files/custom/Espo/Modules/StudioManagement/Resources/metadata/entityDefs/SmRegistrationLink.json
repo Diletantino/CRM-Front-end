@@ -10,11 +10,11 @@
     },
     "accountType": {
       "type": "enum",
-      "options": ["Model", "Operator"],
+      "options": ["Model", "Operator", "ProducerAdmin", "TechnicalDirector", "Recruiter"],
       "required": true,
       "readOnlyAfterCreate": true,
       "displayAsLabel": true,
-      "style": {"Model": "primary", "Operator": "info"}
+      "style": {"Model": "primary", "Operator": "info", "ProducerAdmin": "warning", "TechnicalDirector": "danger", "Recruiter": "success"}
     },
     "expiresAt": {
       "type": "datetime",

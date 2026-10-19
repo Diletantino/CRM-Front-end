@@ -18,6 +18,6 @@ final class RegistrationLinkUrl
         }
 
         // URL fragments are never sent in HTTP requests or Referer headers.
-        return $siteUrl . '/?entryPoint=studioRegister#access=' . rawurlencode($token);
+        return $siteUrl . '/?entryPoint=studioRegister#' . rawurlencode($token);
     }
 }

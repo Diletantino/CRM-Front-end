@@ -148,7 +148,7 @@ let checks = 0;
     const cleanUrls = [];
     const window = {
         location: {
-            hash: '#access=' + 'a'.repeat(64),
+            hash: '#' + 'Ab_9'.repeat(8),
             search: '?entryPoint=studioRegister',
             pathname: '/',
         },
@@ -167,10 +167,15 @@ let checks = 0;
         TextEncoder,
     });
     const registration = new Registration();
-    assert.equal(registration.consumeTokenFromLocation(), 'a'.repeat(64));
-    assert.equal(stored.get('studioAccessToken'), 'a'.repeat(64));
+    assert.equal(registration.consumeTokenFromLocation(), 'Ab_9'.repeat(8));
+    assert.equal(stored.get('studioAccessToken'), 'Ab_9'.repeat(8));
     assert.equal(cleanUrls.at(-1), '/?entryPoint=studioRegister');
     checks += 3;
+
+    // Previously issued 64-character links remain valid.
+    window.location.hash = '#access=' + 'a'.repeat(64);
+    assert.equal(registration.consumeTokenFromLocation(), 'a'.repeat(64));
+    checks++;
 
     // A personal-link login must leave the no-router entry point before F5.
     const events = [];
@@ -227,6 +232,7 @@ let checks = 0;
 
     // An existing session must never swallow another (including invalid) explicit personal link.
     for (const location of [
+        {hash: '#' + 'Cd-7'.repeat(8), search: '?entryPoint=studioRegister'},
         {hash: '#access=' + 'b'.repeat(64), search: '?entryPoint=studioRegister'},
         {hash: '#access=invalid', search: '?entryPoint=studioRegister'},
         {hash: '', search: '?entryPoint=studioRegister&token=legacy-token'},

@@ -7,6 +7,7 @@ use Espo\Core\Exceptions\Forbidden;
 use Espo\Core\Hook\Hook\BeforeSave as BeforeSaveHook;
 use Espo\Entities\User;
 use Espo\Modules\StudioManagement\Tools\RegistrationLinkUrl;
+use Espo\Modules\StudioManagement\Tools\RegistrationToken;
 use Espo\ORM\Entity;
 use Espo\ORM\EntityManager;
 use Espo\ORM\Repository\Option\SaveOptions;
@@ -17,6 +18,7 @@ class BeforeSave implements BeforeSaveHook
     public function __construct(
         private EntityManager $entityManager,
         private RegistrationLinkUrl $registrationLinkUrl,
+        private RegistrationToken $registrationToken,
         private User $user,
     ) {}
 
@@ -37,7 +39,7 @@ class BeforeSave implements BeforeSaveHook
             throw new BadRequest('A target role is required.');
         }
 
-        if (!in_array($accountType, ['Model', 'Operator'], true)) {
+        if (!in_array($accountType, ['Model', 'Operator', 'ProducerAdmin', 'TechnicalDirector', 'Recruiter'], true)) {
             throw new BadRequest('Unsupported account type.');
         }
 
@@ -45,6 +47,10 @@ class BeforeSave implements BeforeSaveHook
 
         if (!$role) {
             throw new BadRequest('Target role not found.');
+        }
+
+        if ($role->get('smAccountType') !== $accountType) {
+            throw new BadRequest('Тип аккаунта выбранной роли должен совпадать с типом создаваемого аккаунта.');
         }
 
         $recruiterId = $entity->get('recruiterId');
@@ -61,7 +67,7 @@ class BeforeSave implements BeforeSaveHook
             }
         }
 
-        $token = bin2hex(random_bytes(32));
+        $token = $this->registrationToken->generate();
         $expiresAt = $entity->get('expiresAt');
 
         if (!is_string($expiresAt) || $expiresAt === '') {

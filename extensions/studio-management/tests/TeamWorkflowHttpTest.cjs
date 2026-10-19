@@ -158,6 +158,9 @@ async function cleanup(list) {
                 Team: {read: 'team'}, User: {read: 'team', edit: 'no'}}});
         const invite = await create('SmRegistrationLink', {accountType: 'Operator', targetRoleId: operatorRole.id,
             expiresAt: new Date(Date.now() + 86400000).toISOString().slice(0, 19).replace('T', ' ')});
+        expect(/^[A-Za-z0-9_-]{32}$/.test(invite.token), 'New personal token contains exactly 32 URL-safe random characters.');
+        expect(invite.registrationUrl.endsWith('/?entryPoint=studioRegister#' + invite.token),
+            'Copied personal link uses the configured domain and a fragment secret.');
         const email = 'team-test-login-' + suffix + '@example.invalid';
         const password = 'TestOnly-' + crypto.randomBytes(12).toString('hex') + 'Aa7';
         const registration = await ok('StudioManagement/register', 'POST', {token: invite.token, email,
@@ -170,6 +173,11 @@ async function cleanup(list) {
         const session = Buffer.from(email + ':' + login.data.token).toString('base64');
         const actor = {...headers, Authorization: 'Basic ' + session, 'Espo-Authorization': session,
             'Espo-Authorization-By-Token': 'true'};
+        const forbiddenInvite = await request('SmRegistrationLink', 'POST',
+            {accountType: 'Operator', targetRoleId: operatorRole.id}, actor);
+        expect(forbiddenInvite.status === 403, 'A non-administrator cannot create registration links.');
+        const forbiddenInviteList = await request('SmRegistrationLink', 'GET', undefined, actor);
+        expect(forbiddenInviteList.status === 403, 'A non-administrator cannot list or open registration links.');
         const actorTeam = await create('Team', {name: 'Тест — смена обычного оператора ' + suffix,
             smProducerId: producer.id, smOperatorId: registration.userId, smModelId: model.id});
         const actorDefaults = await request('StudioManagement/teams/' + actorTeam.id + '/shiftDefaults', 'GET', undefined, actor);

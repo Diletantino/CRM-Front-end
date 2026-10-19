@@ -50,7 +50,7 @@ try {
             return $user;
         };
         $role = $em->getNewEntity('Role');
-        $role->set(['name' => 'Модель', 'smSharePercent' => 0]);
+        $role->set(['name' => 'Модель', 'smAccountType' => 'Model', 'smSharePercent' => 0]);
         $em->saveEntity($role);
         $model = $createUser('Model', [
             'smAccountType' => '', 'rolesIds' => [$role->getId()],
@@ -211,7 +211,31 @@ try {
         $invite = $em->getNewEntity('SmRegistrationLink');
         $invite->set(['accountType' => 'Model', 'targetRoleId' => $role->getId(), 'recruiterId' => $recruiter->getId()]);
         $em->saveEntity($invite);
-        $assert(strlen($invite->get('token')) === 64, 'Valid recruiter can create invitation.');
+        $assert(
+            preg_match('/^[A-Za-z0-9_-]{32}$/', (string) $invite->get('token')) === 1,
+            'Invitation uses a 32-character cryptographically random URL-safe token.'
+        );
+        $assert(
+            str_contains((string) $invite->get('registrationUrl'), '/?entryPoint=studioRegister#' . $invite->get('token')),
+            'Invitation uses the configured domain and keeps the secret in the URL fragment.'
+        );
+        foreach (['Operator', 'ProducerAdmin', 'TechnicalDirector', 'Recruiter'] as $allowedType) {
+            $allowedRole = $em->getNewEntity('Role');
+            $allowedRole->set(['name' => 'Registration ' . $allowedType . ' ' . $suffix, 'smAccountType' => $allowedType]);
+            $em->saveEntity($allowedRole);
+            $allowedInvite = $em->getNewEntity('SmRegistrationLink');
+            $allowedInvite->set(['accountType' => $allowedType, 'targetRoleId' => $allowedRole->getId()]);
+            $em->saveEntity($allowedInvite);
+            $assert(strlen((string) $allowedInvite->get('token')) === 32, $allowedType . ' invitation can be created.');
+        }
+        $mismatchedInvite = $em->getNewEntity('SmRegistrationLink');
+        $mismatchedInvite->set(['accountType' => 'Operator', 'targetRoleId' => $role->getId()]);
+        try {
+            $em->saveEntity($mismatchedInvite);
+            $assert(false, 'A role with another account type must be rejected.');
+        } catch (BadRequest $e) {
+            $assert(str_contains($e->getMessage(), 'совпадать'), 'Role/account type mismatch has a readable explanation.');
+        }
         $badInvite = $em->getNewEntity('SmRegistrationLink');
         $badInvite->set(['accountType' => 'Model', 'targetRoleId' => $role->getId(), 'recruiterId' => $operator->getId()]);
         try {

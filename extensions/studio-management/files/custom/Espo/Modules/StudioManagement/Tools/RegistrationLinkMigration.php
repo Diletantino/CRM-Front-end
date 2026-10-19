@@ -10,6 +10,7 @@ final class RegistrationLinkMigration
     public function __construct(
         private EntityManager $entityManager,
         private RegistrationLinkUrl $registrationLinkUrl,
+        private RegistrationToken $registrationToken,
     ) {}
 
     public function run(): int
@@ -22,7 +23,7 @@ final class RegistrationLinkMigration
         foreach ($links as $link) {
             $token = (string) $link->get('token');
 
-            if (!preg_match('/^[a-f0-9]{64}$/', $token)) {
+            if (!$this->registrationToken->isValid($token)) {
                 continue;
             }
 

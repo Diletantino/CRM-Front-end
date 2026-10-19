@@ -33,9 +33,15 @@ define(['controller'], function (Controller) {
         }
 
         hasPersonalLinkToken() {
-            const fragment = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+            const rawFragment = window.location.hash.replace(/^#/, '');
+            const fragment = new URLSearchParams(rawFragment);
             const query = new URLSearchParams(window.location.search);
-            if (fragment.has('access') || query.has('token')) {
+            if (
+                fragment.has('access') ||
+                /^[A-Za-z0-9_-]{32}$/.test(rawFragment) ||
+                /^[a-f0-9]{64}$/.test(rawFragment) ||
+                query.has('token')
+            ) {
                 return true;
             }
             try {

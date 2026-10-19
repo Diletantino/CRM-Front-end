@@ -13,7 +13,7 @@
   },
   "fields": {"name": "Name", "token": "Token", "registrationUrl": "Registration URL", "targetRole": "Target Role", "recruiter": "Recruiter", "accountType": "Account Type", "expiresAt": "Expires At", "isUsed": "Used", "usedAt": "Used At", "usedByUser": "Registered User"},
   "links": {"targetRole": "Target Role", "recruiter": "Recruiter", "usedByUser": "Registered User"},
-  "options": {"accountType": {"Model": "Model", "Operator": "Operator"}},
+  "options": {"accountType": {"Model": "Model", "Operator": "Operator", "ProducerAdmin": "Producer", "TechnicalDirector": "Technical Director", "Recruiter": "Recruiter"}},
   "messages": {
     "invitationUnavailable": "This invitation is invalid, expired or already used.",
     "allFieldsRequired": "Complete all required fields.",

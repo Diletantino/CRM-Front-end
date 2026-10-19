@@ -10,6 +10,7 @@ use Espo\Core\Exceptions\Forbidden;
 use Espo\Entities\User;
 use Espo\Modules\StudioManagement\Entities\SmRegistrationLink;
 use Espo\Modules\StudioManagement\Tools\AccessPolicy;
+use Espo\Modules\StudioManagement\Tools\RegistrationToken;
 use Espo\ORM\EntityManager;
 
 final class PersonalLinkGuard implements BeforeLogin
@@ -20,6 +21,7 @@ final class PersonalLinkGuard implements BeforeLogin
         private EntityManager $entityManager,
         private AccessPolicy $accessPolicy,
         private AuthTokenManager $authTokenManager,
+        private RegistrationToken $registrationToken,
     ) {}
 
     public function process(AuthenticationData $data, Request $request): void
@@ -73,7 +75,7 @@ final class PersonalLinkGuard implements BeforeLogin
 
         $token = trim((string) $request->getHeader(self::HEADER_LINK_TOKEN));
 
-        if (!preg_match('/^[a-f0-9]{64}$/', $token)) {
+        if (!$this->registrationToken->isValid($token)) {
             throw new Forbidden('A personal access link is required.');
         }
 

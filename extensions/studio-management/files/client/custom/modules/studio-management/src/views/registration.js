@@ -40,7 +40,7 @@ define(['view'], function (View) {
 
             this.options.token = token;
 
-            if (!/^[a-f0-9]{64}$/.test(token)) {
+            if (!this.isValidToken(token)) {
                 return;
             }
 
@@ -58,9 +58,12 @@ define(['view'], function (View) {
         }
 
         consumeTokenFromLocation() {
-            const fragment = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+            const rawFragment = window.location.hash.replace(/^#/, '');
+            const fragment = new URLSearchParams(rawFragment);
             const query = new URLSearchParams(window.location.search);
-            const locationToken = fragment.get('access') || query.get('token') || '';
+            const locationToken = fragment.get('access') ||
+                (this.isValidToken(rawFragment) ? rawFragment : '') ||
+                query.get('token') || '';
             let token = locationToken;
 
             try {
@@ -80,6 +83,10 @@ define(['view'], function (View) {
             window.history.replaceState(null, document.title, cleanUrl);
 
             return token.trim();
+        }
+
+        isValidToken(token) {
+            return /^[A-Za-z0-9_-]{32}$/.test(token) || /^[a-f0-9]{64}$/.test(token);
         }
 
         async submit() {

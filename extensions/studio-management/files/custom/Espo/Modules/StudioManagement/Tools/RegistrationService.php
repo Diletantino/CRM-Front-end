@@ -20,6 +20,7 @@ final class RegistrationService
         private EntityManager $entityManager,
         private PasswordHash $passwordHash,
         private Checker $passwordChecker,
+        private RegistrationToken $registrationToken,
     ) {}
 
     public function getInvitationInfo(string $token): ?array
@@ -69,7 +70,7 @@ final class RegistrationService
         $email = mb_strtolower(trim($email));
         $fullName = trim(preg_replace('/\s+/u', ' ', $fullName) ?? '');
 
-        if (!preg_match('/^[a-f0-9]{64}$/', $token)) {
+        if (!$this->registrationToken->isValid($token)) {
             throw new BadRequest('Invalid invitation token.');
         }
 
@@ -156,7 +157,7 @@ final class RegistrationService
 
     private function findInvitation(string $token): ?Entity
     {
-        if (!preg_match('/^[a-f0-9]{64}$/', $token)) {
+        if (!$this->registrationToken->isValid($token)) {
             return null;
         }
 
