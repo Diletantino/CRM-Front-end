@@ -17,7 +17,7 @@ The extension is developed against EspoCRM `10.0.x` / PHP `8.3+` and does not mo
 2. Set **Percent of shift income** (`smSharePercent`) on model, operator, producer, and technical-director roles. If a user has several roles, the highest percentage is used.
 3. Open users and set **Studio Account Type**. A personal percentage can optionally override role percentages. For a producer who also works as an operator, set separate **Operator Share Percent** and **Producer Share Percent** values.
 4. Open **Teams** and fill its three studio slots: one producer, one operator and one model. Selecting a slot also adds that person to native Espo group membership. Adding a typed user from the native Users panel fills an empty matching slot; duplicate slot assignments are rejected. A producer can also occupy the operator slot.
-5. Registration links are administrator-only. They default to 24 hours if their expiry is omitted or invalid.
+5. Registration links are administrator-only. The form defaults to 24 hours; expired dates are rejected.
 6. For recruited employees, select the recruiter and one reward mode: **$150 after 5 shifts** or **Percent per Shift**. The amount and percentage are editable per employee.
 7. Create the technical director as a user with account type **Technical Director**. Their configured percentage is charged on every completed shift.
 
@@ -67,6 +67,13 @@ docker compose exec -T crm php /tmp/CleanupTeamWorkflowFixtures.php
 HTTP-тест проверяет также персональный вход обычного оператора, полный цикл его смены, запрет чтения чужих доступов и запрет обхода прав при создании смены только по ID группы. Не запускайте тесты с фикстурами на рабочей базе.
 
 ## Registration flow
+
+### Исправления интерфейса и ошибок (19.10.2026)
+
+- В теме StudioDark окна быстрого создания, просмотра, выбора записей и подтверждения располагаются по центру экрана. Длинные формы прокручиваются внутри; заголовок и кнопки остаются видимыми. Свёрнутые окна и вложенные диалоги редактора не затрагиваются.
+- При создании ссылки поле «Роль» по умолчанию фильтруется по выбранному типу аккаунта, включая автодополнение. При смене типа прежняя роль сбрасывается; новая роль, создаваемая из поля выбора, получает выбранный тип.
+- Сервер продолжает запрещать несовместимые типы и роли. Ошибки передаются в UTF-8 JSON, поэтому русский текст уведомления не искажается. Для старых ролей без типа аккаунта выводится инструкция: сначала настроить тип в разделе «Роли».
+- Проверки: `node extensions/studio-management/tests/RegistrationLinkValidationHttpTest.cjs` (только локальная тестовая установка с `.env`); существующие клиентские и PHP-регрессии также дополнены. Опция `--ui-fixture` оставляет тестовые роли для ручной проверки, `--cleanup` мягко удаляет только эти роли.
 
 An administrator creates a **Registration Link** record and chooses one of five staff account types (Model, Operator, Producer, Technical Director, Recruiter), a role with the matching Studio Account Type, optional recruiter, and expiry. Non-administrators cannot create or list account links. EspoCRM generates a cryptographically random 192-bit token encoded as exactly 32 URL-safe characters and a copyable public URL. The secret is placed directly after `#`: URL fragments are not sent in HTTP requests or Referer headers, and the client removes it from the address bar immediately after placing it in same-tab session storage. Previously issued 64-character tokens, `#access=...` links and old `?token=` links remain accepted; query and fragment secrets are removed from the address bar immediately. Before redemption, the URL opens the registration form, validates email/name/password on the server, assigns the preset role and recruiter, and consumes the registration step transactionally. A unique redemption marker prevents concurrent double use.
 

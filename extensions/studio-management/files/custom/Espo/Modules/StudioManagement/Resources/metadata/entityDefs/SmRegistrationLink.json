@@ -3,7 +3,10 @@
     "name": {"type": "varchar", "maxLength": 150, "readOnly": true},
     "token": {"type": "varchar", "maxLength": 64, "readOnly": true, "copyToClipboard": true},
     "registrationUrl": {"type": "url", "readOnly": true, "copyToClipboard": true},
-    "targetRole": {"type": "link", "required": true, "readOnlyAfterCreate": true},
+    "targetRole": {
+      "type": "link", "required": true, "readOnlyAfterCreate": true, "tooltip": true,
+      "view": "studio-management:views/sm-registration-link/fields/target-role"
+    },
     "recruiter": {
       "type": "link", "readOnlyAfterCreate": true, "audited": true, "tooltip": true,
       "selectFilterType": "primary", "selectPrimaryFilterName": "smRecruiters"

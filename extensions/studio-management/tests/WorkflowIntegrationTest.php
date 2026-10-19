@@ -272,6 +272,8 @@ try {
             $assert(false, 'A role with another account type must be rejected.');
         } catch (BadRequest $e) {
             $assert(str_contains($e->getMessage(), 'совпадать'), 'Role/account type mismatch has a readable explanation.');
+            $body = json_decode($e->getBody() ?? '{}', true, flags: JSON_THROW_ON_ERROR);
+            $assert(str_contains($body['message'] ?? '', 'совпадать'), 'Role mismatch reaches the browser as UTF-8 JSON, not a garbled header.');
         }
         $badInvite = $em->getNewEntity('SmRegistrationLink');
         $badInvite->set(['accountType' => 'Model', 'targetRoleId' => $role->getId(), 'recruiterId' => $operator->getId()]);
@@ -280,6 +282,21 @@ try {
             $assert(false, 'Non-recruiter must be rejected.');
         } catch (BadRequest $e) {
             $assert(str_contains($e->getMessage(), 'Рекрутер'), 'Recruiter validation explains the problem in Russian.');
+            $body = json_decode($e->getBody() ?? '{}', true, flags: JSON_THROW_ON_ERROR);
+            $assert(str_contains($body['message'] ?? '', 'Рекрутер'), 'Recruiter validation reaches the browser as UTF-8 JSON.');
+        }
+
+        $untypedRole = $em->getNewEntity('Role');
+        $untypedRole->set(['name' => 'Untyped ' . $suffix]);
+        $em->saveEntity($untypedRole);
+        $untypedInvite = $em->getNewEntity('SmRegistrationLink');
+        $untypedInvite->set(['accountType' => 'Model', 'targetRoleId' => $untypedRole->getId()]);
+        try {
+            $em->saveEntity($untypedInvite);
+            $assert(false, 'A legacy role without an account type must not grant unintended permissions.');
+        } catch (BadRequest $e) {
+            $body = json_decode($e->getBody() ?? '{}', true, flags: JSON_THROW_ON_ERROR);
+            $assert(str_contains($body['message'] ?? '', 'не задан тип аккаунта'), 'Untyped role explains how to repair its settings.');
         }
 
         $model->set(['smSiteData' => [], 'smSiteAccess' => 'CB - legacy-login - legacy-pass']);

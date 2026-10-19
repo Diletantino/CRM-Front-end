@@ -2,12 +2,11 @@
 
 namespace Espo\Modules\StudioManagement\Hooks\SmRegistrationLink;
 
-use Espo\Core\Exceptions\BadRequest;
-use Espo\Core\Exceptions\Forbidden;
 use Espo\Core\Hook\Hook\BeforeSave as BeforeSaveHook;
 use Espo\Entities\User;
 use Espo\Modules\StudioManagement\Tools\RegistrationLinkUrl;
 use Espo\Modules\StudioManagement\Tools\RegistrationToken;
+use Espo\Modules\StudioManagement\Tools\WorkflowError;
 use Espo\ORM\Entity;
 use Espo\ORM\EntityManager;
 use Espo\ORM\Repository\Option\SaveOptions;
@@ -29,28 +28,34 @@ class BeforeSave implements BeforeSaveHook
         }
 
         if (!$this->user->isAdmin()) {
-            throw new Forbidden('Only an administrator can create registration links.');
+            throw WorkflowError::forbidden('Создавать ссылки регистрации может только администратор.');
         }
 
         $roleId = $entity->get('targetRoleId');
         $accountType = $entity->get('accountType');
 
         if (!is_string($roleId) || $roleId === '') {
-            throw new BadRequest('A target role is required.');
+            throw WorkflowError::badRequest('Выберите роль для нового аккаунта.');
         }
 
         if (!in_array($accountType, ['Model', 'Operator', 'ProducerAdmin', 'TechnicalDirector', 'Recruiter'], true)) {
-            throw new BadRequest('Unsupported account type.');
+            throw WorkflowError::badRequest('Выберите поддерживаемый тип аккаунта.');
         }
 
         $role = $this->entityManager->getEntityById('Role', $roleId);
 
         if (!$role) {
-            throw new BadRequest('Target role not found.');
+            throw WorkflowError::badRequest('Выбранная роль не найдена. Выберите другую роль.');
+        }
+
+        if (!$role->get('smAccountType')) {
+            throw WorkflowError::badRequest(
+                'У выбранной роли не задан тип аккаунта. Откройте «Роли», укажите тип аккаунта и повторите создание ссылки.'
+            );
         }
 
         if ($role->get('smAccountType') !== $accountType) {
-            throw new BadRequest('Тип аккаунта выбранной роли должен совпадать с типом создаваемого аккаунта.');
+            throw WorkflowError::badRequest('Тип аккаунта выбранной роли должен совпадать с типом создаваемого аккаунта. Выберите подходящую роль.');
         }
 
         $recruiterId = $entity->get('recruiterId');
@@ -63,7 +68,7 @@ class BeforeSave implements BeforeSaveHook
                 !$recruiter->get('isActive') ||
                 $recruiter->get('smAccountType') !== 'Recruiter'
             ) {
-                throw new BadRequest('Выберите активного пользователя с типом аккаунта «Рекрутер» или оставьте поле пустым. Тип аккаунта задаётся в профиле пользователя.');
+                throw WorkflowError::badRequest('Выберите активного пользователя с типом аккаунта «Рекрутер» или оставьте поле пустым. Тип аккаунта задаётся в профиле пользователя.');
             }
         }
 
@@ -73,7 +78,7 @@ class BeforeSave implements BeforeSaveHook
         if (!is_string($expiresAt) || $expiresAt === '') {
             $expiresAt = gmdate('Y-m-d H:i:s', time() + 86400);
         } elseif (strtotime($expiresAt . ' UTC') <= time()) {
-            throw new BadRequest('Expiration must be in the future.');
+            throw WorkflowError::badRequest('Срок действия ссылки должен быть в будущем.');
         }
 
         $entity->set([

@@ -1,5 +1,53 @@
 @import url("../../../../css/espo/dark.css");
 
+/* Center quick-create, quick-view, selection and confirmation dialogs.
+   Only visible top-level modals participate; minimized windows and editor subdialogs keep their own layout. */
+:is(body, .modal-container) > .modal.in {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem !important;
+}
+
+:is(body, .modal-container) > .modal.in > .modal-dialog {
+    margin: auto;
+    max-width: 100%;
+    min-width: 0;
+}
+
+:is(body, .modal-container) > .modal.in > .modal-dialog > .modal-content {
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100vh - 2rem);
+    max-height: calc(100dvh - 2rem);
+    border: 1px solid #44484e;
+    border-radius: 0.5rem;
+}
+
+:is(body, .modal-container) > .modal.in > .modal-dialog > .modal-content > .modal-header,
+:is(body, .modal-container) > .modal.in > .modal-dialog > .modal-content > .modal-footer {
+    flex: 0 0 auto;
+}
+
+:is(body, .modal-container) > .modal.in > .modal-dialog > .modal-content > .modal-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    height: auto !important;
+    max-height: none !important;
+    overflow: auto;
+}
+
+/* Fullscreen image previews still use the whole viewport. */
+:is(body, .modal-container) > .modal.in:has(> .modal-dialog.maximized) {
+    padding: 0 !important;
+}
+
+:is(body, .modal-container) > .modal.in > .modal-dialog.maximized > .modal-content {
+    max-height: 100vh;
+    max-height: 100dvh;
+    border-radius: 0;
+}
+
 /* Studio CRM theme: compact dark workspace inspired by the supplied references. */
 body {
     --theme-name: StudioDark !important;
