@@ -3,6 +3,7 @@
 namespace Espo\Modules\StudioManagement\Api;
 
 use Espo\Core\Acl;
+use Espo\Modules\StudioManagement\Tools\RolePolicy;
 use Espo\Core\Api\Action;
 use Espo\Core\Api\Request;
 use Espo\Core\Api\Response;
@@ -19,6 +20,7 @@ final class PostReviseShift implements Action
 {
     public function __construct(
         private Acl $acl,
+        private RolePolicy $policy,
         private ShiftService $service,
         private User $user,
         private EntityManager $entityManager,
@@ -43,17 +45,8 @@ final class PostReviseShift implements Action
             throw new Forbidden();
         }
 
-        if (!$this->user->isAdmin() && $this->user->get('smAccountType') !== 'ProducerAdmin') {
-            throw new Forbidden('Only a producer or administrator can revise a completed shift.');
-        }
-
-        if (!$this->user->isAdmin()) {
-            $teamId = $shift->get('teamId');
-            $team = is_string($teamId) ? $this->entityManager->getEntityById('Team', $teamId) : null;
-
-            if (!$team || $team->get('smProducerId') !== $this->user->getId()) {
-                throw new Forbidden('A producer can only revise shifts of their own teams.');
-            }
+        if (!$this->policy->canRevise($this->user, $shift)) {
+            throw new Forbidden('Your role cannot revise this shift.');
         }
 
         $siteData = $data->siteData ?? null;

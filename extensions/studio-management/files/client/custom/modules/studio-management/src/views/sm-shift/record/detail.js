@@ -1,4 +1,4 @@
-define(['views/record/detail'], function (DetailRecordView) {
+define(['views/record/detail', 'studio-management:role-policy'], function (DetailRecordView, RolePolicy) {
     return class extends DetailRecordView {
         editModeDisabled = true
 
@@ -8,21 +8,19 @@ define(['views/record/detail'], function (DetailRecordView) {
             this.buttonList = this.buttonList.filter(item => item.name !== 'edit');
 
             const status = this.model.get('status');
-            const accountType = this.getUser().get('smAccountType');
-            const isAdmin = this.getUser().isAdmin();
-            const isAssignedOperator = ['Operator', 'ProducerAdmin'].includes(accountType) &&
-                this.model.get('operatorId') === this.getUser().id;
-            const isManager = isAdmin || accountType === 'ProducerAdmin';
+            const canEdit = this.getAcl().checkModel(this.model, 'edit');
+            const canOperate = canEdit && RolePolicy.canOperate(this);
+            const isManager = canEdit && (status === 'Draft' ? RolePolicy.canPrepare(this) : RolePolicy.canRevise(this));
 
-            if ((isAssignedOperator || isAdmin) && status === 'Draft') {
+            if (canOperate && status === 'Draft') {
                 this.buttonList.push({name: 'prepareStart', label: 'Start Shift', style: 'success'});
             }
 
-            if ((isAssignedOperator || isAdmin) && status === 'Open') {
+            if (canOperate && status === 'Open') {
                 this.buttonList.push({name: 'finishShift', label: 'Finish Shift', style: 'danger'});
             }
 
-            if ((isAssignedOperator || isAdmin) && status === 'Counting') {
+            if (canOperate && status === 'Counting') {
                 this.buttonList.push({
                     name: 'continueCalculation',
                     label: 'Complete Calculation',
@@ -34,7 +32,7 @@ define(['views/record/detail'], function (DetailRecordView) {
                 this.buttonList.push({name: 'managerEdit', label: 'Edit', style: 'default'});
             }
 
-            if (!isManager) {
+            if (!this.getAcl().checkModel(this.model, 'delete')) {
                 this.removeActionItem('delete');
             }
         }

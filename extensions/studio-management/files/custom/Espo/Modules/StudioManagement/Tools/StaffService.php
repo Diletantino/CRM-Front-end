@@ -19,7 +19,7 @@ final class StaffService
     private const int COMMENT_LIMIT = 200;
     private const int COMMENT_LENGTH = 2000;
 
-    public function __construct(private EntityManager $entityManager) {}
+    public function __construct(private EntityManager $entityManager, private RolePolicy $policy) {}
 
     /** @return array{type: string, rows: array<int, array<string, mixed>>} */
     public function getList(string $type, User $viewer): array
@@ -200,7 +200,7 @@ final class StaffService
         $users = [];
         $teamNames = [];
 
-        if ($viewer->isAdmin()) {
+        if ($this->policy->staffLevel($viewer) === 'all') {
             $collection = $this->entityManager
                 ->getRDBRepository(User::ENTITY_TYPE)
                 ->where(['isActive' => true, 'smAccountType' => $accountType])
@@ -257,7 +257,7 @@ final class StaffService
     {
         $this->assertViewerRole($viewer);
 
-        if ($viewer->isAdmin()) {
+        if ($this->policy->staffLevel($viewer) === 'all') {
             $user = $this->entityManager->getEntityById(User::ENTITY_TYPE, $id);
 
             if (
@@ -283,8 +283,8 @@ final class StaffService
 
     private function assertViewerRole(User $viewer): void
     {
-        if (!$viewer->isAdmin() && $viewer->get('smAccountType') !== 'ProducerAdmin') {
-            throw new Forbidden('Only a producer or administrator can access staff profiles.');
+        if ($this->policy->staffLevel($viewer) === 'no') {
+            throw new Forbidden('Your role cannot access staff profiles.');
         }
     }
 

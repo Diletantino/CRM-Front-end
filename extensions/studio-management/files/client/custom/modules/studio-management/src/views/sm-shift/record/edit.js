@@ -1,4 +1,4 @@
-define(['views/record/edit'], function (EditRecordView) {
+define(['views/record/edit', 'studio-management:role-policy'], function (EditRecordView, RolePolicy) {
     return class extends EditRecordView {
         saveAndContinueEditingAction = false
         saveAndNewAction = false
@@ -169,7 +169,7 @@ define(['views/record/edit'], function (EditRecordView) {
         }
 
         isManager() {
-            return this.getUser().isAdmin() || this.getUser().get('smAccountType') === 'ProducerAdmin';
+            return RolePolicy.canRevise(this);
         }
 
         leaveToDetail() {

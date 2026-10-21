@@ -8,6 +8,7 @@ use Espo\Modules\StudioManagement\Entities\SmShift;
 use Espo\ORM\Entity;
 use Espo\ORM\EntityManager;
 use Espo\Modules\StudioManagement\Tools\WorkflowError;
+use Espo\Modules\StudioManagement\Tools\RolePolicy;
 use Espo\Modules\StudioManagement\Tools\ModelShiftDefaults;
 use Espo\Modules\StudioManagement\Tools\TeamComposition;
 use Espo\ORM\Repository\Option\SaveOptions;
@@ -17,6 +18,7 @@ class BeforeSave implements BeforeSaveHook
 {
     public function __construct(
         private User $user,
+        private RolePolicy $policy,
         private EntityManager $entityManager,
         private ModelShiftDefaults $defaults,
         private TeamComposition $composition,
@@ -46,14 +48,8 @@ class BeforeSave implements BeforeSaveHook
         }
 
         if ($previousStatus === SmShift::STATUS_OPEN && $entity->isAttributeChanged('siteData')) {
-            if (
-                !$this->user->isAdmin() &&
-                (
-                    !in_array($this->user->get('smAccountType'), ['Operator', 'ProducerAdmin'], true) ||
-                    $entity->get('operatorId') !== $this->user->getId()
-                )
-            ) {
-                throw WorkflowError::forbidden('Только назначенный оператор может менять состояние сайтов.');
+            if (!$this->policy->canOperate($this->user, $entity)) {
+                throw WorkflowError::forbidden('У вашей роли нет права управлять этой сменой.');
             }
             $oldRows = (array) ($entity->getFetched('siteData') ?? []);
             $newRows = (array) ($entity->get('siteData') ?? []);
@@ -137,8 +133,7 @@ class BeforeSave implements BeforeSaveHook
     private function prepareDraft(Entity $entity): void
     {
         $this->composition->applyToDraft($entity);
-        if (!$this->user->isAdmin() && !in_array($this->user->getId(),
-            [$entity->get('operatorId'), $entity->get('producerId')], true)) {
+        if (!$this->policy->canPrepare($this->user, $entity)) {
             throw WorkflowError::forbidden('Создать или изменить предварительную смену могут только её оператор и продюсер.');
         }
         if ($entity->get('startTime')) {

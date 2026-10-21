@@ -19,6 +19,7 @@ class BeforeSave implements BeforeSaveHook
         private RegistrationLinkUrl $registrationLinkUrl,
         private RegistrationToken $registrationToken,
         private User $user,
+        private \Espo\Modules\StudioManagement\Tools\RolePolicy $policy,
     ) {}
 
     public function beforeSave(Entity $entity, SaveOptions $options): void
@@ -27,8 +28,8 @@ class BeforeSave implements BeforeSaveHook
             return;
         }
 
-        if (!$this->user->isAdmin()) {
-            throw WorkflowError::forbidden('Создавать ссылки регистрации может только администратор.');
+        if (!$this->policy->canInvite($this->user)) {
+            throw WorkflowError::forbidden('У вашей роли нет права создавать ссылки регистрации.');
         }
 
         $roleId = $entity->get('targetRoleId');

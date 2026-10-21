@@ -1,4 +1,4 @@
-define(['views/fields/base'], function (BaseFieldView) {
+define(['views/fields/base', 'studio-management:role-policy'], function (BaseFieldView, RolePolicy) {
     return class extends BaseFieldView {
         detailTemplate = 'studio-management:sm-shift/fields/workflow-footer/footer'
         editTemplate = 'studio-management:sm-shift/fields/workflow-footer/footer'
@@ -34,20 +34,19 @@ define(['views/fields/base'], function (BaseFieldView) {
             const data = super.data();
             const status = this.model.get('status');
             const accountType = this.getUser().get('smAccountType');
-            const isAdmin = this.getUser().isAdmin();
-            const isAssignedOperator = ['Operator', 'ProducerAdmin'].includes(accountType) &&
-                this.model.get('operatorId') === this.getUser().id;
-            const isManager = isAdmin || accountType === 'ProducerAdmin';
+            const canEdit = this.getAcl().checkModel(this.model, 'edit');
+            const canOperate = canEdit && RolePolicy.canOperate(this);
+            const isManager = canEdit && RolePolicy.canRevise(this);
 
             return {
                 ...data,
                 showStart: this.mode === 'edit' && !this.model.isNew() && status === 'Draft' &&
                     this.model.studioWorkflowMode === 'start' &&
-                    (isAssignedOperator || isAdmin),
+                    canOperate,
                 showFinish: this.mode === 'detail' && status === 'Open' &&
-                    (isAssignedOperator || isAdmin),
+                    canOperate,
                 showComplete: this.mode === 'edit' && status === 'Counting' &&
-                    (isAssignedOperator || isAdmin),
+                    canOperate,
                 showRevision: this.mode === 'edit' && status === 'Closed' && isManager,
             };
         }

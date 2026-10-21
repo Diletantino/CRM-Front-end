@@ -61,8 +61,8 @@ async function cleanup(fixtures) {
             roles[type] = await create('Role', {name: 'Invite UI ' + type + ' ' + suffix, smAccountType: type});
         }
         roles.Untyped = await create('Role', {name: 'Invite UI Untyped ' + suffix});
-        const availableRoles = await request('Role?' + new URLSearchParams({
-            maxSize: '100', select: 'id,name,smAccountType',
+        const availableRoles = await request('StudioManagement/registrationRoles?' + new URLSearchParams({
+            maxSize: '100', select: 'id,name,smAccountType', q: suffix,
         }));
         assert.equal(availableRoles.status, 200);
         assert(Object.values(roles).every(role => availableRoles.data.list.some(item => item.id === role.id)));

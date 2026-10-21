@@ -1,0 +1,33 @@
+{
+  "mandatory": {
+    "scopeLevel": {
+      "Role": "SmRoleAdministration",
+      "SmCredits": true
+    }
+  },
+  "valuePermissionList": [
+    "__APPEND__",
+    "smShiftPreparePermission",
+    "smShiftOperatePermission",
+    "smShiftRevisePermission",
+    "smStaffAccessPermission",
+    "smAnalyticsAccessPermission",
+    "smInvitationsPermission"
+  ],
+  "valuePermissionHighestLevels": {
+    "smShiftPreparePermission": "all",
+    "smShiftOperatePermission": "all",
+    "smShiftRevisePermission": "all",
+    "smStaffAccessPermission": "all",
+    "smAnalyticsAccessPermission": "all",
+    "smInvitationsPermission": "yes"
+  },
+  "permissionsStrictDefaults": {
+    "smShiftPreparePermission": "not-set",
+    "smShiftOperatePermission": "not-set",
+    "smShiftRevisePermission": "not-set",
+    "smStaffAccessPermission": "not-set",
+    "smAnalyticsAccessPermission": "not-set",
+    "smInvitationsPermission": "not-set"
+  }
+}

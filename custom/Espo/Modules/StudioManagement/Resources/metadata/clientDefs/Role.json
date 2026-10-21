@@ -1,7 +1,21 @@
 {
   "recordViews": {
     "detail": "studio-management:views/role/record/detail",
-    "edit": "studio-management:views/role/record/edit"
+    "edit": "studio-management:views/role/record/edit",
+    "editQuick": "studio-management:views/role/record/edit"
   },
-  "additionalRecordFields": ["smSharePercent", "smAccountType"]
+  "additionalRecordFields": [
+    "smSharePercent",
+    "smAccountType",
+    "smShiftPreparePermission",
+    "smShiftOperatePermission",
+    "smShiftRevisePermission",
+    "smStaffAccessPermission",
+    "smAnalyticsAccessPermission",
+    "smInvitationsPermission"
+  ],
+  "controller": "studio-management:controllers/role",
+  "views": {
+    "list": "studio-management:views/role/list"
+  }
 }

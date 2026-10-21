@@ -13,7 +13,7 @@ use Espo\ORM\EntityManager;
 
 final class AnalyticsService
 {
-    public function __construct(private EntityManager $entityManager) {}
+    public function __construct(private EntityManager $entityManager, private RolePolicy $policy) {}
 
     public function get(string $fromRaw, string $toRaw, User $user): array
     {
@@ -37,16 +37,27 @@ final class AnalyticsService
             'closedAt<' => $to->format('Y-m-d H:i:s'),
         ];
 
-        // Business visibility is enforced in addition to Espo ACL. A broad role
-        // configuration must never expose another employee's financial history.
-        if (!$user->isAdmin()) {
-            match ($user->get('smAccountType')) {
-                'ProducerAdmin' => $where['producerId'] = $user->getId(),
-                'Model' => $where['modelId'] = $user->getId(),
-                'Operator' => $where['operatorId'] = $user->getId(),
-                'TechnicalDirector' => null,
-                default => $where['id'] = '__no_access__',
-            };
+        $legacy = match ($user->get('smAccountType')) {
+            'ProducerAdmin' => 'team',
+            'Model', 'Operator' => 'own',
+            'TechnicalDirector' => 'all',
+            default => 'no',
+        };
+        $configured = $this->policy->level($user, 'smAnalyticsAccess', 'legacy');
+        if ($configured === 'no') {
+            throw new \Espo\Core\Exceptions\Forbidden('Your role cannot access analytics.');
+        }
+        $level = $configured === 'legacy' ? $legacy : $configured;
+        if ($level === 'team') {
+            $where['producerId'] = $user->getId();
+        } elseif ($level === 'own') {
+            $where['OR'] = [
+                ['modelId' => $user->getId()],
+                ['operatorId' => $user->getId()],
+                ['producerId' => $user->getId()],
+            ];
+        } elseif ($level !== 'all') {
+            $where['id'] = '__no_access__';
         }
 
         $query = $this->entityManager

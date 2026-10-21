@@ -1,0 +1,9 @@
+{
+  "items": {
+    "studioCredits": {
+      "view": "studio-management:views/site/credits-item",
+      "class": "studio-credits-item",
+      "order": -100
+    }
+  }
+}

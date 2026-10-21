@@ -75,7 +75,7 @@ HTTP-тест проверяет также персональный вход о
   - Сервер проверяет существование выбранной роли, но не требует совпадения её служебного типа с типом создаваемого аккаунта.
 - Проверки: `node extensions/studio-management/tests/RegistrationLinkValidationHttpTest.cjs` (только локальная тестовая установка с `.env`); существующие клиентские и PHP-регрессии также дополнены. Опция `--ui-fixture` оставляет тестовые роли для ручной проверки, `--cleanup` мягко удаляет только эти роли.
 
-An administrator creates a **Registration Link** record and independently chooses one of five staff account types (Model, Operator, Producer, Technical Director, Recruiter), an ACL role, optional recruiter, and expiry. Non-administrators cannot create or list account links. EspoCRM generates a cryptographically random 192-bit token encoded as exactly 32 URL-safe characters and a copyable public URL. The secret is placed directly after `#`: URL fragments are not sent in HTTP requests or Referer headers, and the client removes it from the address bar immediately after placing it in same-tab session storage. Previously issued 64-character tokens, `#access=...` links and old `?token=` links remain accepted; query and fragment secrets are removed from the address bar immediately. Before redemption, the URL opens the registration form, validates email/name/password on the server, assigns the preset role and recruiter, and consumes the registration step transactionally. A unique redemption marker prevents concurrent double use.
+An administrator creates a **Registration Link** record and independently chooses one of five staff account types (Model, Operator, Producer, Technical Director, Recruiter), an ACL role, optional recruiter, and expiry. By default, non-administrators cannot create or list account links. An explicit invitation-management grant plus native link CRUD ACL can delegate this power to any account type. EspoCRM generates a cryptographically random 192-bit token encoded as exactly 32 URL-safe characters and a copyable public URL. The secret is placed directly after `#`: URL fragments are not sent in HTTP requests or Referer headers, and the client removes it from the address bar immediately after placing it in same-tab session storage. Previously issued 64-character tokens, `#access=...` links and old `?token=` links remain accepted; query and fragment secrets are removed from the address bar immediately. Before redemption, the URL opens the registration form, validates email/name/password on the server, assigns the preset role and recruiter, and consumes the registration step transactionally. A unique redemption marker prevents concurrent double use.
 
 After registration the same URL becomes that user's only password-login page. It displays the account login as read-only, accepts the password, and sends the link token in a dedicated header. A server-side authentication hook verifies that the token belongs to exactly that user; hiding the standard form is not the security boundary. Existing session tokens continue to work until logout or expiry. Deleting the Registration Link blocks future password logins through it.
 
@@ -87,7 +87,7 @@ The **Studio Analytics** tab offers today/week/month and custom date filters. Pr
 
 ## Model and operator profiles
 
-The **Models** and **Operators** tabs are available to producer/admin roles. Producers only receive active employees from teams assigned to them; administrators receive all active studio employees. The server applies this restriction to list, profile, and comment endpoints.
+The **Models** and **Operators** tabs preserve producer/admin visibility by default. Explicit Studio permissions can grant access to any account type; native section and User permissions are also required. Producers using legacy defaults see their production, while an explicit all-records grant covers the studio.
 
 Each list contains the requested employment dates, current/previous week figures, last shift, avatar, team/contact data, and a direct edit action. The standard User profile contains biography, site access notes, photos, document scans, chronological comments, the latest 100 completed shifts, and a personal-income chart grouped by payout date. Native EspoCRM attachment fields provide upload, removal, preview, and full-size opening.
 
@@ -98,8 +98,41 @@ Each list contains the requested employment dates, current/previous week figures
 - Passwords must be at least 10 characters and contain lower-case, upper-case, and numeric characters, in addition to EspoCRM's configured strength policy. They use EspoCRM's bcrypt hash service.
 - New invite tokens contain 192 bits of randomness (32 URL-safe characters); previously issued 256-bit hex tokens remain valid. Both invitation lookup and password login compare secrets exactly using constant-time comparison after the indexed database lookup, independently of case-insensitive database collations. Registration is expiring and single-use; after redemption the same token becomes the account-bound login link.
 - Site rows and screenshot IDs are validated on the backend and have strict count and length limits.
-- Start/finish actions are restricted to the assigned operator (or an administrator). Completed-shift corrections are restricted to the team producer (or an administrator).
-- Staff lists, profiles, and comments are restricted on the backend to the owning producer or an administrator.
+- Start/finish and closed-shift correction checks use role-configurable Studio permissions in addition to native record ACL. Unconfigured roles retain the original operator/producer restrictions.
+- Staff list/profile/comment endpoints enforce configured Studio permissions on the backend; changing only frontend visibility never grants server access.
 - Financial calculations use integer cents and fixed-point percentage units.
 
 For internet-facing deployments, enable HTTPS and apply reverse-proxy rate limiting to `/api/v1/StudioManagement/invitation`, `/api/v1/StudioManagement/register`, and `/api/v1/App/user`. Configure the reverse proxy so that only it can reach the CRM container and make it overwrite the forwarded client-IP header before changing `CRM_IP_ADDRESS_SERVER_PARAM` to that header. Administrator sessions are checked against the configured host/IP policy on every authenticated request, not only when the password is entered.
+
+## Credits и юридические уведомления (22.10.2026)
+
+- Раздел Credits доступен всем вошедшим пользователям, независимо от бизнес-прав роли. Он содержит указание авторства EspoCRM и сведения об изменённой версии onlineCRM. По запросу владельца разделы лицензии, гарантий и исходного кода убраны со страницы; неизменённый текст AGPL сохранён в `client/custom/modules/studio-management/legal/AGPL-3.0.txt` и `LICENSE.txt`.
+- На широком экране настоящее штатное уведомление «© 2026 EspoCRM, Inc.» отображается рядом с Credits в верхней навигации. Его содержимое, ссылка и проверки ядра не изменены. На узком экране или при недоступной навигации остаётся обычное видимое уведомление снизу; после выхода из аккаунта восстанавливается штатное расположение.
+- При сетевом размещении оператору отдельно необходимо предложить пользователям соответствующие исходники реально запущенной версии (§13 AGPL). Ссылка на исходный EspoCRM не заменяет код изменений onlineCRM. Этот экран не является юридическим заключением и не отменяет прочих условий лицензии.
+- Проверка: `node extensions/studio-management/tests/CreditsClientTest.cjs`.
+
+## Динамические роли (22.10.2026)
+
+- «Роли → Создать роль»: произвольные названия и количество ролей, поиск и штатная пагинация.
+- Тип аккаунта — бизнес-категория для состава группы и выплат, не ограничение выдачи ACL.
+- Панель «Права студии»: подготовка, запуск/подсчёт и корректировка смен, сотрудники, аналитика, ссылки регистрации.
+- «Как раньше» сохраняет прежние правила; явные уровни «Все записи», «Свой продакшен», «Свои смены», «Запрещено» их переопределяют. Дополнительно задайте штатную матрицу прав разделов/полей (например, изменение Смен).
+- Несколько ролей объединяются по штатному правилу EspoCRM: побеждает наиболее разрешающий уровень. «Запрещено» в одной роли не отменяет разрешение другой.
+- В матрице разделов есть «Управление ролями (полный доступ)»: опасное делегируемое право создавать и менять любые роли, независимо от типа аккаунта.
+- Управление ссылками регистрации тоже опасно: можно выдавать любые роли. Каталог приглашения возвращает только ID/названия и не открывает редактирование ролей.
+- Список выбора роли теперь открывает поиск с пагинацией, а не только первые 20 результатов автодополнения.
+- Права сервера обновляются на следующих запросах действующей сессии. Для обновления уже нарисованных кнопок перезагрузите страницу.
+- Вкладка браузера использует onlineCRM и прозрачный значок. Видимая подпись EspoCRM сохранена согласно лицензии.
+- Исправлены гонки записи state.php и чтения очищаемого ACL-кеша при параллельном сохранении ролей, через расширения модуля без изменения ядра.
+
+Проверки (только отдельная localhost-база):
+
+```sh
+node extensions/studio-management/tests/DynamicRolesClientTest.cjs
+node extensions/studio-management/tests/DynamicRolesHttpTest.cjs
+docker compose cp extensions/studio-management/tests/CleanupDynamicRoles.php crm:/tmp/CleanupDynamicRoles.php
+docker compose cp data/tmp/dynamic-roles-fixtures.json crm:/tmp/dynamic-roles-fixtures.json
+docker compose exec -T crm php /tmp/CleanupDynamicRoles.php
+```
+
+HTTP-тест создаёт 400 ролей, проверяет параллельное сохранение, поиск/страницы, делегированное управление ролями, приглашения, все пять типов аккаунтов, реальный цикл смены, выдачу и отзыв прав. Фикстуры остаются до явной мягкой очистки указанной командой.

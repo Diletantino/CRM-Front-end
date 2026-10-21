@@ -3,6 +3,7 @@
 namespace Espo\Modules\StudioManagement\Api;
 
 use Espo\Core\Acl;
+use Espo\Modules\StudioManagement\Tools\RolePolicy;
 use Espo\Core\Api\Action;
 use Espo\Core\Api\Request;
 use Espo\Core\Api\Response;
@@ -19,6 +20,7 @@ final class GetModelShiftDefaults implements Action
         private EntityManager $entityManager,
         private User $user,
         private Acl $acl,
+        private RolePolicy $policy,
         private ModelShiftDefaults $defaults,
     ) {}
 
@@ -28,27 +30,21 @@ final class GetModelShiftDefaults implements Action
         if (!$model || !$model->get('isActive') || $model->get('smAccountType') !== 'Model') {
             throw new NotFound();
         }
-        $allowed = $this->user->isAdmin();
+        $allowed = $this->policy->level($this->user, 'smShiftPrepare', 'own') === 'all' &&
+            ($this->acl->checkScope('SmShift', 'create') || $this->acl->checkScope('SmShift', 'edit'));
         $shiftId = $request->getQueryParam('shiftId');
         if (!$allowed && $shiftId) {
             $shift = $this->entityManager->getEntityById('SmShift', $shiftId);
-            $team = $shift && $shift->get('teamId')
-                ? $this->entityManager->getEntityById('Team', $shift->get('teamId')) : null;
             $allowed = $shift && $shift->get('modelId') === $model->getId() &&
                 $shift->get('status') === 'Draft' && $this->acl->checkEntityEdit($shift) &&
-                ($shift->get('operatorId') === $this->user->getId() ||
-                    ($this->user->get('smAccountType') === 'ProducerAdmin' &&
-                        $team && $team->get('smProducerId') === $this->user->getId()));
+                $this->policy->canPrepare($this->user, $shift);
         } elseif (!$allowed && $this->acl->checkScope('SmShift', 'create')) {
             $teams = $this->entityManager->getRDBRepository('User')->getRelation($model, 'teams')->find();
             foreach ($teams as $team) {
-                if ($team->get('smProducerId') === $this->user->getId()) {
-                    $allowed = true;
-                    break;
-                }
-                if ($this->user->get('smAccountType') === 'Operator' &&
-                    $this->entityManager->getRDBRepository('Team')->getRelation($team, 'users')
-                        ->where(['id' => $this->user->getId()])->findOne()) {
+                $draft = $this->entityManager->getNewEntity('SmShift');
+                $draft->set(['operatorId' => $team->get('smOperatorId'),
+                    'producerId' => $team->get('smProducerId')]);
+                if ($this->acl->checkEntityRead($team) && $this->policy->canPrepare($this->user, $draft)) {
                     $allowed = true;
                     break;
                 }

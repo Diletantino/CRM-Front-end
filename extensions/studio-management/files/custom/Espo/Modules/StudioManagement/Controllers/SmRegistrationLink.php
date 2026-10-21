@@ -8,6 +8,7 @@ class SmRegistrationLink extends Record
 {
     protected function checkAccess(): bool
     {
-        return $this->user->isAdmin();
+        return $this->injectableFactory->create(\Espo\Modules\StudioManagement\Tools\RolePolicy::class)
+            ->canInvite($this->user);
     }
 }

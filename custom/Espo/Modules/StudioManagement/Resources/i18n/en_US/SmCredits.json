@@ -1,0 +1,17 @@
+{
+  "labels": {
+    "Attribution": "Authors and project origin",
+    "Based on EspoCRM": "onlineCRM is based on EspoCRM, an open-source CRM.",
+    "Modified version": "onlineCRM is a modified version of EspoCRM with a separately customized interface and studio-management module. It is not an official product of EspoCRM, Inc.",
+    "License": "License",
+    "or later": "or any later version",
+    "License rights": "You may use, study, modify and redistribute the program under the AGPL. EspoCRM attribution and legal notices are retained.",
+    "Read license": "Full license text",
+    "Official license": "EspoCRM license page",
+    "Warranty": "Disclaimer of warranty",
+    "No warranty": "The program is provided without warranty to the extent permitted by applicable law, including warranties of fitness for a particular purpose. See sections 15–17 of the license for the full warranty and liability terms.",
+    "Source code": "Source code",
+    "Upstream source": "EspoCRM source code",
+    "Corresponding source": "When deploying a modified program over a network, the operator must offer its users the Corresponding Source of the version actually running, under section 13 of the AGPL. The upstream EspoCRM link above does not replace the source of onlineCRM modifications."
+  }
+}

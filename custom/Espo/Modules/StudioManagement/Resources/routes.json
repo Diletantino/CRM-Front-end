@@ -1,5 +1,10 @@
 [
   {
+    "route": "/StudioManagement/registrationRoles",
+    "method": "get",
+    "actionClassName": "Espo\\Modules\\StudioManagement\\Api\\GetRegistrationRoles"
+  },
+  {
     "route": "/StudioManagement/teams/:id/shiftDefaults",
     "method": "get",
     "actionClassName": "Espo\\Modules\\StudioManagement\\Api\\GetTeamShiftDefaults"

@@ -1,19 +1,25 @@
 {
   "scopeNames": {
+    "SmRoleAdministration": "Role administration (full access)",
     "SmShift": "Studio Shift",
     "SmModels": "Models",
     "SmOperators": "Operators",
     "SmShiftFinancialSnapshot": "Financial Snapshot",
     "SmRegistrationLink": "Registration Link",
-    "SmAnalytics": "Studio Analytics"
+    "SmAnalytics": "Studio Analytics",
+    "SmCredits": "Credits"
   },
   "scopeNamesPlural": {
+    "SmRoleAdministration": "Role administration (full access)",
     "SmShift": "Studio Shifts",
     "SmModels": "Models",
     "SmOperators": "Operators",
     "SmShiftFinancialSnapshot": "Financial Snapshots",
     "SmRegistrationLink": "Registration Links",
-    "SmAnalytics": "Studio Analytics"
+    "SmAnalytics": "Studio Analytics",
+    "SmCredits": "Credits"
   },
-  "themes": {"StudioDark": "Studio Dark"}
+  "themes": {
+    "StudioDark": "Studio Dark"
+  }
 }

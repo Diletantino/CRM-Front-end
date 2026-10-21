@@ -1,4 +1,4 @@
-define(['views/fields/base'], function (BaseFieldView) {
+define(['views/fields/base', 'studio-management:role-policy'], function (BaseFieldView, RolePolicy) {
     return class extends BaseFieldView {
         listTemplate = 'studio-management:sm-shift/fields/workflow-actions/list'
         detailTemplate = 'studio-management:sm-shift/fields/workflow-actions/list'
@@ -7,18 +7,16 @@ define(['views/fields/base'], function (BaseFieldView) {
             const data = super.data();
             const status = this.model.get('status');
             const accountType = this.getUser().get('smAccountType');
-            const isAdmin = this.getUser().isAdmin();
-            const isAssignedOperator = ['Operator', 'ProducerAdmin'].includes(accountType) &&
-                this.model.get('operatorId') === this.getUser().id;
-            const isManager = isAdmin || accountType === 'ProducerAdmin';
+            const canOperate = RolePolicy.canOperate(this);
+            const isManager = status === 'Draft' ? RolePolicy.canPrepare(this) : RolePolicy.canRevise(this);
             const canEdit = this.getAcl().checkModel(this.model, 'edit');
 
             return {
                 ...data,
                 id: this.model.id,
-                showStart: canEdit && (isAssignedOperator || isAdmin) && status === 'Draft',
-                showFinish: canEdit && (isAssignedOperator || isAdmin) && status === 'Open',
-                showCalculation: canEdit && (isAssignedOperator || isAdmin) && status === 'Counting',
+                showStart: canEdit && canOperate && status === 'Draft',
+                showFinish: canEdit && canOperate && status === 'Open',
+                showCalculation: canEdit && canOperate && status === 'Counting',
                 showEdit: canEdit && isManager && ['Draft', 'Closed'].includes(status),
                 editMode: status === 'Closed' ? 'revise' : '',
                 operatorCompleted: accountType === 'Operator' && status === 'Closed',

@@ -3,6 +3,7 @@
 namespace Espo\Modules\StudioManagement\Api;
 
 use Espo\Core\Acl;
+use Espo\Modules\StudioManagement\Tools\RolePolicy;
 use Espo\Core\Api\Action;
 use Espo\Core\Api\Request;
 use Espo\Core\Api\Response;
@@ -19,6 +20,7 @@ final class PostOpenShift implements Action
 {
     public function __construct(
         private Acl $acl,
+        private RolePolicy $policy,
         private ShiftService $service,
         private EntityManager $entityManager,
         private User $user,
@@ -42,14 +44,8 @@ final class PostOpenShift implements Action
             throw new Forbidden();
         }
 
-        if (
-            !$this->user->isAdmin() &&
-            (
-                !in_array($this->user->get('smAccountType'), ['Operator', 'ProducerAdmin'], true) ||
-                $shift->get('operatorId') !== $this->user->getId()
-            )
-        ) {
-            throw new Forbidden('Only the assigned operator can start this shift.');
+        if (!$this->policy->canOperate($this->user, $shift)) {
+            throw new Forbidden('Your role cannot operate this shift.');
         }
 
         return ResponseComposer::json($this->service->open($id)->getValueMap());

@@ -1,8 +1,17 @@
 {
   "fields": {
     "smAccountType": {
-      "type": "enum", "options": ["", "Model", "Operator", "ProducerAdmin", "TechnicalDirector", "Recruiter"],
-      "default": "", "tooltip": true
+      "type": "enum",
+      "options": [
+        "",
+        "Model",
+        "Operator",
+        "ProducerAdmin",
+        "TechnicalDirector",
+        "Recruiter"
+      ],
+      "default": "",
+      "tooltip": true
     },
     "smSharePercent": {
       "type": "decimal",
@@ -14,6 +23,90 @@
       "default": 0,
       "audited": true,
       "tooltip": true
+    },
+    "smShiftPreparePermission": {
+      "type": "enum",
+      "options": [
+        "not-set",
+        "all",
+        "own",
+        "no"
+      ],
+      "default": "not-set",
+      "tooltip": true,
+      "translation": "Role.options.studioLevel",
+      "view": "views/role/fields/permission",
+      "audited": true
+    },
+    "smShiftOperatePermission": {
+      "type": "enum",
+      "options": [
+        "not-set",
+        "all",
+        "own",
+        "no"
+      ],
+      "default": "not-set",
+      "tooltip": true,
+      "translation": "Role.options.studioLevel",
+      "view": "views/role/fields/permission",
+      "audited": true
+    },
+    "smShiftRevisePermission": {
+      "type": "enum",
+      "options": [
+        "not-set",
+        "all",
+        "team",
+        "no"
+      ],
+      "default": "not-set",
+      "tooltip": true,
+      "translation": "Role.options.studioLevel",
+      "view": "views/role/fields/permission",
+      "audited": true
+    },
+    "smStaffAccessPermission": {
+      "type": "enum",
+      "options": [
+        "not-set",
+        "all",
+        "team",
+        "no"
+      ],
+      "default": "not-set",
+      "tooltip": true,
+      "translation": "Role.options.studioLevel",
+      "view": "views/role/fields/permission",
+      "audited": true
+    },
+    "smAnalyticsAccessPermission": {
+      "type": "enum",
+      "options": [
+        "not-set",
+        "all",
+        "team",
+        "own",
+        "no"
+      ],
+      "default": "not-set",
+      "tooltip": true,
+      "translation": "Role.options.studioLevel",
+      "view": "views/role/fields/permission",
+      "audited": true
+    },
+    "smInvitationsPermission": {
+      "type": "enum",
+      "options": [
+        "not-set",
+        "yes",
+        "no"
+      ],
+      "default": "not-set",
+      "tooltip": true,
+      "translation": "Role.options.studioLevel",
+      "view": "views/role/fields/permission",
+      "audited": true
     }
   }
 }

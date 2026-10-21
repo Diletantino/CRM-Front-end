@@ -1,12 +1,9 @@
-define(['views/record/row-actions/default'], function (DefaultRowActionsView) {
+define(['views/record/row-actions/default', 'studio-management:role-policy'], function (DefaultRowActionsView, RolePolicy) {
     return class extends DefaultRowActionsView {
         getActionList() {
             const status = this.model.get('status');
-            const accountType = this.getUser().get('smAccountType');
-            const isAdmin = this.getUser().isAdmin();
-            const isAssignedOperator = ['Operator', 'ProducerAdmin'].includes(accountType) &&
-                this.model.get('operatorId') === this.getUser().id;
-            const isManager = isAdmin || accountType === 'ProducerAdmin';
+            const canOperate = RolePolicy.canOperate(this);
+            const isManager = status === 'Draft' ? RolePolicy.canPrepare(this) : RolePolicy.canRevise(this);
             const list = [{
                 label: 'View',
                 data: {id: this.model.id},
@@ -15,7 +12,7 @@ define(['views/record/row-actions/default'], function (DefaultRowActionsView) {
                 iconClass: 'fas fa-expand',
             }];
 
-            if ((isAssignedOperator || isAdmin) && status === 'Draft' && this.options.acl.edit) {
+            if (canOperate && status === 'Draft' && this.options.acl.edit) {
                 list.push({
                     label: 'Start Shift',
                     data: {id: this.model.id},
@@ -25,7 +22,7 @@ define(['views/record/row-actions/default'], function (DefaultRowActionsView) {
                 });
             }
 
-            if ((isAssignedOperator || isAdmin) && status === 'Open' && this.options.acl.edit) {
+            if (canOperate && status === 'Open' && this.options.acl.edit) {
                 list.push({
                     action: 'finishShift',
                     label: 'Finish Shift',
@@ -35,7 +32,7 @@ define(['views/record/row-actions/default'], function (DefaultRowActionsView) {
                 });
             }
 
-            if ((isAssignedOperator || isAdmin) && status === 'Counting' && this.options.acl.edit) {
+            if (canOperate && status === 'Counting' && this.options.acl.edit) {
                 list.push({
                     label: 'Complete Calculation',
                     data: {id: this.model.id},

@@ -1,1 +1,33 @@
-{"fields": {"smSharePercent": "Studio Share Percent"}, "tooltips": {"smSharePercent": "Percentage of shift gross paid to a user assigned this role. If several roles are assigned, the highest percentage is used."}}
+{
+  "fields": {
+    "smSharePercent": "Studio Share Percent",
+    "smShiftPreparePermission": "Prepare shifts",
+    "smShiftOperatePermission": "Run and calculate shifts",
+    "smShiftRevisePermission": "Revise closed shifts",
+    "smStaffAccessPermission": "View staff",
+    "smAnalyticsAccessPermission": "View analytics",
+    "smInvitationsPermission": "Manage registration links"
+  },
+  "tooltips": {
+    "smSharePercent": "Percentage of shift gross paid to a user assigned this role. If several roles are assigned, the highest percentage is used.",
+    "smShiftPreparePermission": "Requires shift create/edit ACL. All records permits any readable team.",
+    "smShiftOperatePermission": "Requires shift edit ACL. Own shifts means the operator slot, regardless of account type.",
+    "smShiftRevisePermission": "Requires shift edit ACL. Own production means teams produced by this user.",
+    "smStaffAccessPermission": "Requires staff tab and User read ACL. Own production means teams produced by this user.",
+    "smAnalyticsAccessPermission": "Requires Analytics tab ACL. Own shifts includes model/operator/producer participation.",
+    "smInvitationsPermission": "Sensitive: together with link CRUD ACL, allows inviting with any role, including elevated roles."
+  },
+  "labels": {
+    "Studio Permissions": "Studio permissions"
+  },
+  "options": {
+    "studioLevel": {
+      "not-set": "Legacy account-type rules",
+      "all": "All records",
+      "team": "Own production",
+      "own": "Own shifts",
+      "yes": "Allowed",
+      "no": "Denied"
+    }
+  }
+}

@@ -49,7 +49,7 @@ try {
                 'type' => 'regular', 'isActive' => true, 'smAccountType' => $type,
             ], $extra));
             $em->saveEntity($user);
-            return $user;
+            return $em->getEntityById('User', $user->getId());
         };
         $role = $em->getNewEntity('Role');
         $role->set(['name' => 'Модель', 'smAccountType' => 'Model', 'smSharePercent' => 0]);
@@ -89,9 +89,9 @@ try {
         $response = $factory->create(GetModelShiftDefaults::class)->process($request);
         $defaults = json_decode((string) $response->getBody(), true, flags: JSON_THROW_ON_ERROR);
         $assert($defaults['siteData'][0]['login'] === 'regression', 'Defaults API returns model access to an authorized viewer.');
-        $outsider = $em->getNewEntity('User');
-        $outsider->set(['id' => 'regression-outsider', 'smAccountType' => 'Operator', 'type' => 'regular']);
-        $api = new GetModelShiftDefaults($em, $outsider, $factory->create(Acl::class), $factory->create(ModelShiftDefaults::class));
+        $outsider = $createUser('Operator', ['userName' => 'regression-outsider-' . $suffix]);
+        $api = new GetModelShiftDefaults($em, $outsider, $factory->create(Acl::class),
+            $factory->create(\Espo\Modules\StudioManagement\Tools\RolePolicy::class), $factory->create(ModelShiftDefaults::class));
         try {
             $api->process($request);
             $assert(false, 'An unrelated operator must not receive model credentials.');

@@ -1,4 +1,4 @@
-define(['views/fields/base'], function (BaseFieldView) {
+define(['views/fields/base', 'studio-management:role-policy'], function (BaseFieldView, RolePolicy) {
     return class extends BaseFieldView {
         detailTemplate = 'studio-management:sm-shift/fields/site-data/detail'
         listTemplate = 'studio-management:sm-shift/fields/site-data/detail'
@@ -7,10 +7,8 @@ define(['views/fields/base'], function (BaseFieldView) {
         data() {
             const data = super.data();
             const status = this.model.get('status') || 'Draft';
-            const accountType = this.getUser().get('smAccountType');
-            const isManager = this.getUser().isAdmin() || accountType === 'ProducerAdmin';
-            const isAssignedOperator = ['Operator', 'ProducerAdmin'].includes(accountType) &&
-                this.model.get('operatorId') === this.getUser().id;
+            const isManager = RolePolicy.canRevise(this);
+            const canOperate = RolePolicy.canOperate(this);
             const rows = this.getRows().map((row, index) => ({
                 ...row,
                 index,
@@ -27,7 +25,7 @@ define(['views/fields/base'], function (BaseFieldView) {
                 canEditCredentials: status === 'Draft' || isManager,
                 canEditFinancial: status === 'Counting' || (status === 'Closed' && isManager),
                 canManageState: status === 'Open' &&
-                    (isAssignedOperator || this.getUser().isAdmin()) &&
+                    canOperate &&
                     this.getAcl().checkModel(this.model, 'edit'),
                 canAddRemove: status === 'Draft' || isManager,
             };
