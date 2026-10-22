@@ -1,0 +1,18 @@
+#!/bin/sh
+set -eu
+
+# Runs after the official install/migrate and environment configuration,
+# including the very first boot with empty volumes. Keep JSON values typed.
+bin/command config:set applicationName onlineCRM
+bin/command config:set theme StudioDark
+bin/command config:set themeParams '{"navbar":"side"}' --type=json
+bin/command config:set userThemesDisabled true --type=bool
+bin/command config:set timeFormat 'HH:mm'
+bin/command config:set tabList '["SmShift","SmModels","SmOperators","Team","SmAnalytics","SmRegistrationLink","User","Role","SmCredits"]' --type=json
+bin/command config:set quickCreateList '["SmShift","SmRegistrationLink","User","Team"]' --type=json
+bin/command rebuild >/dev/null
+bin/command studio-sync-staff
+bin/command studio-migrate-registration-links
+bin/command update-app-timestamp >/dev/null
+
+exec "$@"

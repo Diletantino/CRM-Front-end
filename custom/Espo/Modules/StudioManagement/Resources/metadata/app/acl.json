@@ -5,6 +5,17 @@
       "SmCredits": true
     }
   },
+  "adminMandatory": {
+    "scopeLevel": {
+      "Role": {
+        "create": "yes",
+        "read": "all",
+        "edit": "all",
+        "delete": "all",
+        "stream": "all"
+      }
+    }
+  },
   "valuePermissionList": [
     "__APPEND__",
     "smShiftPreparePermission",

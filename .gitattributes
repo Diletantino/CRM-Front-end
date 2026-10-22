@@ -10,6 +10,7 @@
 
 bin/command text eol=lf
 *.sh text eol=lf
+docker/runtime/apache2-studio-bootstrap text eol=lf
 
 .gitattributes text eol=crlf
 .gitignore text eol=crlf

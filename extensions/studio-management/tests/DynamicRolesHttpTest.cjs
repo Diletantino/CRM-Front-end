@@ -81,7 +81,8 @@ async function login(type, role) {
     }
     check(roles.length === 400, 'Create 400 roles');
     const query = encodeURIComponent(prefix + ' catalog');
-    const native = await ok('Role?maxSize=20&offset=380&q=' + query);
+    const native = await ok('Role?maxSize=20&offset=380&orderBy=name&order=asc' +
+        '&whereGroup[0][type]=textFilter&whereGroup[0][value]=' + query);
     check(native.list.length === 20 && native.list[0].name.endsWith('380') && native.list[19].name.endsWith('399'),
         'Native list supports page 20/20 (core may intentionally omit total count)');
     const seen = new Set();

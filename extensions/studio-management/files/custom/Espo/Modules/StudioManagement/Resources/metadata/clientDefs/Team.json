@@ -1,4 +1,5 @@
 {
+  "controller": "studio-management:controllers/team",
   "additionalRecordFields": [
     "smProducer",
     "smOperator",
