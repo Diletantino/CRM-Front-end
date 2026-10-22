@@ -1,0 +1,5 @@
+# Local UI customization only. Do not use this override in production.
+services:
+  crm:
+    environment:
+      ESPOCRM_CONFIG_USE_CACHE: "false"

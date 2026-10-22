@@ -89,6 +89,11 @@ define(['view'], function (View) {
             return /^[A-Za-z0-9_-]{32}$/.test(token) || /^[a-f0-9]{64}$/.test(token);
         }
 
+        meetsBasicPasswordRequirements(password) {
+            return Array.from(password).length >= 10 && /[a-z]/.test(password) &&
+                /[A-Z]/.test(password) && /[0-9]/.test(password);
+        }
+
         async submit() {
             const fullName = this.$el.find('[name="fullName"]').val().trim();
             const email = this.$el.find('[name="email"]').val().trim();
@@ -105,6 +110,11 @@ define(['view'], function (View) {
 
             if (password !== passwordConfirm) {
                 $message.text(this.translate('passwordsDoNotMatch', 'messages', 'SmRegistrationLink'));
+                return;
+            }
+
+            if (!this.meetsBasicPasswordRequirements(password)) {
+                $message.text(this.translate('passwordRequirements', 'messages', 'SmRegistrationLink'));
                 return;
             }
 

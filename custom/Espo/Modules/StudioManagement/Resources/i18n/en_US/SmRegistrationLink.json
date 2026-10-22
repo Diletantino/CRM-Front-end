@@ -16,6 +16,7 @@
   "options": {"accountType": {"Model": "Model", "Operator": "Operator", "ProducerAdmin": "Producer", "TechnicalDirector": "Technical Director", "Recruiter": "Recruiter"}},
   "tooltips": {"targetRole": "The role defines access permissions and is selected independently of the account type.", "neverExpires": "When enabled, the link expiration is set to 1 January 2200."},
   "messages": {
+    "passwordRequirements": "Use at least 10 characters, including an uppercase Latin letter (A–Z), a lowercase Latin letter (a–z), and a digit (0–9).",
     "invitationUnavailable": "This invitation is invalid, expired or already used.",
     "allFieldsRequired": "Complete all required fields.",
     "passwordsDoNotMatch": "Passwords do not match.",

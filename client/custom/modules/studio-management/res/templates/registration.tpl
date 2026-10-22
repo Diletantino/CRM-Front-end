@@ -30,8 +30,9 @@
                             <input class="form-control" type="email" name="email" maxlength="254" autocomplete="email">
                         </div>
                         <div class="form-group">
-                            <label>{{translate 'Password'}}</label>
-                            <input class="form-control" type="password" name="password" maxlength="255" autocomplete="new-password">
+                            <label for="registration-password">{{translate 'Password'}}</label>
+                            <input id="registration-password" class="form-control" type="password" name="password" minlength="10" maxlength="255" autocomplete="new-password" aria-describedby="registration-password-requirements">
+                            <p id="registration-password-requirements" class="help-block">{{translate 'passwordRequirements' category='messages' scope='SmRegistrationLink'}}</p>
                         </div>
                         <div class="form-group">
                             <label>{{translate 'Confirm Password' scope='SmRegistrationLink'}}</label>
@@ -41,7 +42,7 @@
                             {{translate 'Register' scope='SmRegistrationLink'}}
                         </button>
                     </div>
-                    <p class="registration-message" style="margin-top: 15px"></p>
+                    <p class="registration-message" role="alert" style="margin-top: 15px"></p>
                     {{else}}
                         {{#if isLogin}}
                     <p class="text-muted">

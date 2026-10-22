@@ -19,3 +19,13 @@ client/custom/*
 client/custom/modules/*
 !client/custom/modules/studio-management
 !client/custom/modules/studio-management/**
+!client/res
+client/res/*
+!client/res/templates
+client/res/templates/*
+!client/res/templates/site
+client/res/templates/site/*
+!client/res/templates/site/footer.tpl
+!html
+html/*
+!html/main.html

@@ -48,6 +48,7 @@ services:
       ESPOCRM_DEFAULT_CURRENCY: ${CRM_DEFAULT_CURRENCY:-USD}
       ESPOCRM_CONFIG_THEME: StudioDark
       ESPOCRM_CONFIG_APPLICATION_NAME: onlineCRM
+      ESPOCRM_CONFIG_USE_CACHE: ${CRM_USE_CACHE:-true}
       ESPOCRM_CONFIG_USER_THEMES_DISABLED: "true"
       ESPOCRM_CONFIG_STUDIO_ADMIN_HOSTS: ${CRM_ADMIN_HOSTS:-localhost,127.0.0.1}
       ESPOCRM_CONFIG_STUDIO_ADMIN_ALLOWED_IPS: ${CRM_ADMIN_ALLOWED_IPS:-127.0.0.1,::1,172.16.0.0/12}
@@ -60,7 +61,22 @@ services:
       ESPOCRM_CONFIG_PASSWORD_STRENGTH_BOTH_CASES: ${CRM_PASSWORD_BOTH_CASES:-true}
       ESPOCRM_CONFIG_PASSWORD_RECOVERY_FOR_ADMIN_DISABLED: ${CRM_ADMIN_PASSWORD_RECOVERY_DISABLED:-true}
       ESPOCRM_CONFIG_ADMIN_UPGRADE_DISABLED: ${CRM_ADMIN_UPGRADE_DISABLED:-true}
-    volumes: *crm-volumes
+    volumes:
+      - crm-data:/var/www/html/data
+      - crm-custom:/var/www/html/custom
+      - crm-client-custom:/var/www/html/client/custom
+      - type: bind
+        source: ./client/res/templates/site/footer.tpl
+        target: /var/www/html/client/res/templates/site/footer.tpl
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ./html/main.html
+        target: /var/www/html/html/main.html
+        read_only: true
+        bind:
+          create_host_path: false
     depends_on:
       db:
         condition: service_healthy

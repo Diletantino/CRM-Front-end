@@ -6,10 +6,9 @@ define(['views/site/navbar/item'], function (NavbarItemView) {
             this.positionCredit = () => this.updateCreditPosition();
             window.addEventListener('resize', this.positionCredit);
             this.resizeObserver = new ResizeObserver(this.positionCredit);
-            this.resizeObserver.observe(this.element);
-            const navbar = document.getElementById('navbar');
-            if (navbar) {
-                this.resizeObserver.observe(navbar);
+            const sidebar = document.querySelector('#navbar .navbar-left-container');
+            if (sidebar) {
+                this.resizeObserver.observe(sidebar);
             }
             this.bodyObserver = new MutationObserver(this.positionCredit);
             this.bodyObserver.observe(document.body, {
@@ -20,25 +19,34 @@ define(['views/site/navbar/item'], function (NavbarItemView) {
         }
 
         updateCreditPosition() {
-            // Reposition the real, unchanged native notice. Never hide or duplicate it,
-            // and do not modify EspoCRM's legal-notice checks.
+            // Keep the native notice intact; only position it in the sidebar.
             const footer = document.querySelector('body > footer');
-            const slot = this.element.querySelector('.studio-native-credit-slot');
-            if (!footer || !slot) {
+            if (!footer) {
                 return;
             }
             this.footerElement = footer;
-            const rect = slot.getBoundingClientRect();
-            if (window.innerWidth < 760 || rect.width < 1 || rect.height < 1 ||
-                rect.left < 0 || rect.right > window.innerWidth || rect.top < 0) {
+            const sidebar = document.querySelector('#navbar .navbar-left-container');
+            if (!sidebar || document.body.getAttribute('data-navbar') !== 'side') {
                 this.restoreCredit();
                 return;
             }
-            footer.classList.add('studio-credit-in-navigation');
+            const rect = sidebar.getBoundingClientRect();
+            const minimizer = sidebar.querySelector('.minimizer');
+            const minimizerRect = minimizer?.getBoundingClientRect();
+            const bottom = Math.min(rect.bottom, window.innerHeight,
+                minimizerRect?.height > 0 ? minimizerRect.top : window.innerHeight);
+            const height = 64;
+            if (window.innerWidth < 760 || rect.width < 45 || rect.height < height ||
+                rect.left < 0 || rect.right > window.innerWidth || bottom - height < rect.top) {
+                this.restoreCredit();
+                return;
+            }
+            footer.classList.add('studio-credit-in-sidebar');
+            footer.classList.toggle('studio-credit-compact', rect.width < 100);
             footer.style.setProperty('--studio-credit-left', rect.left + 'px');
-            footer.style.setProperty('--studio-credit-top', rect.top + 'px');
+            footer.style.setProperty('--studio-credit-top', (bottom - height) + 'px');
             footer.style.setProperty('--studio-credit-width', rect.width + 'px');
-            footer.style.setProperty('--studio-credit-height', rect.height + 'px');
+            footer.style.setProperty('--studio-credit-height', height + 'px');
         }
 
         restoreCredit() {
@@ -46,7 +54,8 @@ define(['views/site/navbar/item'], function (NavbarItemView) {
             if (!footer) {
                 return;
             }
-            footer.classList.remove('studio-credit-in-navigation');
+            footer.classList.remove('studio-credit-in-sidebar');
+            footer.classList.remove('studio-credit-compact');
             for (const name of ['left', 'top', 'width', 'height']) {
                 footer.style.removeProperty('--studio-credit-' + name);
             }
