@@ -1,5 +1,5 @@
 <!doctype html>
-<html dir="{{direction}}">
+<html>
     <head>
         <title>{{applicationName}}</title>
         <script type="application/json" data-name="loader-params">{{loaderParams}}</script>{{scriptsHtml}}
@@ -20,7 +20,8 @@
             };
 
             const init = () => {
-                require('{{appClientClassName}}', App => {
+                const appClass = '{{appClientClassName}}';
+                require(appClass === 'app' ? 'studio-management:app' : appClass, App => {
                     new App({
                         id: '{{applicationId}}',
                         useCache: {{useCache}},
@@ -32,7 +33,6 @@
                     internalModuleList: {{internalModuleList}},
                     bundledModuleList: {{bundledModuleList}},
                     theme: {{theme}},
-                    useRouter: {{useRouter}},
                 }, app => {
                         loadedApp = app;
 
@@ -52,7 +52,7 @@
             });
         </script>
     </head>
-    <body data-id="{{applicationId}}" data-direction="{{direction}}">
+    <body data-id="{{applicationId}}">
         <div class="container content"></div>
         <footer>
             <p class="credit small">   

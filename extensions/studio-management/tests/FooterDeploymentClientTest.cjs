@@ -61,5 +61,9 @@ for (const target of ['/usr/src/espocrm', '/var/www/html']) {
 }
 eq(read('.dockerignore').includes('!client/res/templates/site/footer.tpl'), true);
 eq(read('.dockerignore').includes('!html/main.html'), true);
+eq(dockerfile.includes('studio-template-files.conf /etc/apache2/conf-enabled/studio-template-files.conf'), true);
+const apacheTemplates = read('docker/runtime/studio-template-files.conf');
+eq(apacheTemplates.includes('EnableMMAP Off'), true);
+eq(apacheTemplates.includes('EnableSendfile Off'), true);
 eq(read('docker/runtime/apache2-studio-bootstrap').includes('config:set themeParams \'{"navbar":"side"}\' --type=json'), true);
 console.log('Footer deployment: ' + checks + ' checks passed.');

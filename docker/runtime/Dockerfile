@@ -9,6 +9,7 @@ COPY --chown=www-data:www-data client/res/templates/site/footer.tpl /usr/src/esp
 COPY --chown=www-data:www-data client/res/templates/site/footer.tpl /var/www/html/client/res/templates/site/footer.tpl
 COPY --chown=www-data:www-data html/main.html /usr/src/espocrm/html/main.html
 COPY --chown=www-data:www-data html/main.html /var/www/html/html/main.html
+COPY --chown=root:root docker/runtime/studio-template-files.conf /etc/apache2/conf-enabled/studio-template-files.conf
 COPY --chmod=755 docker/runtime/studio-entrypoint.sh /usr/local/bin/studio-entrypoint.sh
 COPY --chmod=755 docker/runtime/apache2-studio-bootstrap /usr/local/bin/apache2-studio-bootstrap
 
