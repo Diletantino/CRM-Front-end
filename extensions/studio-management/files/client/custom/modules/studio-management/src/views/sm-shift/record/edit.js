@@ -33,8 +33,10 @@ define(['views/record/edit', 'studio-management:role-policy'], function (EditRec
                     'modelImages',
                     'startTime',
                     'currency',
-                    'description',
                 ].forEach(field => this.setFieldReadOnly(field, true));
+                if (!(status === 'Counting' && params.count)) {
+                    this.setFieldReadOnly('description', true);
+                }
             }
 
             if (!saveButton || this.model.isNew()) {
@@ -143,6 +145,7 @@ define(['views/record/edit', 'studio-management:role-policy'], function (EditRec
                 const response = await Espo.Ajax.postRequest(`SmShift/${this.model.id}/close`, {
                     siteData: this.model.get('siteData') || [],
                     screenshotsIds: this.model.get('screenshotsIds') || [],
+                    comment: this.model.get('description') || '',
                 });
                 this.model.set(response);
                 Espo.Ui.success(this.translate('shiftClosed', 'messages', 'SmShift'));

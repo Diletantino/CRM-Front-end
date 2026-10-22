@@ -3,7 +3,7 @@
     "rows": [
       [{"name": "name"}, {"name": "accountType"}],
       [{"name": "targetRole"}, {"name": "expiresAt"}],
-      [{"name": "recruiter"}, false],
+      [{"name": "recruiter"}, {"name": "neverExpires"}],
       [{"name": "registrationUrl"}],
       [{"name": "token"}],
       [{"name": "isUsed"}, {"name": "usedAt"}],

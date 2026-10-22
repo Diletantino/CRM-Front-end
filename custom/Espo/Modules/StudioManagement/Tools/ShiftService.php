@@ -81,10 +81,16 @@ final class ShiftService
      * @param array<int, mixed> $siteData
      * @param array<int, mixed> $screenshotIds
      */
-    public function close(string $id, array $siteData, array $screenshotIds, User $closedBy): Entity
+    public function close(
+        string $id,
+        array $siteData,
+        array $screenshotIds,
+        string $comment,
+        User $closedBy,
+    ): Entity
     {
         return $this->entityManager->getTransactionManager()->run(
-            function () use ($id, $siteData, $screenshotIds, $closedBy): Entity {
+            function () use ($id, $siteData, $screenshotIds, $comment, $closedBy): Entity {
                 $shift = $this->getShiftForUpdate($id);
 
                 if ($shift->get('status') !== SmShift::STATUS_COUNTING) {
@@ -113,6 +119,7 @@ final class ShiftService
                     'endTime' => $shift->get('endTime') ?: $closedAt,
                     'closedById' => $closedBy->getId(),
                     'screenshotsIds' => $this->normalizeAttachmentIds($screenshotIds),
+                    'description' => $this->normalizeComment($comment),
                 ]));
 
                 $this->entityManager->saveEntity($shift, ['skipBeforeSave' => true]);
@@ -645,6 +652,17 @@ final class ShiftService
         }
 
         return array_values($result);
+    }
+
+    private function normalizeComment(string $value): string
+    {
+        $value = trim($value);
+
+        if (mb_strlen($value) > 5000) {
+            throw WorkflowError::badRequest('Комментарий к смене не должен превышать 5000 символов.');
+        }
+
+        return $value;
     }
 
     /** @param array<int, string> $allowedTypes */

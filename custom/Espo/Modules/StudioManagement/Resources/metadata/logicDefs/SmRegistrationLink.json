@@ -1,0 +1,22 @@
+{
+  "fields": {
+    "expiresAt": {
+      "visible": {
+        "conditionGroup": [
+          {
+            "type": "isFalse",
+            "attribute": "neverExpires"
+          }
+        ]
+      },
+      "readOnly": {
+        "conditionGroup": [
+          {
+            "type": "isTrue",
+            "attribute": "neverExpires"
+          }
+        ]
+      }
+    }
+  }
+}

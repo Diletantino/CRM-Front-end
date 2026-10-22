@@ -11,10 +11,10 @@
     "Go to Login": "Go to Login",
     "Personal Login Description": "This personal link permits login only to the account assigned to it."
   },
-  "fields": {"name": "Name", "token": "Token", "registrationUrl": "Registration URL", "targetRole": "Target Role", "recruiter": "Recruiter", "accountType": "Account Type", "expiresAt": "Expires At", "isUsed": "Used", "usedAt": "Used At", "usedByUser": "Registered User"},
+  "fields": {"name": "Name", "token": "Token", "registrationUrl": "Registration URL", "targetRole": "Target Role", "recruiter": "Recruiter", "accountType": "Account Type", "expiresAt": "Expires At", "neverExpires": "Never expires", "isUsed": "Used", "usedAt": "Used At", "usedByUser": "Registered User"},
   "links": {"targetRole": "Target Role", "recruiter": "Recruiter", "usedByUser": "Registered User"},
   "options": {"accountType": {"Model": "Model", "Operator": "Operator", "ProducerAdmin": "Producer", "TechnicalDirector": "Technical Director", "Recruiter": "Recruiter"}},
-  "tooltips": {"targetRole": "The role defines access permissions and is selected independently of the account type."},
+  "tooltips": {"targetRole": "The role defines access permissions and is selected independently of the account type.", "neverExpires": "When enabled, the link expiration is set to 1 January 2200."},
   "messages": {
     "invitationUnavailable": "This invitation is invalid, expired or already used.",
     "allFieldsRequired": "Complete all required fields.",

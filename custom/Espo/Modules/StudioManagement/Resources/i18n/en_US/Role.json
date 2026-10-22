@@ -18,7 +18,12 @@
     "smInvitationsPermission": "Sensitive: together with link CRUD ACL, allows inviting with any role, including elevated roles."
   },
   "labels": {
+    "Remove All Restrictions": "Remove All Restrictions",
     "Studio Permissions": "Studio permissions"
+  },
+  "messages": {
+    "removeAllRestrictionsConfirmation": "Are you sure? The role will receive the highest available permission for every section, action and field.",
+    "allRestrictionsRemoved": "All restrictions are removed. Save the role to apply the permissions."
   },
   "options": {
     "studioLevel": {

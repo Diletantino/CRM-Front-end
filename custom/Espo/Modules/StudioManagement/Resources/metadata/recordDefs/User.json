@@ -1,4 +1,12 @@
 {
+  "createInputFilterClassNameList": [
+    "__APPEND__",
+    "Espo\\Modules\\StudioManagement\\Classes\\Record\\User\\DelegatedUserNameFilter"
+  ],
+  "updateInputFilterClassNameList": [
+    "__APPEND__",
+    "Espo\\Modules\\StudioManagement\\Classes\\Record\\User\\DelegatedUserNameFilter"
+  ],
   "beforeLinkHookClassNameList": [
     "__APPEND__",
     "Espo\\Modules\\StudioManagement\\Classes\\RecordHooks\\TeamMember"

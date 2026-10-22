@@ -10,9 +10,14 @@
     "smInvitationsPermission": "Управление ссылками регистрации"
   },
   "labels": {
+    "Remove All Restrictions": "Снять все ограничения",
     "Scope Level": "Права на разделы",
     "Field Level": "Права на поля",
     "Studio Permissions": "Права студии"
+  },
+  "messages": {
+    "removeAllRestrictionsConfirmation": "Вы уверены? Роль получит максимально возможные права ко всем разделам, действиям и полям.",
+    "allRestrictionsRemoved": "Все ограничения сняты. Сохраните роль, чтобы применить права."
   },
   "options": {
     "smAccountType": {

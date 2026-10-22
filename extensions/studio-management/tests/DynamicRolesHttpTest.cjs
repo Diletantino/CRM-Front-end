@@ -108,7 +108,8 @@ async function login(type, role) {
     check(edited.name.endsWith('edited') && edited.smShiftOperatePermission === 'all', 'Existing arbitrary role is editable');
     const allAcl = {
         SmShift: {read: 'all', edit: 'all', create: 'yes', delete: 'all'},
-        User: {read: 'all', edit: 'no'}, Team: {read: 'all'},
+        User: {create: 'yes', read: 'all', edit: 'all', delete: 'all', stream: 'all'},
+        Team: {create: 'yes', read: 'all', edit: 'all', delete: 'all', stream: 'all'},
         SmModels: true, SmOperators: true, SmAnalytics: true,
         SmShiftFinancialSnapshot: {read: 'all'},
         SmRegistrationLink: {read: 'all', edit: 'all', create: 'yes', delete: 'all'},
@@ -118,6 +119,7 @@ async function login(type, role) {
     const actors = [];
     for (const type of ['Model', 'Operator', 'ProducerAdmin', 'TechnicalDirector', 'Recruiter']) {
         const role = await create('Role', {name: prefix + ' grants ' + type, smAccountType: 'Model',
+            userPermission: 'all', assignmentPermission: 'all',
             smShiftPreparePermission: 'all', smShiftOperatePermission: 'all', smShiftRevisePermission: 'all',
             smStaffAccessPermission: 'all', smAnalyticsAccessPermission: 'all', smInvitationsPermission: 'yes',
             data: allAcl});
@@ -127,6 +129,29 @@ async function login(type, role) {
         const session = await ok('App/user', 'GET', undefined, actor.headers);
         check(session.user.smAccountType === type, type + ': role type never changes explicit account type');
         check(session.acl.smShiftOperatePermission === 'all', type + ': native ACL map includes grant');
+        check(session.acl.table.Team.create === 'yes', type + ': Team create grant reaches active session');
+        const managedTeam = await create('Team', {name: prefix + ' managed team ' + type}, actor.headers);
+        check(Boolean(managedTeam.id), type + ': delegated Team create permission works on backend');
+        const managedTeamEdit = await ok('Team/' + managedTeam.id, 'PUT',
+            {name: prefix + ' updated team ' + type}, actor.headers);
+        check(managedTeamEdit.name === prefix + ' updated team ' + type,
+            type + ': delegated Team edit permission works on backend');
+        const managedTeamStream = await ok('Team/' + managedTeam.id + '/stream?maxSize=5',
+            'GET', undefined, actor.headers);
+        check(Array.isArray(managedTeamStream.list),
+            type + ': delegated Team stream permission works on backend');
+        check((await request('Team/' + managedTeam.id, 'DELETE', undefined, actor.headers)).status === 200,
+            type + ': delegated Team delete permission works on backend');
+        const managedUser = await create('User', {
+            userName: 'managed-' + type.toLowerCase().slice(0, 8) + '-' + prefix.split(' ')[1] + '@example.invalid',
+            smDelegatedUserName: 'managed-' + type.toLowerCase().slice(0, 8) + '-' + prefix.split(' ')[1] + '@example.invalid',
+            firstName: 'Managed', lastName: type, type: 'regular', isActive: true,
+        }, actor.headers);
+        check(Boolean(managedUser.id), type + ': delegated User create permission works on backend');
+        const managedEdit = await ok('User/' + managedUser.id, 'PUT', {firstName: 'Updated'}, actor.headers);
+        check(managedEdit.firstName === 'Updated', type + ': delegated User edit permission works on backend');
+        check((await request('User/' + managedUser.id, 'DELETE', undefined, actor.headers)).status === 200,
+            type + ': delegated User delete permission works on backend');
         const delegatedRole = await create('Role', {name: prefix + ' delegated ' + type,
             smAccountType: 'ProducerAdmin', data: {SmModels: true}, smShiftRevisePermission: 'all'}, actor.headers);
         check(delegatedRole.smShiftRevisePermission === 'all', type + ': can create any role with any grant');

@@ -163,6 +163,11 @@
       "type": "jsonArray",
       "readOnly": true
     },
+    "smDelegatedUserName": {
+      "type": "varchar",
+      "notStorable": true,
+      "maxLength": 50
+    },
     "smCommentsWidget": {
       "type": "varchar",
       "notStorable": true,

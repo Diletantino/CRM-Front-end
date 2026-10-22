@@ -81,6 +81,40 @@ async function cleanup(fixtures) {
         });
         assert.equal(modelRoleLink.targetRoleId, roles.Model.id);
         checks++;
+        const permanent = await create('SmRegistrationLink', {
+            accountType: 'Model', targetRoleId: roles.Model.id, neverExpires: true,
+        });
+        assert.equal(permanent.neverExpires, true);
+        assert.equal(permanent.expiresAt, '2200-01-01 00:00:00');
+        checks++;
+        const finiteAgain = await request('SmRegistrationLink/' + permanent.id, 'PUT', {
+            neverExpires: false, expiresAt: '2099-06-15 12:30:00',
+        });
+        assert.equal(finiteAgain.status, 200);
+        assert.equal(finiteAgain.data.neverExpires, false);
+        assert.equal(finiteAgain.data.expiresAt, '2099-06-15 12:30:00');
+        checks++;
+        const permanentAgain = await request('SmRegistrationLink/' + permanent.id, 'PUT', {
+            neverExpires: true, expiresAt: '2098-01-01 00:00:00',
+        });
+        assert.equal(permanentAgain.status, 200);
+        assert.equal(permanentAgain.data.neverExpires, true);
+        assert.equal(permanentAgain.data.expiresAt, '2200-01-01 00:00:00');
+        checks++;
+        const automaticFinite = await request('SmRegistrationLink/' + permanent.id, 'PUT', {
+            neverExpires: false,
+        });
+        assert.equal(automaticFinite.status, 200);
+        assert.equal(automaticFinite.data.neverExpires, false);
+        assert.notEqual(automaticFinite.data.expiresAt, '2200-01-01 00:00:00');
+        assert(Date.parse(automaticFinite.data.expiresAt + 'Z') > Date.now());
+        checks++;
+        const invalidUpdate = await request('SmRegistrationLink/' + permanent.id, 'PUT', {
+            expiresAt: '2020-01-01 00:00:00',
+        });
+        assert.equal(invalidUpdate.status, 400);
+        assert(invalidUpdate.data.message?.includes('в будущем'));
+        checks++;
         const expired = await request('SmRegistrationLink', 'POST', {
             accountType: 'Model', targetRoleId: roles.Model.id, expiresAt: '2020-01-01 00:00:00',
         });

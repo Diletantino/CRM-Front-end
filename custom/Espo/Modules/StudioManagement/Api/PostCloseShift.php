@@ -61,7 +61,13 @@ final class PostCloseShift implements Action
             throw new BadRequest('Screenshot IDs must be an array.');
         }
 
-        $shift = $this->service->close($id, $siteData, $screenshotIds, $this->user);
+        $comment = $data->comment ?? '';
+
+        if (!is_string($comment)) {
+            throw new BadRequest('Shift comment must be a string.');
+        }
+
+        $shift = $this->service->close($id, $siteData, $screenshotIds, $comment, $this->user);
 
         return ResponseComposer::json($shift->getValueMap());
     }

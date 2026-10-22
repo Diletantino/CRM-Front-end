@@ -25,6 +25,15 @@ class BeforeSave implements BeforeSaveHook
     public function beforeSave(Entity $entity, SaveOptions $options): void
     {
         if (!$entity->isNew()) {
+            if (
+                !$entity->isAttributeChanged('expiresAt') &&
+                !$entity->isAttributeChanged('neverExpires')
+            ) {
+                return;
+            }
+
+            $this->applyExpiration($entity);
+
             return;
         }
 
@@ -64,20 +73,36 @@ class BeforeSave implements BeforeSaveHook
         }
 
         $token = $this->registrationToken->generate();
+        $this->applyExpiration($entity);
+
+        $entity->set([
+            'name' => sprintf('%s — %s', $accountType, (string) $role->get('name')),
+            'token' => $token,
+            'registrationUrl' => $this->registrationLinkUrl->build($token),
+            'isUsed' => false,
+        ]);
+    }
+
+    private function applyExpiration(Entity $entity): void
+    {
+        $neverExpires = (bool) $entity->get('neverExpires');
         $expiresAt = $entity->get('expiresAt');
 
-        if (!is_string($expiresAt) || $expiresAt === '') {
+        if ($neverExpires) {
+            $expiresAt = '2200-01-01 00:00:00';
+        } elseif (
+            !is_string($expiresAt) ||
+            $expiresAt === '' ||
+            $expiresAt === '2200-01-01 00:00:00'
+        ) {
             $expiresAt = gmdate('Y-m-d H:i:s', time() + 86400);
         } elseif (strtotime($expiresAt . ' UTC') <= time()) {
             throw WorkflowError::badRequest('Срок действия ссылки должен быть в будущем.');
         }
 
         $entity->set([
-            'name' => sprintf('%s — %s', $accountType, (string) $role->get('name')),
-            'token' => $token,
-            'registrationUrl' => $this->registrationLinkUrl->build($token),
             'expiresAt' => $expiresAt,
-            'isUsed' => false,
+            'neverExpires' => $neverExpires,
         ]);
     }
 }

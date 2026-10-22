@@ -22,9 +22,13 @@
     "expiresAt": {
       "type": "datetime",
       "required": true,
-      "readOnlyAfterCreate": true,
       "index": true,
       "default": "javascript: return this.dateTime.getDateTimeShiftedFromNow(1, 'days', 15);"
+    },
+    "neverExpires": {
+      "type": "bool",
+      "default": false,
+      "tooltip": true
     },
     "isUsed": {"type": "bool", "default": false, "readOnly": true, "index": true},
     "usedAt": {"type": "datetime", "readOnly": true},

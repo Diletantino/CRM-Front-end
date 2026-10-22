@@ -138,12 +138,13 @@ try {
         $assert($shift->get('status') === 'Counting', 'Finish transitions Open to Counting.');
         $sites[0]['earning'] = '125.00';
         $sites[0]['offlineBonus'] = '10.00';
-        $shift = $service->close($shift->getId(), $sites, [], $admin);
+        $shift = $service->close($shift->getId(), $sites, [], 'Operator test comment', $admin);
         $assert($shift->get('status') === 'Closed', 'Count transitions Counting to Closed.');
+        $assert($shift->get('description') === 'Operator test comment', 'Operator comment is saved with the closed shift.');
         $assert((float) $shift->get('totalGross') === 135.0, 'Online and offline income summed correctly.');
         $assert((bool) $em->getRDBRepository('SmShiftFinancialSnapshot')->where(['shiftId' => $shift->getId()])->findOne(), 'Close creates financial snapshot.');
         try {
-            $service->close($shift->getId(), $sites, [], $admin);
+            $service->close($shift->getId(), $sites, [], '', $admin);
             $assert(false, 'Closing twice must be rejected.');
         } catch (Conflict) {
             $assert(true, 'Duplicate close rejected.');
@@ -175,7 +176,7 @@ try {
         $em->saveEntity($groupOnly, ['skipBeforeSave' => true]);
         $storedTeam->set('smProducerId', null);
         $em->saveEntity($storedTeam, ['skipHooks' => true]);
-        $closedLegacy = $service->close($groupOnly->getId(), $sites, [], $admin);
+        $closedLegacy = $service->close($groupOnly->getId(), $sites, [], '', $admin);
         $assert($closedLegacy->get('status') === 'Closed' &&
             $closedLegacy->get('producerId') === $producer->getId(), 'Legacy Counting shift resolves producer from native group and role.');
         $assert((float) $closedLegacy->get('producerShare') === 13.5, 'Legacy producer gets correct percentage.');
@@ -194,7 +195,7 @@ try {
         $em->saveEntity($dualShift);
         $service->open($dualShift->getId());
         $service->finish($dualShift->getId());
-        $dualClosed = $service->close($dualShift->getId(), $sites, [], $admin);
+        $dualClosed = $service->close($dualShift->getId(), $sites, [], '', $admin);
         $assert((float) $dualClosed->get('operatorShare') === 6.75 &&
             (float) $dualClosed->get('producerShare') === 13.5, 'Producer/operator has separate financial shares.');
         $assert($em->getRDBRepository('SmShift')->getRelation($dualClosed, 'participants')->count() === 2,

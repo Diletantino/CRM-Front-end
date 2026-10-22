@@ -73,5 +73,38 @@ const TargetRole = load('views/sm-registration-link/fields/target-role.js', {'vi
     assert.equal(field.actionSelect(), 'paged-modal');
     assert.equal(field.createDisabled, true);
     checks += 3;
+
+    class RoleTableBase {}
+    const UnrestrictedTable = load('views/role/record/table.js', {'views/role/record/table': RoleTableBase});
+    const table = new UnrestrictedTable();
+    let unrestrictedData;
+    table.model = {set: value => { unrestrictedData = value; }};
+    table.tableDataList = [
+        {name: 'User', type: 'record', list: [
+            {action: 'create', levelList: ['yes', 'no']},
+            {action: 'read', levelList: ['all', 'team', 'own', 'no']},
+            {action: 'delete', levelList: null},
+        ]},
+        {name: 'SmModels', type: 'boolean'},
+    ];
+    table.removeAllRestrictions();
+    assert.deepEqual(JSON.parse(JSON.stringify(unrestrictedData)), {
+        data: {User: {create: 'yes', read: 'all'}, SmModels: true},
+        fieldData: {},
+    });
+    checks += 3;
+
+    class RoleEditBase {
+        constructor() { this.buttonList = []; }
+        addButton(item) { this.buttonList.push(item); }
+        setupButtons() { this.buttonWasReadyDuringBaseSetup = this.buttonList.some(item => item.name === 'removeAllRestrictions'); }
+        setup() { this.setupButtons(); }
+    }
+    const UnrestrictedEdit = load('views/role/record/edit.js', {'views/role/record/edit': RoleEditBase});
+    const edit = new UnrestrictedEdit();
+    edit.setup();
+    assert.equal(edit.buttonWasReadyDuringBaseSetup, true);
+    checks++;
+
     console.log('Dynamic roles client: ' + checks + ' checks passed.');
 })().catch(error => { console.error(error); process.exitCode = 1; });
