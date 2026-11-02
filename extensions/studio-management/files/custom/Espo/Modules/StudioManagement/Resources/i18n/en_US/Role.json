@@ -1,5 +1,6 @@
 {
   "fields": {
+    "smShiftReviewPermission": "Approve shift closure",
     "smSharePercent": "Studio Share Percent",
     "smShiftPreparePermission": "Prepare shifts",
     "smShiftOperatePermission": "Run and calculate shifts",
@@ -9,10 +10,11 @@
     "smInvitationsPermission": "Manage registration links"
   },
   "tooltips": {
+    "smShiftReviewPermission": "Review and approve shift closure. Own production uses the producer recorded on the shift. Legacy access is limited to the assigned producer and administrator.",
     "smSharePercent": "Percentage of shift gross paid to a user assigned this role. If several roles are assigned, the highest percentage is used.",
     "smShiftPreparePermission": "Requires shift create/edit ACL. All records permits any readable team.",
     "smShiftOperatePermission": "Requires shift edit ACL. Own shifts means the operator slot, regardless of account type.",
-    "smShiftRevisePermission": "Requires shift edit ACL. Own production means teams produced by this user.",
+    "smShiftRevisePermission": "Director-level correction of approved shifts. Requires explicit permission and native shift edit ACL. Legacy/unset does not automatically grant this to producers.",
     "smStaffAccessPermission": "Requires staff tab and User read ACL. Own production means teams produced by this user.",
     "smAnalyticsAccessPermission": "Requires Analytics tab ACL. Own shifts includes model/operator/producer participation.",
     "smInvitationsPermission": "Sensitive: together with link CRUD ACL, allows inviting with any role, including elevated roles."

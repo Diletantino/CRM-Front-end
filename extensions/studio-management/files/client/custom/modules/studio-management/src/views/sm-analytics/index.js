@@ -1,10 +1,16 @@
-define(['view'], function (View) {
+define(['view', 'studio-management:analytics-periods'], function (View, Periods) {
     return class extends View {
         template = 'studio-management:sm-analytics/index'
 
         setup() {
-            this.addHandler('click', '[data-period]', event => {
-                this.setPeriod(event.currentTarget.dataset.period);
+            this.activeTab = 'overview';
+            this.requestNumber = 0;
+            this.addHandler('click', '[data-analytics-tab]', (event, target) => {
+                event.preventDefault();
+                this.selectTab(target.dataset.analyticsTab);
+            });
+            this.addHandler('click', '[data-period]', (event, target) => {
+                this.setPeriod(target.dataset.period);
                 this.load();
             });
             this.addHandler('click', '[data-action="apply"]', () => this.load());
@@ -15,27 +21,20 @@ define(['view'], function (View) {
             this.load();
         }
 
-        iso(date) {
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-
-            return `${year}-${month}-${day}`;
+        setPeriod(period) {
+            const range = Periods.range(period, new Date(), this.getConfig().get('timeZone') || 'UTC');
+            this.$el.find('[name="from"]').val(range.from);
+            this.$el.find('[name="to"]').val(range.to);
+            this.$el.find('[data-period]').removeClass('active');
+            this.$el.find(`[data-period="${period}"]`).addClass('active');
         }
 
-        setPeriod(period) {
-            const now = new Date();
-            let from = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
-            if (period === 'week') {
-                const mondayOffset = (from.getDay() + 6) % 7;
-                from.setDate(from.getDate() - mondayOffset);
-            } else if (period === 'month') {
-                from = new Date(now.getFullYear(), now.getMonth(), 1);
-            }
-
-            this.$el.find('[name="from"]').val(this.iso(from));
-            this.$el.find('[name="to"]').val(this.iso(now));
+        selectTab(tab) {
+            this.activeTab = tab;
+            this.$el.find('[data-analytics-tab]').attr('aria-selected', 'false').parent().removeClass('active');
+            this.$el.find(`[data-analytics-tab="${tab}"]`).attr('aria-selected', 'true').parent().addClass('active');
+            this.$el.find('[data-analytics-panel]').hide();
+            this.$el.find(`[data-analytics-panel="${tab}"]`).show();
         }
 
         formatMoney(value, currency) {
@@ -49,22 +48,72 @@ define(['view'], function (View) {
         }
 
         async load() {
+            const requestNumber = ++this.requestNumber;
             const from = this.$el.find('[name="from"]').val();
             const to = this.$el.find('[name="to"]').val();
             const $status = this.$el.find('.analytics-status').text(this.translate('Loading...'));
 
             try {
                 const data = await Espo.Ajax.getRequest('StudioManagement/analytics', {from, to});
+                if (requestNumber !== this.requestNumber || this.isRemoved()) return;
+                this.personalOnly = data.personalOnly === true;
                 this.renderPersonalTotals(data.personalTotals || []);
                 this.renderTotals(data.totals || []);
                 this.renderRows(data.rows || []);
+                this.renderMetrics(data.personalMetrics || {});
                 $status.text('');
             } catch (e) {
+                if (requestNumber !== this.requestNumber || this.isRemoved()) return;
                 $status.text(
                     e?.xhr?.getResponseHeader('X-Status-Reason') ||
                     this.translate('analyticsFailed', 'messages', 'SmAnalytics')
                 );
             }
+        }
+
+        renderMetrics(metrics) {
+            const tabs = metrics.availableTabs || [];
+            this.$el.find('.analytics-heading').text(this.personalOnly
+                ? this.translate('Personal Analytics', 'labels', 'SmAnalytics')
+                : this.translate('SmAnalytics', 'scopeNames'));
+            this.$el.find('[data-analytics-tab]').each((index, element) => {
+                const tab = element.dataset.analyticsTab;
+                $(element).parent().toggle((tab === 'overview' && !this.personalOnly) || tabs.includes(tab));
+            });
+            if (this.personalOnly && this.activeTab === 'overview') this.activeTab = tabs[0] || 'earnings';
+            if (this.activeTab !== 'overview' && !tabs.includes(this.activeTab)) this.activeTab = 'overview';
+            const week = metrics.week || {};
+            this.$el.find('.analytics-week-range').text(
+                `${week.from || ''} — ${week.to || ''} (${week.timeZone || 'UTC'})`
+            );
+            this.renderAmounts('.analytics-average', metrics.averageChecks || [], 'noShifts');
+            this.renderAmounts('.analytics-weekly-earnings', metrics.weeklyEarnings || [], 'noEarnings');
+            const minutes = Math.floor((metrics.workingSeconds || 0) / 60);
+            this.$el.find('.analytics-hours').text(
+                `${Math.floor(minutes / 60)} ${this.translate('Hours Unit', 'labels', 'SmAnalytics')} ` +
+                `${minutes % 60} ${this.translate('Minutes Unit', 'labels', 'SmAnalytics')}`
+            );
+            this.$el.find('.analytics-hours-scope').text(this.translate(
+                metrics.hoursScope === 'production' ? 'productionHours' : 'personalHours', 'messages', 'SmAnalytics'
+            ));
+            const last = metrics.lastShift;
+            this.$el.find('.analytics-last-date').text(last?.endedAt
+                ? this.getDateTime().toDisplay(last.endedAt)
+                : this.translate('noShifts', 'messages', 'SmAnalytics'));
+            this.$el.find('.analytics-last-check').text(last
+                ? this.formatMoney(last.amount, last.currency)
+                : this.translate('noShifts', 'messages', 'SmAnalytics'));
+            this.selectTab(this.activeTab);
+        }
+
+        renderAmounts(selector, amounts, emptyMessage) {
+            const $container = this.$el.find(selector).empty();
+            if (!amounts.length) {
+                $('<p>').text(this.translate(emptyMessage, 'messages', 'SmAnalytics')).appendTo($container);
+            }
+            amounts.forEach(amount => {
+                $('<p>').text(this.formatMoney(amount.amount, amount.currency)).appendTo($container);
+            });
         }
 
         renderTotals(totals) {

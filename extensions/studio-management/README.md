@@ -23,15 +23,29 @@ The extension is developed against EspoCRM `10.0.x` / PHP `8.3+` and does not mo
 
 ## Shift flow
 
+### Проверка закрытия смен (30.10.2026)
+
+Цикл: `Draft → Open → Counting → Review (На проверке) → Closed (Подсчитана)`.
+Оператор отправляет результаты на проверку через `/close`, после чего обычное редактирование запрещено на сервере. Даже если оператор и продюсер — один пользователь, автоматического подтверждения нет.
+
+Продюсер открывает «Редактировать» у смены на проверке. Без флажка «Подтвердить закрытие смены» кнопка сохраняет исправления и оставляет статус Review. С флажком (строго Boolean `true` в `/review`) создаются финансовый снимок и расходы, фиксируются подтвердивший и время, статус становится Closed. Повторное подтверждение блокируется транзакционной проверкой статуса. Непроверенные смены не попадают в итоговую аналитику и не запускают выплату рекрутеру.
+
+Новое право роли «Подтверждение закрытия смен» (`smShiftReviewPermission`: свой продакшен / все / запрет). Для старых ролей без настройки проверять свои смены может продюсер; обычный оператор не видит флажок и не может вызвать endpoint проверки. Корректировка Closed использует отдельное явное право `smShiftRevisePermission` вместе с обычным ACL изменения смен; неявный доступ продюсера к закрытым сменам больше не предоставляется. В динамической системе ролей это право является директорским допуском, независимо от названия роли. «Снять все ограничения» включает оба разрешения.
+
+Скриншоты открываются в штатном просмотрщике изображений по клику на миниатюру/имя; доступ к файлам проверяет EspoCRM. Hover/focus подсвечивает доступные для просмотра изображения.
+
+Проверки: `ShiftReviewClientTest.cjs`, `WorkflowClientTest.cjs`, `DynamicRolesClientTest.cjs`, `WorkflowIntegrationTest.php` (транзакционные фикстуры откатываются). Старые Closed не переводятся в Review автоматически.
+
 1. Create a preliminary shift and choose only its group. Operator, model, producer, birth date and site credentials are copied automatically. Add model images and optionally the planned start. Participants are validated on the server, including API requests without frontend autofill.
 2. The assigned operator opens the full-page **Start** form and presses **Start Shift**. The server records the UTC start timestamp.
 3. During an active shift, the operator can mark each site as started or banned.
 4. **Finish Shift** records the end timestamp and opens the full-page calculation form.
 5. The operator enters earnings and offline bonuses per site, uploads screenshots, and confirms **Complete Calculation**.
-6. The server validates every amount, calculates exact cent totals, writes a `SmShiftFinancialSnapshot`, and closes the shift in one transaction.
-7. A producer assigned to the shift team (or an administrator) can revise the financial rows and screenshots through the privileged correction endpoint. The shift and its snapshot are updated in the same transaction.
+6. The server validates every amount, calculates exact cent totals, and moves the shift to **Review**. The operator can no longer edit it; no financial snapshot or expenses are posted yet.
+7. An authorized reviewer opens **Edit**, checks the rows and screenshots, and selects **Confirm Shift Closure** before saving. Approval creates a `SmShiftFinancialSnapshot` and expenses in one transaction and moves the shift to **Closed**. Saving without confirmation keeps it in Review.
+8. Correcting a Closed shift requires the explicit closed-shift correction permission and native edit ACL. The privileged correction endpoint updates the shift and its existing snapshot in one transaction.
 
-The sum of model, operator, producer, technical-director, and percentage-based recruiter expenses must not exceed 100%. The one-time recruiter reward is a fixed expense and can make studio net negative. Every payout is stored as a separate line in the financial snapshot; studio share is gross less all expenses. Ordinary users cannot mutate completed shifts or snapshots; corrections are restricted to the producer of the team and administrators.
+The sum of model, operator, producer, technical-director, and percentage-based recruiter expenses must not exceed 100%. The one-time recruiter reward is a fixed expense and can make studio net negative. Every payout is stored as a separate line in the financial snapshot; studio share is gross less all expenses. Ordinary users cannot mutate completed shifts or snapshots; corrections require an explicit role grant or native administrator access.
 
 A producer can be assigned as the shift operator. In that case the same user is recorded as shift creator/producer/operator, can execute the normal operator workflow, and receives the independently configured operator and producer payouts. Recruiter rewards are never paid for a user whose current account type is producer.
 
@@ -82,6 +96,20 @@ After registration the same URL becomes that user's only password-login page. It
 The standard login page is reserved for administrators and is shown only when both `studioAdminHosts` and `studioAdminAllowedIps` match the current request. Docker maps these values from `CRM_ADMIN_HOSTS` and `CRM_ADMIN_ALLOWED_IPS`. IP ranges in CIDR notation are supported.
 
 ## Analytics
+
+### Personal metrics and calendar periods (31.10.2026)
+
+Ordinary operators see their own shifts, including Closed shifts, in the table. They cannot open Closed records by ID, read their stream, or edit them. Other operators’ shifts are excluded, including shifts in the same group. Native administrators and explicitly authorized closed-shift correction roles keep access. This is enforced by an entity ACL checker and a mandatory list filter, including filtered/related lists.
+
+Operators and models have built-in **personal-only analytics** even when their baseline role denies studio analytics and financial snapshots. The endpoint returns only the authenticated user's metrics, without `rows` or `totals`, and ignores supplied user IDs. A separate personal menu entry opens the same route; native ACLs for snapshots and studio finances are not expanded. Explicit all-studio grants remain available for delegated director roles. Following the user's final correction, ordinary models cannot browse User/Team sections, including their own profile/groups, through menus or record APIs; session identity remains available for login. Explicit all-records grants and native administrators retain their configured access. HR and producer screenshot roles are not silently broadened.
+
+The Analytics section has personal tabs for the previous completed Monday–Sunday week. Models and operators see their average shift result, working hours, latest shift date/check, and personal earnings. Producers see checks, hours and latest shifts only where they worked as an operator, regardless of who produced the shift. Technical directors and recruiters see weekly personal earnings. All personal metrics are anchored to the authenticated user, even with an all-studio analytics grant. Native section ACL and the Studio analytics permission remain required for studio-wide analytics; the personal-only operator/model mode is the explicit exception described above.
+
+Only approved (`Closed`) shifts count. Average checks use the shift result including offline bonuses; zero checks count and currencies remain separate. Hours use actual start/end timestamps of shifts ending within the week, without multiplying overlapping shifts by participant count. The latest date/check refer to the same latest approved shift across all dates. Earnings sum the user's expense rows by posting date, including both operator and producer shares for a dual-role user.
+
+The Overview buttons select **Today**, the full current **Monday–Sunday week**, or the full **calendar month**. Calendar boundaries use the CRM timezone and are converted to UTC for database filters, including DST changes. Personal weekly tabs show their fixed previous-week dates; Overview date filters do not redefine those tabs. Existing dynamic access grants are preserved.
+
+Regression tests: `AnalyticsClientTest.cjs` and transactional `AnalyticsIntegrationTest.php` in a local Docker installation. The attached manual plan's 100 USD shift example expects model/operator 65 USD, producer 10 USD, recruiter 5 USD, technical director 5 USD, studio 15 USD; the personal tabs show each individual's payout rather than those studio totals.
 
 The **Studio Analytics** tab offers today/week/month and custom date filters. Production aggregation is executed by the database over immutable snapshot rows, while personal earnings use indexed `SmShiftExpense` rows. Producers are restricted to their production, models and operators to their own shifts, and technical directors to all shifts. Recruiters receive only their personal payout total. These restrictions are enforced in the service even if an Espo role was configured too broadly.
 

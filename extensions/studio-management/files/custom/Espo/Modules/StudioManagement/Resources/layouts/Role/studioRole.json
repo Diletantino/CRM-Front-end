@@ -17,6 +17,7 @@
   {
     "label": "Studio Permissions",
     "rows": [
+      [{"name": "smShiftReviewPermission"}, false, false],
       [
         {
           "name": "smShiftPreparePermission"

@@ -1,5 +1,18 @@
 @import url("../../../../css/espo/dark.css");
 
+[data-name="screenshots"] a[data-action="showImagePreview"] {
+    cursor: zoom-in;
+    display: inline-block;
+    border-radius: 4px;
+    transition: filter .15s ease, box-shadow .15s ease;
+}
+[data-name="screenshots"] a[data-action="showImagePreview"]:hover,
+[data-name="screenshots"] a[data-action="showImagePreview"]:focus-visible {
+    filter: brightness(1.15);
+    box-shadow: 0 0 0 2px #2196f3;
+    outline-offset: 2px;
+}
+
 #registration-password-requirements {
     color: var(--text-color, #f1f3f5);
     line-height: 1.5;
@@ -15,35 +28,7 @@ body[data-navbar="side"] #navbar .navbar-nav.tabs {
     /* Let long menus scroll clear of the notice above the minimize button. */
     padding-bottom: 72px;
 }
-body > footer#footer.studio-credit-in-sidebar {
-    position: fixed !important;
-    left: var(--studio-credit-left) !important;
-    top: var(--studio-credit-top) !important;
-    right: auto !important;
-    bottom: auto !important;
-    width: var(--studio-credit-width) !important;
-    height: var(--studio-credit-height) !important;
-    max-height: none !important;
-    margin: 0 !important;
-    padding: 4px 2px !important;
-    background: var(--navbar-bg, #151617);
-    box-sizing: border-box;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center !important;
-    z-index: 1031;
-}
-body > footer.studio-credit-in-sidebar .credit {
-    margin: 0;
-    padding: 0 !important;
-    width: 100%;
-    min-width: 0;
-    color: #c8cdd3;
-    font-size: 12px;
-    line-height: 1.5;
-    white-space: normal;
-}
+
 body > footer.studio-credit-in-sidebar.studio-credit-compact .credit {
     font-size: 10px;
     font-family: Arial, sans-serif;

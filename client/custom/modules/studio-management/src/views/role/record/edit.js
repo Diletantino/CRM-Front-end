@@ -35,6 +35,7 @@ define(['views/role/record/edit'], function (RoleEditView) {
                 lockPermission: 'yes',
                 smShiftPreparePermission: 'all',
                 smShiftOperatePermission: 'all',
+                smShiftReviewPermission: 'all',
                 smShiftRevisePermission: 'all',
                 smStaffAccessPermission: 'all',
                 smAnalyticsAccessPermission: 'all',

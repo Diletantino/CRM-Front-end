@@ -81,14 +81,66 @@ final class ShiftService
      * @param array<int, mixed> $siteData
      * @param array<int, mixed> $screenshotIds
      */
-    public function close(string $id, array $siteData, array $screenshotIds, string $comment, User $closedBy): Entity
+    public function close(string $id, array $siteData, array $screenshotIds, string $comment, User $submittedBy): Entity
+    {
+        return $this->entityManager->getTransactionManager()->run(function () use ($id, $siteData, $screenshotIds, $comment, $submittedBy): Entity {
+            $shift = $this->getShiftForUpdate($id);
+            if ($shift->get('status') !== SmShift::STATUS_COUNTING) {
+                throw WorkflowError::conflict('Отправить на проверку можно только смену на этапе подсчёта.');
+            }
+            $this->saveReviewData($shift, $siteData, $screenshotIds, $comment);
+            $shift->set([
+                'status' => SmShift::STATUS_REVIEW,
+                'submittedById' => $submittedBy->getId(),
+                'submittedAt' => gmdate('Y-m-d H:i:s'),
+                'producerId' => $this->getProducer($shift)->getId(),
+            ]);
+            $this->entityManager->saveEntity($shift, ['skipBeforeSave' => true]);
+            return $shift;
+        });
+    }
+
+    public function review(string $id, array $siteData, array $screenshotIds, string $comment): Entity
+    {
+        return $this->entityManager->getTransactionManager()->run(function () use ($id, $siteData, $screenshotIds, $comment): Entity {
+            $shift = $this->getShiftForUpdate($id);
+            if ($shift->get('status') !== SmShift::STATUS_REVIEW) {
+                throw WorkflowError::conflict('Проверять можно только смену со статусом «На проверке».');
+            }
+            $this->saveReviewData($shift, $siteData, $screenshotIds, $comment);
+            $this->entityManager->saveEntity($shift, ['skipBeforeSave' => true]);
+            return $shift;
+        });
+    }
+
+    private function saveReviewData(Entity $shift, array $siteData, array $screenshotIds, string $comment): void
+    {
+        [$rows, $earning, $bonus] = $this->normalizeSiteData($siteData);
+        $shift->set([
+            'siteData' => $rows,
+            'calculatedTotal' => $this->money->centsToAmount($earning),
+            'offlineBonus' => $this->money->centsToAmount($bonus),
+            'result' => $this->money->centsToAmount($earning + $bonus),
+            'totalGross' => $this->money->centsToAmount($earning + $bonus),
+            'screenshotsIds' => $this->normalizeAttachmentIds($screenshotIds),
+            'description' => $this->normalizeComment($comment),
+        ]);
+    }
+
+    public function approve(
+        string $id,
+        array $siteData,
+        array $screenshotIds,
+        string $comment,
+        User $closedBy,
+    ): Entity
     {
         return $this->entityManager->getTransactionManager()->run(
             function () use ($id, $siteData, $screenshotIds, $comment, $closedBy): Entity {
                 $shift = $this->getShiftForUpdate($id);
 
-                if ($shift->get('status') !== SmShift::STATUS_COUNTING) {
-                    throw WorkflowError::conflict('Завершить можно только смену на этапе подсчёта.');
+                if ($shift->get('status') !== SmShift::STATUS_REVIEW) {
+                    throw WorkflowError::conflict('Подтвердить можно только смену со статусом «На проверке».');
                 }
 
                 $financial = $this->calculateFinancials($shift, $siteData, $closedBy);
@@ -112,6 +164,8 @@ final class ShiftService
                     'status' => SmShift::STATUS_CLOSED,
                     'endTime' => $shift->get('endTime') ?: $closedAt,
                     'closedById' => $closedBy->getId(),
+                    'reviewedById' => $closedBy->getId(),
+                    'reviewedAt' => $closedAt,
                     'screenshotsIds' => $this->normalizeAttachmentIds($screenshotIds),
                     'description' => $this->normalizeComment($comment),
                 ]));
@@ -651,9 +705,11 @@ final class ShiftService
     private function normalizeComment(string $value): string
     {
         $value = trim($value);
+
         if (mb_strlen($value) > 5000) {
             throw WorkflowError::badRequest('Комментарий к смене не должен превышать 5000 символов.');
         }
+
         return $value;
     }
 

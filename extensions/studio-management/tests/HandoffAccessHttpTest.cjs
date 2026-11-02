@@ -55,7 +55,7 @@ async function create(type, data, headers) { return track(type, await ok(type, '
     check(role.data.SmRoleAdministration === true, 'UI button really saved Role administration');
     check(Object.values(role.fieldData).every(fields => Object.keys(fields).length === 0),
         'UI button removed all field restrictions (native save retains empty scope maps)');
-    for (const field of ['smShiftPreparePermission', 'smShiftOperatePermission', 'smShiftRevisePermission',
+    for (const field of ['smShiftPreparePermission', 'smShiftOperatePermission', 'smShiftReviewPermission', 'smShiftRevisePermission',
         'smStaffAccessPermission', 'smAnalyticsAccessPermission']) check(role[field] === 'all', field);
     const link = await create('SmRegistrationLink', {name: prefix + ' invitation', accountType: 'Operator',
         targetRoleId: roleId, expiresAt: new Date(Date.now() + 86400000).toISOString().slice(0, 19).replace('T', ' ')});
@@ -101,7 +101,9 @@ async function create(type, data, headers) { return track(type, await ok(type, '
     check(open.status === 'Open' && Boolean(open.startTime), 'Opens shift');
     check((await ok('SmShift/' + shift.id + '/finish', 'POST', {}, actor)).status === 'Counting', 'Finishes active shift');
     const siteData = defaults.siteData.map(row => ({...row, earning:'100.00', offlineBonus:'10.00'}));
-    const closed = await ok('SmShift/' + shift.id + '/close', 'POST', {siteData, screenshotsIds:[]}, actor);
+    const submitted = await ok('SmShift/' + shift.id + '/close', 'POST', {siteData, screenshotsIds:[]}, actor);
+    check(submitted.status === 'Review', 'Submission never bypasses review, even with unrestricted rights');
+    const closed = await ok('SmShift/' + shift.id + '/review', 'POST', {siteData, screenshotsIds:[], confirmClosure:true}, actor);
     check(closed.status === 'Closed' && Number(closed.totalGross) === 110, 'Closes shift with persisted total');
     check((await ok('SmShift/' + shift.id + '/revise', 'POST', {siteData, screenshotsIds:[]}, actor)).status === 'Closed',
         'Can revise closed shift');

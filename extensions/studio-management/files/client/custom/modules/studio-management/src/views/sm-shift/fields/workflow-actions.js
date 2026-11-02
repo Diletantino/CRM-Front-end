@@ -8,7 +8,8 @@ define(['views/fields/base', 'studio-management:role-policy'], function (BaseFie
             const status = this.model.get('status');
             const accountType = this.getUser().get('smAccountType');
             const canOperate = RolePolicy.canOperate(this);
-            const isManager = status === 'Draft' ? RolePolicy.canPrepare(this) : RolePolicy.canRevise(this);
+            const isManager = status === 'Draft' ? RolePolicy.canPrepare(this) :
+                status === 'Review' ? RolePolicy.canReview(this) : RolePolicy.canRevise(this);
             const canEdit = this.getAcl().checkModel(this.model, 'edit');
 
             return {
@@ -17,9 +18,9 @@ define(['views/fields/base', 'studio-management:role-policy'], function (BaseFie
                 showStart: canEdit && canOperate && status === 'Draft',
                 showFinish: canEdit && canOperate && status === 'Open',
                 showCalculation: canEdit && canOperate && status === 'Counting',
-                showEdit: canEdit && isManager && ['Draft', 'Closed'].includes(status),
-                editMode: status === 'Closed' ? 'revise' : '',
-                operatorCompleted: accountType === 'Operator' && status === 'Closed',
+                showEdit: canEdit && isManager && ['Draft', 'Review', 'Closed'].includes(status),
+                editMode: status === 'Closed' ? 'revise' : status === 'Review' ? 'review' : '',
+                operatorCompleted: accountType === 'Operator' && ['Review', 'Closed'].includes(status) && !isManager,
             };
         }
 

@@ -10,7 +10,8 @@ define(['views/record/detail', 'studio-management:role-policy'], function (Detai
             const status = this.model.get('status');
             const canEdit = this.getAcl().checkModel(this.model, 'edit');
             const canOperate = canEdit && RolePolicy.canOperate(this);
-            const isManager = canEdit && (status === 'Draft' ? RolePolicy.canPrepare(this) : RolePolicy.canRevise(this));
+            const isManager = canEdit && (status === 'Draft' ? RolePolicy.canPrepare(this) :
+                status === 'Review' ? RolePolicy.canReview(this) : RolePolicy.canRevise(this));
 
             if (canOperate && status === 'Draft') {
                 this.buttonList.push({name: 'prepareStart', label: 'Start Shift', style: 'success'});
@@ -28,7 +29,7 @@ define(['views/record/detail', 'studio-management:role-policy'], function (Detai
                 });
             }
 
-            if (isManager && ['Draft', 'Closed'].includes(status)) {
+            if (isManager && ['Draft', 'Review', 'Closed'].includes(status)) {
                 this.buttonList.push({name: 'managerEdit', label: 'Edit', style: 'default'});
             }
 
@@ -53,7 +54,13 @@ define(['views/record/detail', 'studio-management:role-policy'], function (Detai
         }
 
         actionManagerEdit() {
-            this.navigateToEdit(this.model.get('status') === 'Closed' ? 'revise' : null);
+            const status = this.model.get('status');
+            this.navigateToEdit(status === 'Closed' ? 'revise' : status === 'Review' ? 'review' : null);
+        }
+
+        afterRender() {
+            super.afterRender();
+            this.hideField('confirmClosure');
         }
 
         navigateToEdit(mode) {

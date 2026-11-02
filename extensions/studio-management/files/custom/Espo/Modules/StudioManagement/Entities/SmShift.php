@@ -10,5 +10,6 @@ class SmShift extends Entity
     public const STATUS_DRAFT = 'Draft';
     public const STATUS_OPEN = 'Open';
     public const STATUS_COUNTING = 'Counting';
+    public const STATUS_REVIEW = 'Review';
     public const STATUS_CLOSED = 'Closed';
 }

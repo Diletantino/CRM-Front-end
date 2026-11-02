@@ -7,7 +7,7 @@ define(['views/fields/base', 'studio-management:role-policy'], function (BaseFie
         data() {
             const data = super.data();
             const status = this.model.get('status') || 'Draft';
-            const isManager = RolePolicy.canRevise(this);
+            const isManager = status === 'Review' ? RolePolicy.canReview(this) : RolePolicy.canRevise(this);
             const canOperate = RolePolicy.canOperate(this);
             const rows = this.getRows().map((row, index) => ({
                 ...row,
@@ -21,9 +21,9 @@ define(['views/fields/base', 'studio-management:role-policy'], function (BaseFie
                 ...data,
                 rows,
                 hasRows: rows.length > 0,
-                showFinancial: ['Counting', 'Closed'].includes(status),
+                showFinancial: ['Counting', 'Review', 'Closed'].includes(status),
                 canEditCredentials: status === 'Draft' || isManager,
-                canEditFinancial: status === 'Counting' || (status === 'Closed' && isManager),
+                canEditFinancial: (status === 'Counting' && canOperate) || (['Review', 'Closed'].includes(status) && isManager),
                 canManageState: status === 'Open' &&
                     canOperate &&
                     this.getAcl().checkModel(this.model, 'edit'),

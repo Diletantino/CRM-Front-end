@@ -14,6 +14,15 @@
         <span class="fas fa-check"></span> {{translate 'Complete Calculation' scope='SmShift'}}
     </button>
     {{/if}}
+    {{#if showReview}}
+    <label style="display: flex; justify-content: center; align-items: center; gap: 8px; margin-bottom: 16px; cursor: pointer;">
+        <input type="checkbox" class="form-checkbox" name="confirmClosureReview" style="position: static; margin: 0; float: none;">
+        {{translate 'confirmClosure' category='fields' scope='SmShift'}}
+    </label>
+    <button type="button" class="btn btn-success btn-lg" data-action="workflowSave">
+        <span class="fas fa-check-double"></span> {{translate 'Save Review' scope='SmShift'}}
+    </button>
+    {{/if}}
     {{#if showRevision}}
     <button type="button" class="btn btn-primary btn-lg" data-action="workflowSave">
         <span class="fas fa-floppy-disk"></span> {{translate 'Save Changes' scope='SmShift'}}

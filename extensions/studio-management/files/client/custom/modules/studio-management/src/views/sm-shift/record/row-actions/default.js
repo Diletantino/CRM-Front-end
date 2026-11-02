@@ -3,7 +3,8 @@ define(['views/record/row-actions/default', 'studio-management:role-policy'], fu
         getActionList() {
             const status = this.model.get('status');
             const canOperate = RolePolicy.canOperate(this);
-            const isManager = status === 'Draft' ? RolePolicy.canPrepare(this) : RolePolicy.canRevise(this);
+            const isManager = status === 'Draft' ? RolePolicy.canPrepare(this) :
+                status === 'Review' ? RolePolicy.canReview(this) : RolePolicy.canRevise(this);
             const list = [{
                 label: 'View',
                 data: {id: this.model.id},
@@ -42,13 +43,13 @@ define(['views/record/row-actions/default', 'studio-management:role-policy'], fu
                 });
             }
 
-            if (isManager && ['Draft', 'Closed'].includes(status) && this.options.acl.edit) {
+            if (isManager && ['Draft', 'Review', 'Closed'].includes(status) && this.options.acl.edit) {
                 list.push({
                     label: 'Edit',
                     data: {id: this.model.id},
                     link: status === 'Closed' ?
                         `#SmShift/edit/${this.model.id}/revise` :
-                        `#SmShift/edit/${this.model.id}`,
+                        `#SmShift/edit/${this.model.id}${status === 'Review' ? '/review' : ''}`,
                     groupIndex: 1,
                     iconClass: 'fas fa-pen-to-square',
                 });

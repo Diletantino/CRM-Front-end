@@ -52,6 +52,15 @@
       "view": "views/role/fields/permission",
       "audited": true
     },
+    "smShiftReviewPermission": {
+      "type": "enum",
+      "options": ["not-set", "all", "team", "no"],
+      "default": "not-set",
+      "tooltip": true,
+      "translation": "Role.options.studioLevel",
+      "view": "views/role/fields/permission",
+      "audited": true
+    },
     "smShiftRevisePermission": {
       "type": "enum",
       "options": [

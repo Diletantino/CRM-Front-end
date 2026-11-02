@@ -2,10 +2,7 @@
 
 namespace Espo\Modules\StudioManagement\Tools;
 
-use DateInterval;
 use DateTimeImmutable;
-use DateTimeZone;
-use Espo\Core\Exceptions\BadRequest;
 use Espo\Entities\User;
 use Espo\Modules\StudioManagement\Entities\SmShiftExpense;
 use Espo\Modules\StudioManagement\Entities\SmShiftFinancialSnapshot;
@@ -13,23 +10,16 @@ use Espo\ORM\EntityManager;
 
 final class AnalyticsService
 {
-    public function __construct(private EntityManager $entityManager, private RolePolicy $policy) {}
+    public function __construct(
+        private EntityManager $entityManager,
+        private RolePolicy $policy,
+        private AnalyticsCalendar $calendar,
+        private PersonalAnalytics $personal,
+    ) {}
 
     public function get(string $fromRaw, string $toRaw, User $user): array
     {
-        $utc = new DateTimeZone('UTC');
-        $from = DateTimeImmutable::createFromFormat('!Y-m-d', $fromRaw, $utc);
-        $toInclusive = DateTimeImmutable::createFromFormat('!Y-m-d', $toRaw, $utc);
-
-        if (!$from || !$toInclusive || $from->format('Y-m-d') !== $fromRaw || $toInclusive->format('Y-m-d') !== $toRaw) {
-            throw new BadRequest('Dates must use the YYYY-MM-DD format.');
-        }
-
-        $to = $toInclusive->add(new DateInterval('P1D'));
-
-        if ($from >= $to || $from->diff($to)->days > 732) {
-            throw new BadRequest('The date range must be between 1 day and 2 years.');
-        }
+        [$from, $to] = $this->calendar->range($fromRaw, $toRaw);
 
         $where = [
             'deleted' => false,
@@ -155,6 +145,7 @@ final class AnalyticsService
             'totals' => array_values($totalsByCurrency),
             'rows' => $rows,
             'personalTotals' => $this->getPersonalTotals($from, $to, $user),
+            'personalMetrics' => $this->personal->get($user),
         ];
     }
 

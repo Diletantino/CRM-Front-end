@@ -1,5 +1,18 @@
 @import url("../../../../css/espo/dark.css");
 
+[data-name="screenshots"] a[data-action="showImagePreview"] {
+    cursor: zoom-in;
+    display: inline-block;
+    border-radius: 4px;
+    transition: filter .15s ease, box-shadow .15s ease;
+}
+[data-name="screenshots"] a[data-action="showImagePreview"]:hover,
+[data-name="screenshots"] a[data-action="showImagePreview"]:focus-visible {
+    filter: brightness(1.15);
+    box-shadow: 0 0 0 2px #2196f3;
+    outline-offset: 2px;
+}
+
 #registration-password-requirements {
     color: var(--text-color, #f1f3f5);
     line-height: 1.5;

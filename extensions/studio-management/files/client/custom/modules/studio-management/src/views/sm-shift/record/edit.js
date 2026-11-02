@@ -7,9 +7,16 @@ define(['views/record/edit', 'studio-management:role-policy'], function (EditRec
             super.setup();
 
             const params = this.options.params || {};
-            this.model.studioWorkflowMode = params.start ? 'start' : params.count ? 'count' : params.revise ? 'revise' : '';
+            this.model.studioWorkflowMode = params.start ? 'start' : params.count ? 'count' : params.review ? 'review' : params.revise ? 'revise' : '';
             const status = this.model.get('status');
             const saveButton = this.buttonList.find(item => item.name === 'save');
+            this.model.set('confirmClosure', false);
+            this.hideField('confirmClosure');
+            if ((status === 'Review' && !RolePolicy.canReview(this)) ||
+                (status === 'Closed' && !RolePolicy.canRevise(this))) {
+                ['siteData', 'screenshots', 'description'].forEach(field => this.setFieldReadOnly(field, true));
+                this.buttonList = this.buttonList.filter(item => item.name !== 'save');
+            }
 
             this.listenTo(this.model, 'change:modelId', () => this.loadModelDefaults());
             this.listenTo(this.model, 'change:teamId', () => this.loadTeamDefaults());
@@ -34,7 +41,8 @@ define(['views/record/edit', 'studio-management:role-policy'], function (EditRec
                     'startTime',
                     'currency',
                 ].forEach(field => this.setFieldReadOnly(field, true));
-                if (!(status === 'Counting' && params.count)) {
+
+                if (!(status === 'Counting' && params.count) && !(status === 'Review' && RolePolicy.canReview(this))) {
                     this.setFieldReadOnly('description', true);
                 }
             }
@@ -52,6 +60,9 @@ define(['views/record/edit', 'studio-management:role-policy'], function (EditRec
             } else if (status === 'Closed' && params.revise) {
                 saveButton.label = 'Save Changes';
                 saveButton.style = 'primary';
+            } else if (status === 'Review' && RolePolicy.canReview(this)) {
+                saveButton.label = 'Save Review';
+                saveButton.style = 'success';
             }
         }
 
@@ -114,6 +125,11 @@ define(['views/record/edit', 'studio-management:role-policy'], function (EditRec
             }
 
             this.model.setMultiple(this.fetch());
+            if (this.getFieldView?.('screenshots')?.validate()) {
+                this.enableActionItems();
+                Espo.Ui.notify(false);
+                return;
+            }
 
             if (status === 'Draft' && params.start) {
                 try {
@@ -139,36 +155,60 @@ define(['views/record/edit', 'studio-management:role-policy'], function (EditRec
                 return;
             }
 
-            if (status === 'Counting' && params.count) {
-                await this.confirm(this.translate('closeShiftConfirmation', 'messages', 'SmShift'));
+            try {
+                if (status === 'Counting' && params.count) {
+                    await this.confirm(this.translate('closeShiftConfirmation', 'messages', 'SmShift'));
 
-                const response = await Espo.Ajax.postRequest(`SmShift/${this.model.id}/close`, {
-                    siteData: this.model.get('siteData') || [],
-                    screenshotsIds: this.model.get('screenshotsIds') || [],
-                    comment: this.model.get('description') || '',
-                });
-                this.model.set(response);
-                Espo.Ui.success(this.translate('shiftClosed', 'messages', 'SmShift'));
-                this.leaveToDetail();
+                    const response = await Espo.Ajax.postRequest(`SmShift/${this.model.id}/close`, {
+                        siteData: this.model.get('siteData') || [],
+                        screenshotsIds: this.model.get('screenshotsIds') || [],
+                        comment: this.model.get('description') || '',
+                    });
+                    this.model.set(response);
+                    Espo.Ui.success(this.translate('shiftClosed', 'messages', 'SmShift'));
+                    this.leaveToDetail();
 
-                return;
+                    return;
+                }
+
+                if (status === 'Review' && RolePolicy.canReview(this)) {
+                    const checkbox = this.$el?.find('[name="confirmClosureReview"]');
+                    const confirmClosure = checkbox?.length ? checkbox.prop('checked') === true : this.model.get('confirmClosure') === true;
+                    if (confirmClosure) {
+                        await this.confirm(this.translate('approveShiftConfirmation', 'messages', 'SmShift'));
+                    }
+                    const response = await Espo.Ajax.postRequest(`SmShift/${this.model.id}/review`, {
+                        siteData: this.model.get('siteData') || [],
+                        screenshotsIds: this.model.get('screenshotsIds') || [],
+                        comment: this.model.get('description') || '',
+                        confirmClosure,
+                    });
+                    this.model.set(response);
+                    Espo.Ui.success(this.translate(confirmClosure ? 'shiftApproved' : 'shiftReviewSaved', 'messages', 'SmShift'));
+                    this.leaveToDetail();
+                    return;
+                }
+
+                if (status === 'Closed' && params.revise && this.isManager()) {
+                    await this.confirm(this.translate('reviseShiftConfirmation', 'messages', 'SmShift'));
+
+                    const response = await Espo.Ajax.postRequest(`SmShift/${this.model.id}/revise`, {
+                        siteData: this.model.get('siteData') || [],
+                        screenshotsIds: this.model.get('screenshotsIds') || [],
+                    });
+                    this.model.set(response);
+                    Espo.Ui.success(this.translate('shiftRevised', 'messages', 'SmShift'));
+                    this.leaveToDetail();
+
+                    return;
+                }
+
+                return super.actionSave(data);
+            } catch (error) {
+                this.enableActionItems();
+                Espo.Ui.notify(false);
+                throw error;
             }
-
-            if (status === 'Closed' && params.revise && this.isManager()) {
-                await this.confirm(this.translate('reviseShiftConfirmation', 'messages', 'SmShift'));
-
-                const response = await Espo.Ajax.postRequest(`SmShift/${this.model.id}/revise`, {
-                    siteData: this.model.get('siteData') || [],
-                    screenshotsIds: this.model.get('screenshotsIds') || [],
-                });
-                this.model.set(response);
-                Espo.Ui.success(this.translate('shiftRevised', 'messages', 'SmShift'));
-                this.leaveToDetail();
-
-                return;
-            }
-
-            return super.actionSave(data);
         }
 
         isManager() {

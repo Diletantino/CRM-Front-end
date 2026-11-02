@@ -121,7 +121,7 @@ async function login(type, role) {
     for (const type of ['Model', 'Operator', 'ProducerAdmin', 'TechnicalDirector', 'Recruiter']) {
         const role = await create('Role', {name: prefix + ' grants ' + type, smAccountType: 'Model',
             userPermission: 'all', assignmentPermission: 'all',
-            smShiftPreparePermission: 'all', smShiftOperatePermission: 'all', smShiftRevisePermission: 'all',
+            smShiftPreparePermission: 'all', smShiftOperatePermission: 'all', smShiftReviewPermission: 'all', smShiftRevisePermission: 'all',
             smStaffAccessPermission: 'all', smAnalyticsAccessPermission: 'all', smInvitationsPermission: 'yes',
             data: allAcl});
         actorRoles.push(role);
@@ -184,13 +184,15 @@ async function login(type, role) {
         check(value.status === (action === 'open' ? 'Open' : 'Counting'), 'Granted model: ' + action);
     }
     const siteData = defaults.siteData.map(row => ({...row, earning: '12.00', offlineBonus: '2.00'}));
-    const closed = await ok('SmShift/' + shift.id + '/close', 'POST', {siteData, screenshotsIds: []}, actor.headers);
+    const submitted = await ok('SmShift/' + shift.id + '/close', 'POST', {siteData, screenshotsIds: []}, actor.headers);
+    check(submitted.status === 'Review', 'Granted user still submits to review');
+    const closed = await ok('SmShift/' + shift.id + '/review', 'POST', {siteData, screenshotsIds: [], confirmClosure: true}, actor.headers);
     check(closed.status === 'Closed' && Number(closed.totalGross) === 14, 'Granted model closes shift');
     const revised = await ok('SmShift/' + shift.id + '/revise', 'POST', {siteData, screenshotsIds: []}, actor.headers);
     check(revised.status === 'Closed', 'Granted model revises closed shift');
     const analytics = await ok('StudioManagement/analytics?from=2026-01-01&to=2026-12-31', 'GET', undefined, actor.headers);
     check(analytics.rows.some(row => row.teamId === team.id), 'All-analytics grant includes unrelated production');
-    const denied = {smShiftPreparePermission: 'no', smShiftOperatePermission: 'no', smShiftRevisePermission: 'no',
+    const denied = {smShiftPreparePermission: 'no', smShiftOperatePermission: 'no', smShiftReviewPermission: 'no', smShiftRevisePermission: 'no',
         smStaffAccessPermission: 'no', smAnalyticsAccessPermission: 'no', smInvitationsPermission: 'no'};
     for (let index = 0; index < actors.length; index++) {
         const viewer = actors[index];
@@ -210,7 +212,12 @@ async function login(type, role) {
         check((await request('SmShift', 'POST', {teamId: team.id, currency: 'USD'}, viewer.headers)).status === 403,
             'Preparation grant revoked');
         const hidden = await request('StudioManagement/analytics?from=2026-01-01&to=2026-12-31', 'GET', undefined, viewer.headers);
-        check(hidden.status === 403, 'Analytics data revoked, including technical director');
+        if (['Model', 'Operator'].includes(session.user.smAccountType)) {
+            check(hidden.status === 200 && hidden.data.personalOnly === true && !hidden.data.rows && !hidden.data.totals,
+                'Revoked studio grant leaves only built-in personal metrics');
+        } else {
+            check(hidden.status === 403, 'Studio analytics revoked, including technical director');
+        }
     }
     // Invitation catalog permission must not imply permission to manage Role records.
     await ok('Role/' + actorRoles[0].id, 'PUT', {smInvitationsPermission: 'yes'});
@@ -228,7 +235,8 @@ async function login(type, role) {
         'Native create ACL still protects credentials');
     check((await request('StudioManagement/staff/model', 'GET', undefined, actor.headers)).status === 403,
         'Native staff tab ACL is authoritative');
-    check((await request('StudioManagement/analytics?from=2026-01-01&to=2026-12-31', 'GET', undefined, actor.headers)).status === 403,
-        'Native analytics tab ACL is authoritative');
+    const personalOnly = await request('StudioManagement/analytics?from=2026-01-01&to=2026-12-31', 'GET', undefined, actor.headers);
+    check(personalOnly.status === 200 && personalOnly.data.personalOnly === true && !personalOnly.data.rows && !personalOnly.data.totals,
+        'Native analytics denial still protects studio finances; model retains personal metrics only');
     console.log('Dynamic roles HTTP: ' + checks + ' checks passed; 400 roles; ' + ((Date.now() - started) / 1000).toFixed(1) + 's. Run fixture cleanup.');
 })().catch(error => { console.error(error.message); process.exitCode = 1; });

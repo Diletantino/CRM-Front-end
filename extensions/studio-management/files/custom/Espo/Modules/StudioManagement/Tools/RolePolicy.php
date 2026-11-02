@@ -39,15 +39,28 @@ final class RolePolicy
             [$shift->get('operatorId'), $shift->get('producerId')], true));
     }
 
-    public function canRevise(User $user, Entity $shift): bool
+    public function canReview(User $user, Entity $shift): bool
     {
         $legacy = $user->get('smAccountType') === 'ProducerAdmin' ? 'team' : 'no';
-        $level = $this->level($user, 'smShiftRevise', $legacy);
+        return $this->checkProductionLevel($user, $shift, $this->level($user, 'smShiftReview', $legacy));
+    }
+
+    public function canRevise(User $user, Entity $shift): bool
+    {
+        // Closed-shift corrections require an explicit director-level role grant.
+        return $this->checkProductionLevel($user, $shift, $this->level($user, 'smShiftRevise'));
+    }
+
+    private function checkProductionLevel(User $user, Entity $shift, string $level): bool
+    {
         if ($level === 'all') {
             return true;
         }
         if ($level !== 'team') {
             return false;
+        }
+        if ($shift->get('producerId')) {
+            return $shift->get('producerId') === $user->getId();
         }
         $teamId = $shift->get('teamId');
         $team = $teamId ? $this->em->getEntityById('Team', $teamId) : null;

@@ -71,6 +71,7 @@
           "attribute": "status",
           "value": [
             "Counting",
+            "Review",
             "Closed"
           ]
         }
@@ -150,6 +151,9 @@
   {
     "name": "shiftNotes",
     "rows": [
+      [{"name": "submittedBy"}, {"name": "submittedAt"}],
+      [{"name": "reviewedBy"}, {"name": "reviewedAt"}],
+      [{"name": "confirmClosure"}, false],
       [
         {
           "name": "description"

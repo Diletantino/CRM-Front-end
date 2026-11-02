@@ -20,6 +20,7 @@
     "__APPEND__",
     "smShiftPreparePermission",
     "smShiftOperatePermission",
+    "smShiftReviewPermission",
     "smShiftRevisePermission",
     "smStaffAccessPermission",
     "smAnalyticsAccessPermission",
@@ -28,6 +29,7 @@
   "valuePermissionHighestLevels": {
     "smShiftPreparePermission": "all",
     "smShiftOperatePermission": "all",
+    "smShiftReviewPermission": "all",
     "smShiftRevisePermission": "all",
     "smStaffAccessPermission": "all",
     "smAnalyticsAccessPermission": "all",
@@ -36,6 +38,7 @@
   "permissionsStrictDefaults": {
     "smShiftPreparePermission": "not-set",
     "smShiftOperatePermission": "not-set",
+    "smShiftReviewPermission": "not-set",
     "smShiftRevisePermission": "not-set",
     "smStaffAccessPermission": "not-set",
     "smAnalyticsAccessPermission": "not-set",

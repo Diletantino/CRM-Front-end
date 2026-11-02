@@ -88,7 +88,9 @@ async function cleanup(list) {
         const counting = await ok('SmShift/' + draft.id + '/finish', 'POST');
         expect(counting.status === 'Counting', 'Open -> Counting');
         const sites = open.siteData.map(row => ({...row, earning: '100.00', offlineBonus: '10.00'}));
-        const closed = await ok('SmShift/' + draft.id + '/close', 'POST', {siteData: sites, screenshotsIds: []});
+        const pending = await ok('SmShift/' + draft.id + '/close', 'POST', {siteData: sites, screenshotsIds: []});
+        expect(pending.status === 'Review', 'Operator submission requires review.');
+        const closed = await ok('SmShift/' + draft.id + '/review', 'POST', {siteData: sites, screenshotsIds: [], confirmClosure: true});
         expect(closed.status === 'Closed' && Number(closed.totalGross) === 110, 'Counting -> Closed with correct total.');
         expect(closed.producerId === producer.id && Number(closed.producerShare) === 11,
             'Closing must use the original producer even after group changes.');
@@ -147,7 +149,8 @@ async function cleanup(list) {
         const legacyShift = await create('SmShift', {teamId: legacyTeam.id, currency: 'USD'});
         await ok('SmShift/' + legacyShift.id + '/open', 'POST');
         await ok('SmShift/' + legacyShift.id + '/finish', 'POST');
-        const legacyClosed = await ok('SmShift/' + legacyShift.id + '/close', 'POST', {siteData: sites, screenshotsIds: []});
+        await ok('SmShift/' + legacyShift.id + '/close', 'POST', {siteData: sites, screenshotsIds: []});
+        const legacyClosed = await ok('SmShift/' + legacyShift.id + '/review', 'POST', {siteData: sites, screenshotsIds: [], confirmClosure: true});
         expect(legacyClosed.status === 'Closed', 'Manually created producer with role can close a real HTTP shift.');
         await ok('User/' + legacy.id, 'PUT', {isActive: false});
         const inactive = await request('StudioManagement/teams/' + legacyTeam.id + '/shiftDefaults');
@@ -203,7 +206,16 @@ async function cleanup(list) {
         }
         const actorClosed = await request('SmShift/' + actorCreate.data.id + '/close', 'POST',
             {siteData: sites, screenshotsIds: []}, actor);
-        expect(actorClosed.status === 200 && actorClosed.data.status === 'Closed', 'Ordinary operator closes own shift: ' + actorClosed.message);
+        expect(actorClosed.status === 200 && actorClosed.data.status === 'Review', 'Ordinary operator submits own shift: ' + actorClosed.message);
+        const operatorReview = await request('SmShift/' + actorCreate.data.id + '/review', 'POST',
+            {siteData: sites, screenshotsIds: [], confirmClosure: true}, actor);
+        expect(operatorReview.status === 403, 'Ordinary operator cannot approve submitted shift.');
+        const operatorChange = await request('SmShift/' + actorCreate.data.id, 'PUT', {description: 'bypass'}, actor);
+        expect(operatorChange.status === 403, 'Ordinary operator cannot edit submitted shift through native PUT.');
+        await ok('SmShift/' + actorCreate.data.id + '/review', 'POST', {siteData: sites, screenshotsIds: [], confirmClosure: true});
+        const operatorRevision = await request('SmShift/' + actorCreate.data.id + '/revise', 'POST',
+            {siteData: sites, screenshotsIds: []}, actor);
+        expect(operatorRevision.status === 403, 'Ordinary operator cannot revise an approved shift.');
         const actorRevise = await request('SmShift/' + actorCreate.data.id + '/revise', 'POST',
             {siteData: sites, screenshotsIds: []}, actor);
         expect(actorRevise.status === 403, 'Operator cannot revise a closed shift.');
@@ -213,10 +225,36 @@ async function cleanup(list) {
         expect(outsiderCreate.status === 403, 'Group-only shift create cannot bypass team access restrictions.');
         passed = true;
         if (process.argv.includes('--keep')) {
+            // A disposable pending-review record and synthetic image for UI verification.
+            const zlib = require('node:zlib');
+            const chunk = (type, data) => {
+                const body = Buffer.concat([Buffer.from(type), data]);
+                let crc = 0xffffffff;
+                for (const byte of body) {
+                    crc ^= byte;
+                    for (let bit = 0; bit < 8; bit++) crc = (crc >>> 1) ^ ((crc & 1) ? 0xedb88320 : 0);
+                }
+                const size = Buffer.alloc(4); size.writeUInt32BE(data.length);
+                const end = Buffer.alloc(4); end.writeUInt32BE((crc ^ 0xffffffff) >>> 0);
+                return Buffer.concat([size, body, end]);
+            };
+            const header = Buffer.alloc(13); header.writeUInt32BE(200, 0); header.writeUInt32BE(100, 4); header[8] = 8; header[9] = 2;
+            const pixels = Buffer.alloc(100 * 601);
+            for (let y = 0; y < 100; y++) for (let x = 0; x < 200; x++) {
+                const offset = y * 601 + 1 + x * 3; pixels[offset] = 33; pixels[offset + 1] = 150; pixels[offset + 2] = 243;
+            }
+            const png = Buffer.concat([Buffer.from('89504e470d0a1a0a', 'hex'), chunk('IHDR', header),
+                chunk('IDAT', zlib.deflateSync(pixels)), chunk('IEND', Buffer.alloc(0))]);
+            const proof = await create('Attachment', {name: 'review-proof-' + suffix + '.png', type: 'image/png',
+                role: 'Attachment', parentType: 'SmShift', field: 'screenshots', file: 'data:image/png;base64,' + png.toString('base64')});
+            await ok('SmShift/' + sameShift.id + '/open', 'POST');
+            await ok('SmShift/' + sameShift.id + '/finish', 'POST');
+            const review = await ok('SmShift/' + sameShift.id + '/close', 'POST', {siteData: sites, screenshotsIds: [proof.id]});
+            expect(review.status === 'Review', 'Dual-role producer/operator also enters Review.');
             fs.writeFileSync(registry, JSON.stringify({fixtures, teamId: native.id, producer, operator, model,
-                sameTeamId: same.id, closedShiftId: draft.id}, null, 2));
+                sameTeamId: same.id, closedShiftId: draft.id, reviewShiftId: sameShift.id}, null, 2));
             console.log('UI fixtures retained: ' + JSON.stringify({teamId: native.id, sameTeamId: same.id,
-                producer: producer.name, operator: operator.name, model: model.name}));
+                producer: producer.name, operator: operator.name, model: model.name, reviewShiftId: sameShift.id}));
         }
         console.log('Live team workflow: ' + checks + ' checks passed.');
     } catch (error) {

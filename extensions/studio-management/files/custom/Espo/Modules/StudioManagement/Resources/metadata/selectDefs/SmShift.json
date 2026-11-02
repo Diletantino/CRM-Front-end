@@ -1,0 +1,5 @@
+{
+  "accessControlFilterClassNameMap": {
+    "mandatory": "Espo\\Modules\\StudioManagement\\Classes\\Select\\SmShift\\AccessControlFilters\\Mandatory"
+  }
+}

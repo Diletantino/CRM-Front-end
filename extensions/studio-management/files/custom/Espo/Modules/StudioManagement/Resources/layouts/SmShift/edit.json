@@ -20,7 +20,7 @@
         {
           "type": "in",
           "attribute": "status",
-          "value": ["Counting", "Closed"]
+          "value": ["Counting", "Review", "Closed"]
         }
       ]
     },
@@ -37,6 +37,7 @@
   {
     "name": "shiftNotes",
     "rows": [
+      [{"name": "confirmClosure"}, false],
       [{"name": "description"}],
       [{"name": "workflowFooter", "fullWidth": true, "noLabel": true}]
     ]

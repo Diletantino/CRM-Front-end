@@ -37,6 +37,10 @@ class BeforeSave implements BeforeSaveHook
 
         $previousStatus = $entity->getFetched('status');
 
+        if (in_array($previousStatus, [SmShift::STATUS_REVIEW, SmShift::STATUS_CLOSED], true)) {
+            throw WorkflowError::forbidden('Изменения смены на проверке и подсчитанной смены доступны только через проверку или разрешённую корректировку.');
+        }
+
         if ($previousStatus === SmShift::STATUS_DRAFT) {
             if ($entity->isAttributeChanged('status') || $entity->isAttributeChanged('endTime')) {
                 throw WorkflowError::conflict('Статус смены изменяется только кнопками запуска и завершения.');
@@ -99,6 +103,10 @@ class BeforeSave implements BeforeSaveHook
             'expenseBreakdown',
             'platformMetrics',
             'closedById',
+            'submittedById',
+            'submittedAt',
+            'reviewedById',
+            'reviewedAt',
             'financialSnapshotId',
         ] as $attribute) {
             if ($entity->isAttributeChanged($attribute)) {

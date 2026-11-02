@@ -5,6 +5,10 @@ define(['views/fields/base', 'studio-management:role-policy'], function (BaseFie
 
         setup() {
             super.setup();
+            this.addHandler('change', '[name="confirmClosureReview"]', event => {
+                this.model.set('confirmClosure', event.target.checked === true);
+                this.trigger('change');
+            });
             this.addHandler('click', '[data-action="workflowSave"]', event => this.runWorkflow(event, 'actionSave'));
             this.addHandler('click', '[data-action="workflowFinish"]', event => this.runWorkflow(event, 'actionFinishShift'));
         }
@@ -48,6 +52,7 @@ define(['views/fields/base', 'studio-management:role-policy'], function (BaseFie
                 showComplete: this.mode === 'edit' && status === 'Counting' &&
                     canOperate,
                 showRevision: this.mode === 'edit' && status === 'Closed' && isManager,
+                showReview: this.mode === 'edit' && status === 'Review' && canEdit && RolePolicy.canReview(this),
             };
         }
     };

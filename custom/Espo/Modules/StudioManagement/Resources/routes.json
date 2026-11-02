@@ -30,6 +30,11 @@
     "actionClassName": "Espo\\Modules\\StudioManagement\\Api\\PostFinishShift"
   },
   {
+    "route": "/SmShift/:id/review",
+    "method": "post",
+    "actionClassName": "Espo\\Modules\\StudioManagement\\Api\\PostReviewShift"
+  },
+  {
     "route": "/SmShift/:id/revise",
     "method": "post",
     "actionClassName": "Espo\\Modules\\StudioManagement\\Api\\PostReviseShift"

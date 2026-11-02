@@ -37,6 +37,8 @@ let checks = 0;
         listenTo() {}
         once() {}
         setFieldReadOnly() {}
+        hideField() {}
+        showField() {}
         fetch() { return {}; }
         translate(value) { return value; }
         setIsNotChanged() {}

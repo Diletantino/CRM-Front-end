@@ -18,9 +18,13 @@ define([], function () {
             return value === 'all' || (value === 'own' &&
                 [view.model.get('operatorId'), view.model.get('producerId')].includes(view.getUser().id));
         },
-        canRevise(view) {
+        canReview(view) {
             const legacy = view.getUser().get('smAccountType') === 'ProducerAdmin' ? 'team' : 'no';
-            const value = level(view, 'smShiftRevise', legacy);
+            const value = level(view, 'smShiftReview', legacy);
+            return value === 'all' || (value === 'team' && view.model.get('producerId') === view.getUser().id);
+        },
+        canRevise(view) {
+            const value = level(view, 'smShiftRevise');
             return value === 'all' || (value === 'team' && view.model.get('producerId') === view.getUser().id);
         },
         canViewStaff(view, scope) {

@@ -6,10 +6,15 @@ require '/var/www/html/bootstrap.php';
 
 use Espo\Core\Application;
 use Espo\Core\ApplicationUser;
+use Espo\Entities\User;
 use Espo\Core\Exceptions\BadRequest;
 use Espo\Core\Exceptions\Conflict;
 use Espo\Core\Exceptions\Forbidden;
 use Espo\Core\Acl;
+use Espo\Core\AclManager;
+use Espo\Modules\StudioManagement\Api\PostReviewShift;
+use Espo\Modules\StudioManagement\Api\PostReviseShift;
+use Espo\Modules\StudioManagement\Tools\RolePolicy;
 use Espo\Core\Api\RequestWrapper;
 use Espo\Modules\StudioManagement\Api\GetModelShiftDefaults;
 use GuzzleHttp\Psr7\ServerRequest;
@@ -139,7 +144,92 @@ try {
         $sites[0]['earning'] = '125.00';
         $sites[0]['offlineBonus'] = '10.00';
         $shift = $service->close($shift->getId(), $sites, [], 'Operator test comment', $admin);
-        $assert($shift->get('status') === 'Closed', 'Count transitions Counting to Closed.');
+        $assert($shift->get('status') === 'Review', 'Count transitions Counting to Review.');
+        $assert(!$em->getRDBRepository('SmShiftFinancialSnapshot')->where(['shiftId' => $shift->getId()])->findOne(), 'Review has no posted financial snapshot.');
+        $assert(!$em->getRDBRepository('SmShiftExpense')->where(['shiftId' => $shift->getId()])->findOne(), 'Review does not post expenses.');
+        $assert($shift->get('submittedById') === $admin->getId(), 'Submission is audited.');
+        $aclManager = $factory->create(AclManager::class);
+        $policy = $factory->create(RolePolicy::class);
+        $roleFor = function (User $user, array $permissions) use ($em, $suffix, $factory): User {
+            $r = $em->getNewEntity('Role');
+            $r->set(array_merge(['name' => 'Review test ' . $suffix . ' ' . $user->getId(),
+                'data' => (object) ['SmShift' => (object) ['read' => 'all', 'edit' => 'all', 'create' => 'yes']]], $permissions));
+            $em->saveEntity($r);
+            $user->set('rolesIds', [$r->getId()]);
+            $em->saveEntity($user);
+            $em->getRDBRepository('User')->getRelation($user, 'roles')->relateById($r->getId());
+            $factory->create(\Espo\Core\Acl\Cache\Clearer::class)->clearForUser($user);
+            return $em->getEntityById('User', $user->getId());
+        };
+        $operator = $roleFor($operator, ['smShiftReviewPermission' => 'no', 'smShiftRevisePermission' => 'no']);
+        $producer = $roleFor($producer, ['smShiftReviewPermission' => 'team', 'smShiftRevisePermission' => 'no']);
+        $director = $roleFor($createUser('TechnicalDirector'), ['smShiftReviewPermission' => 'all', 'smShiftRevisePermission' => 'all']);
+        // ORM fixture relation changes do not represent a new HTTP request: use fresh ACL wrappers.
+        $aclManager = $factory->create(AclManager::class);
+        $policy = new RolePolicy($aclManager, $em);
+        $assert($policy->canReview($producer, $shift), 'Review fixture producer has review permission: ' .
+            $aclManager->getPermissionLevel($producer, 'smShiftReview'));
+        $assert((new Acl($aclManager, $producer))->checkEntityEdit($shift), 'Review fixture native edit level: ' .
+            $aclManager->getLevel($producer, 'SmShift', 'edit'));
+        $reviewRequest = function (array $extra = []) use ($shift, $sites): RequestWrapper {
+            return new RequestWrapper(new ServerRequest('POST', '/', ['Content-Type' => 'application/json'], json_encode(array_merge([
+                'siteData' => $sites, 'screenshotsIds' => [], 'comment' => 'Operator test comment',
+            ], $extra), JSON_THROW_ON_ERROR)), '', ['id' => $shift->getId()]);
+        };
+        $reviewApi = function (User $user) use ($em, $service, $policy, $aclManager): PostReviewShift {
+            return new PostReviewShift(new Acl($aclManager, $user), $policy, $service, $user, $em);
+        };
+        try {
+            $reviewApi($operator)->process($reviewRequest(['confirmClosure' => true]));
+            $assert(false, 'An operator cannot approve even with native edit-all ACL.');
+        } catch (Forbidden) { $assert(true, 'Operator approval forbidden by backend.'); }
+        try {
+            $reviewApi($producer)->process($reviewRequest(['confirmClosure' => 'true']));
+            $assert(false, 'Approval must not accept a truthy string.');
+        } catch (BadRequest) { $assert(true, 'Explicit Boolean confirmation required.'); }
+        $reviewApi($producer)->process($reviewRequest());
+        $assert($em->getEntityById('SmShift', $shift->getId())->get('status') === 'Review', 'Saving unchecked review does not finalize.');
+        try {
+            $shift->set('description', 'Bypass');
+            $em->saveEntity($shift);
+            $assert(false, 'Ordinary PUT must not mutate a review shift.');
+        } catch (Forbidden) { $assert(true, 'Generic review update forbidden.'); }
+        $shift->set('description', 'Operator test comment');
+        $reviewApi($producer)->process($reviewRequest(['confirmClosure' => true]));
+        $shift = $em->getEntityById('SmShift', $shift->getId());
+        $assert($shift->get('status') === 'Closed', 'Approval transitions Review to Closed.');
+        $assert($shift->get('reviewedById') === $producer->getId() && (bool) $shift->get('reviewedAt'), 'Approval audit recorded.');
+        $assert(!$policy->canRevise($producer, $shift), 'Producer cannot correct a closed shift without explicit permission.');
+        $assert($policy->canRevise($director, $shift), 'Explicit director correction permission works.');
+        $operatorAcl = new Acl($aclManager, $operator);
+        $assert(!$operatorAcl->checkEntityRead($shift), 'Own closed shift cannot be opened by operator.');
+        $assert(!$operatorAcl->checkEntityEdit($shift), 'Own closed shift cannot be edited by operator.');
+        $listFixtures = [$shift->getId()];
+        foreach (['own-open' => $operator, 'foreign-open' => $producer, 'foreign-closed' => $producer] as $label => $worker) {
+            $fixture = $em->getNewEntity('SmShift');
+            $fixture->set(['name' => 'List access ' . $suffix, 'operatorId' => $worker->getId(),
+                'teamId' => $shift->get('teamId'), 'status' => $label === 'foreign-closed' ? 'Closed' : 'Open']);
+            $em->saveEntity($fixture, ['skipHooks' => true]);
+            $listFixtures[] = $fixture->getId();
+            $assert($operatorAcl->checkEntityRead($fixture) === ($label === 'own-open'), 'Record access: ' . $label);
+            $assert($operatorAcl->checkEntityEdit($fixture) === ($label === 'own-open'), 'Edit access: ' . $label);
+        }
+        $listQuery = $em->getQueryBuilder()->select()->from('SmShift')->select('id')->where(['id' => $listFixtures]);
+        (new \Espo\Modules\StudioManagement\Classes\Select\SmShift\AccessControlFilters\Mandatory($operator, $policy))->apply($listQuery);
+        $visibleIds = $em->getQueryExecutor()->execute($listQuery->build())->fetchAll(\PDO::FETCH_COLUMN);
+        $assert(count($visibleIds) === 2 && in_array($shift->getId(), $visibleIds, true),
+            'Operator list includes own Closed and Open, excludes foreign shifts even in same group.');
+        try {
+            (new PostReviseShift(new Acl($aclManager, $producer), $policy, $service, $producer, $em))->process($reviewRequest());
+            $assert(false, 'Producer correction must be forbidden through API.');
+        } catch (Forbidden) { $assert(true, 'Closed-shift producer correction forbidden.'); }
+        (new PostReviseShift(new Acl($aclManager, $director), $policy, $service, $director, $em))->process($reviewRequest());
+        $assert($em->getRDBRepository('SmShiftFinancialSnapshot')->where(['shiftId' => $shift->getId()])->count() === 1,
+            'Director revision updates the one snapshot instead of duplicating it.');
+        try {
+            $service->approve($shift->getId(), $sites, [], '', $admin);
+            $assert(false, 'Repeated approval must fail.');
+        } catch (Conflict) { $assert(true, 'Approval is idempotent by status lock.'); }
         $assert($shift->get('description') === 'Operator test comment', 'Operator comment is saved with the closed shift.');
         $assert((float) $shift->get('totalGross') === 135.0, 'Online and offline income summed correctly.');
         $assert((bool) $em->getRDBRepository('SmShiftFinancialSnapshot')->where(['shiftId' => $shift->getId()])->findOne(), 'Close creates financial snapshot.');
@@ -177,6 +267,7 @@ try {
         $storedTeam->set('smProducerId', null);
         $em->saveEntity($storedTeam, ['skipHooks' => true]);
         $closedLegacy = $service->close($groupOnly->getId(), $sites, [], '', $admin);
+        $closedLegacy = $service->approve($groupOnly->getId(), $sites, [], '', $admin);
         $assert($closedLegacy->get('status') === 'Closed' &&
             $closedLegacy->get('producerId') === $producer->getId(), 'Legacy Counting shift resolves producer from native group and role.');
         $assert((float) $closedLegacy->get('producerShare') === 13.5, 'Legacy producer gets correct percentage.');
@@ -196,6 +287,8 @@ try {
         $service->open($dualShift->getId());
         $service->finish($dualShift->getId());
         $dualClosed = $service->close($dualShift->getId(), $sites, [], '', $admin);
+        $assert($dualClosed->get('status') === 'Review', 'Producer/operator also requires separate review.');
+        $dualClosed = $service->approve($dualShift->getId(), $sites, [], '', $admin);
         $assert((float) $dualClosed->get('operatorShare') === 6.75 &&
             (float) $dualClosed->get('producerShare') === 13.5, 'Producer/operator has separate financial shares.');
         $assert($em->getRDBRepository('SmShift')->getRelation($dualClosed, 'participants')->count() === 2,

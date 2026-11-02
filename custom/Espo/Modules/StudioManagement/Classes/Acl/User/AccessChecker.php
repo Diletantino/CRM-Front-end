@@ -22,6 +22,21 @@ final class AccessChecker implements AccessEntityCREDSChecker
 
     public function __construct(private DefaultAccessChecker $defaultAccessChecker) {}
 
+    public function check(User $user, ScopeData $data): bool
+    {
+        return !$this->isRestrictedModel($user, $data) && $this->defaultAccessChecker->check($user, $data);
+    }
+
+    public function checkRead(User $user, ScopeData $data): bool
+    {
+        return !$this->isRestrictedModel($user, $data) && $this->defaultAccessChecker->checkRead($user, $data);
+    }
+
+    private function isRestrictedModel(User $user, ScopeData $data): bool
+    {
+        return !$user->isAdmin() && $user->get('smAccountType') === 'Model' && $data->getRead() !== 'all';
+    }
+
     public function checkEntityCreate(User $user, Entity $entity, ScopeData $data): bool
     {
         if ($entity instanceof User && $entity->isSuperAdmin() && !$user->isSuperAdmin()) {
@@ -33,6 +48,7 @@ final class AccessChecker implements AccessEntityCREDSChecker
 
     public function checkEntityRead(User $user, Entity $entity, ScopeData $data): bool
     {
+        if ($this->isRestrictedModel($user, $data)) return false;
         if ($entity instanceof User && $entity->isSuperAdmin() && !$user->isSuperAdmin()) {
             return false;
         }

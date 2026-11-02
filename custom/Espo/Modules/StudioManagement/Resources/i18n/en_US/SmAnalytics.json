@@ -1,4 +1,17 @@
 {
-  "labels": {"Gross": "Gross", "Studio": "Studio Net", "Producers": "Producers", "Participants": "Models and Operators", "Technical Directors": "Technical Directors", "Recruiters": "Recruiters", "Expenses": "Total Expenses", "Personal Earnings": "Personal Earnings", "Shifts": "Shifts", "Producer Earnings": "Production Finances"},
-  "messages": {"noData": "No closed shifts in this period.", "analyticsFailed": "Could not load analytics."}
+  "labels": {
+    "Personal Analytics": "Personal Analytics",
+    "Gross": "Gross", "Studio": "Studio Net", "Producers": "Producers", "Participants": "Models and Operators", "Technical Directors": "Technical Directors", "Recruiters": "Recruiters", "Expenses": "Total Expenses", "Personal Earnings": "Personal Earnings", "Shifts": "Shifts", "Producer Earnings": "Production Finances",
+    "Today": "Today", "Week": "Current Week", "Month": "Current Month", "From": "From", "To": "To", "Producer": "Producer", "Team": "Team", "Producer Share": "Producer Share",
+    "Overview": "Overview", "Weekly Average": "Last Week Average Check", "Weekly Hours": "Last Week Working Hours", "Last Shift Date": "Last Shift Date", "Last Shift Check": "Last Shift Check", "Weekly Earnings": "Last Week Earnings", "Hours Unit": "h", "Minutes Unit": "min"
+  },
+  "messages": {
+    "noData": "No approved shifts in this period.", "analyticsFailed": "Could not load analytics.",
+    "noShifts": "No approved shifts.", "noEarnings": "No earnings were posted last week.",
+    "checkScope": "Average result of approved shifts in the previous calendar week. Currencies are calculated separately.",
+    "productionHours": "Total duration of approved shifts in your production during the previous calendar week.",
+    "personalHours": "Total duration of your approved shifts during the previous calendar week.",
+    "lastShiftScope": "Latest approved shift across all dates.",
+    "earningsScope": "Your personal earnings posted in the previous calendar week. Only approved shifts are included; studio income is excluded."
+  }
 }

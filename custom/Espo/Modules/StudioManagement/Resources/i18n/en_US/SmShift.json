@@ -7,6 +7,8 @@
     "Finish Shift": "Finish",
     "Complete Calculation": "Complete Calculation",
     "Save Changes": "Save Changes",
+    "Save Review": "Save Review",
+    "Preview Screenshot": "Open screenshot",
     "Add Site": "Add Site",
     "Start Site": "Start",
     "Banned": "Banned",
@@ -16,6 +18,11 @@
     "Financial results": "Financial results"
   },
   "fields": {
+    "confirmClosure": "Confirm shift closure",
+    "submittedBy": "Submitted by",
+    "submittedAt": "Submitted for review at",
+    "reviewedBy": "Approved by",
+    "reviewedAt": "Approved at",
     "number": "#",
     "name": "Name",
     "status": "Status",
@@ -70,6 +77,7 @@
       "Draft": "Preliminary",
       "Open": "Shift in progress",
       "Counting": "Being calculated",
+      "Review": "Under review",
       "Closed": "Calculated"
     }
   },
@@ -81,10 +89,13 @@
   "messages": {
     "openShiftConfirmation": "Start this shift now? The start time will be recorded automatically.",
     "finishShiftConfirmation": "Finish the shift and proceed to calculation?",
-    "closeShiftConfirmation": "Complete the calculation and record the financial result?",
+    "closeShiftConfirmation": "Complete calculation and submit the shift for producer review? The operator will no longer be able to edit it.",
+    "approveShiftConfirmation": "Confirm closure and record the financial result? Further changes require permission to correct closed shifts.",
+    "shiftApproved": "Closure approved. The shift is calculated and financial results are recorded.",
+    "shiftReviewSaved": "Review changes saved. The shift remains under review until closure is confirmed.",
     "reviseShiftConfirmation": "Save the corrected amounts and update the financial snapshot?",
     "shiftOpened": "Shift started.",
-    "shiftClosed": "Calculation completed and financial result recorded.",
+    "shiftClosed": "Calculation completed. Shift submitted for producer review.",
     "shiftRevised": "Shift data and financial snapshot updated.",
     "teamDefaultsFailed": "Unable to load team composition. Select an active model, operator and producer in the team."
   }
