@@ -1,0 +1,25 @@
+{
+  "labels": {
+    "Account name": "Employee name",
+    "Remove photo": "Remove photo",
+    "Accounts to complete": "Accounts to complete",
+    "Back to queue": "Back to queue",
+    "Received at": "Received at",
+    "Pending completion": "Pending completion",
+    "Fill profile": "Fill profile",
+    "Save profile": "Save profile",
+    "Complete account registration": "Complete account registration",
+    "Previous page": "Previous page",
+    "Next page": "Next page"
+  },
+  "messages": {
+    "emptyQueue": "There are no accounts to complete.",
+    "confirmComplete": "Complete registration? The employee will be able to sign in and the account will leave the queue.",
+    "confirmRemovePhoto": "Remove the photo from the profile?",
+    "accountCompleted": "Registration completed. The account is active.",
+    "profileSaved": "Profile saved.",
+    "photoFormats": "JPEG, PNG or WebP, up to 5 MB.",
+    "photoTooLarge": "The photo must be no larger than 5 MB.",
+    "requestFailed": "The operation failed. Refresh the queue and try again."
+  }
+}

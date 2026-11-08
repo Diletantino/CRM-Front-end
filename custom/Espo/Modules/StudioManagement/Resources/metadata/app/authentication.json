@@ -1,6 +1,11 @@
 {
   "beforeLoginHookClassNameList": [
     "__APPEND__",
+    "Espo\\Modules\\StudioManagement\\Authentication\\PendingAccountGuard",
     "Espo\\Modules\\StudioManagement\\Authentication\\PersonalLinkGuard"
+  ],
+  "onLoginHookClassNameList": [
+    "__APPEND__",
+    "Espo\\Modules\\StudioManagement\\Authentication\\RecruiterAccess"
   ]
 }

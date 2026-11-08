@@ -1,0 +1,4 @@
+{
+  "controller": "studio-management:controllers/sm-account-onboarding",
+  "iconClass": "fas fa-user-check"
+}

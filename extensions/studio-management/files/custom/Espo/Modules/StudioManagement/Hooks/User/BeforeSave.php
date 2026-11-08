@@ -2,9 +2,11 @@
 
 namespace Espo\Modules\StudioManagement\Hooks\User;
 
+use Espo\Core\Exceptions\BadRequest;
 use Espo\Core\Hook\Hook\BeforeSave as BeforeSaveHook;
 use Espo\Entities\User;
 use Espo\Modules\StudioManagement\Tools\AccountTypeResolver;
+use Espo\Modules\StudioManagement\Tools\AccountOnboarding;
 use Espo\Modules\StudioManagement\Tools\TeamComposition;
 use Espo\ORM\EntityManager;
 use Espo\ORM\Entity;
@@ -17,6 +19,9 @@ class BeforeSave implements BeforeSaveHook
 
     public function beforeSave(Entity $entity, SaveOptions $options): void
     {
+        if ($entity instanceof User && $entity->get(AccountOnboarding::PENDING) && $entity->isActive()) {
+            throw new BadRequest('Complete account registration before activation.');
+        }
         if ($entity instanceof User && !$entity->get('smAccountType')) {
             $entity->set('smAccountType', $this->resolver->resolve($entity));
         }

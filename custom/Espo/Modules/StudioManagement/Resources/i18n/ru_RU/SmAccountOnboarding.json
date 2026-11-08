@@ -1,0 +1,25 @@
+{
+  "labels": {
+    "Account name": "Имя сотрудника",
+    "Remove photo": "Удалить фото",
+    "Accounts to complete": "Аккаунты для заполнения",
+    "Back to queue": "К списку",
+    "Received at": "Поступил",
+    "Pending completion": "Ожидает заполнения",
+    "Fill profile": "Заполнить",
+    "Save profile": "Сохранить профиль",
+    "Complete account registration": "Завершить регистрацию аккаунта",
+    "Previous page": "Предыдущая страница",
+    "Next page": "Следующая страница"
+  },
+  "messages": {
+    "emptyQueue": "Нет аккаунтов для заполнения.",
+    "confirmComplete": "Завершить регистрацию? Сотрудник сможет войти, а аккаунт исчезнет из очереди.",
+    "confirmRemovePhoto": "Удалить фотографию из профиля?",
+    "accountCompleted": "Регистрация завершена. Аккаунт активирован.",
+    "profileSaved": "Профиль сохранён.",
+    "photoFormats": "JPEG, PNG или WebP, до 5 МБ.",
+    "photoTooLarge": "Фотография должна быть не больше 5 МБ.",
+    "requestFailed": "Не удалось выполнить операцию. Обновите очередь и повторите попытку."
+  }
+}

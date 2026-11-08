@@ -131,6 +131,15 @@ async function login(type, role) {
         check(session.user.smAccountType === type, type + ': role type never changes explicit account type');
         check(session.acl.smShiftOperatePermission === 'all', type + ': native ACL map includes grant');
         check(session.acl.table.Team.create === 'yes', type + ': Team create grant reaches active session');
+        if (type === 'Recruiter') {
+            check((await request('StudioManagement/onboarding', 'GET', undefined, actor.headers)).status === 200,
+                'Recruiter can open the account completion queue');
+            for (const resource of ['Team', 'User', 'Role', 'SmShift', 'SmRegistrationLink', 'StudioManagement/analytics']) {
+                check((await request(resource, 'GET', undefined, actor.headers)).status === 403,
+                    'Recruiter access stays limited despite a role grant: ' + resource);
+            }
+            continue;
+        }
         const managedTeam = await create('Team', {name: prefix + ' managed team ' + type}, actor.headers);
         check(Boolean(managedTeam.id), type + ': delegated Team create permission works on backend');
         const managedTeamEdit = await ok('Team/' + managedTeam.id, 'PUT',

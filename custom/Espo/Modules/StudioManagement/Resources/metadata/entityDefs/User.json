@@ -1,5 +1,23 @@
 {
   "fields": {
+    "smRegistrationPending": {
+      "type": "bool",
+      "default": false,
+      "readOnly": true,
+      "audited": true,
+      "index": true
+    },
+    "smRegistrationCompletedAt": {
+      "type": "datetime",
+      "readOnly": true,
+      "audited": true
+    },
+    "smRegistrationCompletedById": {
+      "type": "varchar",
+      "maxLength": 36,
+      "readOnly": true,
+      "audited": true
+    },
     "smAccountType": {
       "type": "enum",
       "options": [

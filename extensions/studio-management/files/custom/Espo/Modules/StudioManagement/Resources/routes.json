@@ -1,5 +1,40 @@
 [
   {
+    "route": "/StudioManagement/onboarding",
+    "method": "get",
+    "actionClassName": "Espo\\Modules\\StudioManagement\\Api\\AccountOnboardingAction"
+  },
+  {
+    "route": "/StudioManagement/onboarding/:id",
+    "method": "get",
+    "actionClassName": "Espo\\Modules\\StudioManagement\\Api\\AccountOnboardingAction"
+  },
+  {
+    "route": "/StudioManagement/onboarding/:id",
+    "method": "put",
+    "actionClassName": "Espo\\Modules\\StudioManagement\\Api\\AccountOnboardingAction"
+  },
+  {
+    "route": "/StudioManagement/onboarding/:id/complete",
+    "method": "post",
+    "actionClassName": "Espo\\Modules\\StudioManagement\\Api\\AccountOnboardingAction"
+  },
+  {
+    "route": "/StudioManagement/onboarding/:id/photos",
+    "method": "post",
+    "actionClassName": "Espo\\Modules\\StudioManagement\\Api\\AccountOnboardingAction"
+  },
+  {
+    "route": "/StudioManagement/onboarding/:id/photos/:photoId",
+    "method": "get",
+    "actionClassName": "Espo\\Modules\\StudioManagement\\Api\\AccountOnboardingAction"
+  },
+  {
+    "route": "/StudioManagement/onboarding/:id/photos/:photoId",
+    "method": "delete",
+    "actionClassName": "Espo\\Modules\\StudioManagement\\Api\\AccountOnboardingAction"
+  },
+  {
     "route": "/StudioManagement/registrationRoles",
     "method": "get",
     "actionClassName": "Espo\\Modules\\StudioManagement\\Api\\GetRegistrationRoles"
