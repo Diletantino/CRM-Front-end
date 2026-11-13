@@ -66,7 +66,7 @@ async function create(type, data, headers) { return track(type, await ok(type, '
     track('User', {id: registration.userId});
     const basic = Buffer.from(email + ':' + password).toString('base64');
     check(registration.mode === 'pending', 'Registration waits for profile completion');
-    const blocked = await request('App/user', 'GET', undefined, {...admin,
+    const blocked = await req('App/user', 'GET', undefined, {...admin,
         Authorization: 'Basic ' + basic, 'Espo-Authorization': basic, 'X-Studio-Access-Token': link.token});
     check(blocked.status === 502, 'Pending account login returns HTTP 502');
     await ok('StudioManagement/onboarding/' + registration.userId + '/complete', 'POST', {});
@@ -102,6 +102,11 @@ async function create(type, data, headers) { return track(type, await ok(type, '
     check(defaults.modelId === model.id && defaults.operatorId === registration.userId, 'Loads all group slots');
     const shift = await create('SmShift', {name: prefix + ' shift', teamId: team.id, currency:'USD'}, actor);
     check(shift.operatorId === registration.userId && shift.modelId === model.id, 'Creates shift from group');
+    const proof = await create('Attachment', {
+        name: prefix + ' proof.png', type: 'image/png', role: 'Attachment', parentType: 'SmShift', field: 'screenshots',
+        file: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jf2QAAAAASUVORK5CYII=',
+    }, actor);
+    await ok('SmShift/' + shift.id, 'PATCH', {screenshotsIds: [proof.id]}, actor);
     const open = await ok('SmShift/' + shift.id + '/open', 'POST', {}, actor);
     check(open.status === 'Open' && Boolean(open.startTime), 'Opens shift');
     check((await ok('SmShift/' + shift.id + '/finish', 'POST', {}, actor)).status === 'Counting', 'Finishes active shift');

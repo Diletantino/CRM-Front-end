@@ -198,6 +198,11 @@ async function login(type, role) {
     check(defaults.modelId === model.id && defaults.operatorId === operator.id, 'Granted model loads unrelated team defaults');
     const shift = await create('SmShift', {name: prefix + ' shift', teamId: team.id, currency: 'USD'}, actor.headers);
     check(shift.operatorId === operator.id, 'Granted model creates shift without occupying operator slot');
+    const proof = await create('Attachment', {
+        name: prefix + ' proof.png', type: 'image/png', role: 'Attachment', parentType: 'SmShift', field: 'screenshots',
+        file: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jf2QAAAAASUVORK5CYII=',
+    }, actor.headers);
+    await ok('SmShift/' + shift.id, 'PATCH', {screenshotsIds: [proof.id]}, actor.headers);
     for (const action of ['open', 'finish']) {
         const value = await ok('SmShift/' + shift.id + '/' + action, 'POST', {}, actor.headers);
         check(value.status === (action === 'open' ? 'Open' : 'Counting'), 'Granted model: ' + action);

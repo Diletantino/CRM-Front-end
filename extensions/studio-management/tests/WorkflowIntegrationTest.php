@@ -6,6 +6,7 @@ require '/var/www/html/bootstrap.php';
 
 use Espo\Core\Application;
 use Espo\Core\ApplicationUser;
+use Espo\Entities\Attachment;
 use Espo\Entities\User;
 use Espo\Core\Exceptions\BadRequest;
 use Espo\Core\Exceptions\Conflict;
@@ -43,9 +44,21 @@ $assert = function (bool $condition, string $message) use (&$checks): void {
     $checks++;
 };
 $rollback = new RuntimeException('ROLLBACK_TEST_FIXTURES');
+$attachments = [];
+$attachImage = function ($shift, string $field = 'screenshots') use ($em, &$attachments): void {
+    $attachment = $em->getNewEntity(Attachment::ENTITY_TYPE);
+    $attachment->setName('shift-proof.png')
+        ->setType('image/png')
+        ->setRole('Attachment')
+        ->setParent($shift)
+        ->setTargetField($field)
+        ->setContents(base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jf2QAAAAASUVORK5CYII='));
+    $em->saveEntity($attachment);
+    $attachments[] = $attachment;
+};
 
 try {
-    $em->getTransactionManager()->run(function () use ($em, $factory, $admin, $assert, $rollback): void {
+    $em->getTransactionManager()->run(function () use ($em, $factory, $admin, $assert, $rollback, $attachImage): void {
         $suffix = bin2hex(random_bytes(5));
         $createUser = function (string $type, array $extra = []) use ($em, $suffix) {
             $user = $em->getNewEntity('User');
@@ -124,6 +137,16 @@ try {
         $assert($shift->get('modelBirthDate') === '2001-01-01', 'Birth date copied from profile.');
 
         $service = $factory->create(ShiftService::class);
+        $attachImage($shift, 'modelImages');
+        try {
+            $service->open($shift->getId());
+            $assert(false, 'A model photo is not a start screenshot.');
+        } catch (BadRequest) {
+            $draft = $em->getEntityById('SmShift', $shift->getId());
+            $assert($draft->get('status') === 'Draft' && $draft->get('startTime') === '2026-01-01 14:00:00',
+                'Missing screenshot preserves the draft and its planned start.');
+        }
+        $attachImage($shift);
         $shift = $service->open($shift->getId());
         $assert($shift->get('status') === 'Open', 'Start transitions Draft to Open.');
         $assert($shift->get('startTime') !== '2026-01-01 14:00:00', 'Actual start replaces planned start.');
@@ -260,6 +283,7 @@ try {
             'Assigning a role through the native relation resolves an empty studio type.');
         $producer->set(['rolesIds' => [$producerRole->getId()], 'smAccountType' => null]);
         $em->saveEntity($producer, ['skipBeforeSave' => true]);
+        $attachImage($groupOnly);
         $groupOnly = $service->open($groupOnly->getId());
         $groupOnly = $service->finish($groupOnly->getId());
         // Reproduce pre-upgrade Counting records: no shift producer, member exists but the group FK is empty.
@@ -285,6 +309,7 @@ try {
         $dualShift = $em->getNewEntity('SmShift');
         $dualShift->set(['teamId' => $dualTeam->getId(), 'currency' => 'USD']);
         $em->saveEntity($dualShift);
+        $attachImage($dualShift);
         $service->open($dualShift->getId());
         $service->finish($dualShift->getId());
         $dualClosed = $service->close($dualShift->getId(), $sites, [], '', $admin);
@@ -464,8 +489,12 @@ try {
     });
 } catch (Throwable $e) {
     if ($e !== $rollback) {
-        fwrite(STDERR, $e . PHP_EOL);
-        exit(1);
+        throw $e;
+    }
+} finally {
+    $storage = $container->get('fileStorageManager');
+    foreach ($attachments as $attachment) {
+        $storage->unlink($attachment);
     }
 }
 echo "Workflow integration: $checks checks passed; all fixtures rolled back.\n";

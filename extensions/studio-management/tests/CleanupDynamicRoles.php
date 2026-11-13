@@ -33,7 +33,7 @@ $em->getTransactionManager()->run(function () use ($em, $registry, $prefix, $shi
         }
     }
     foreach (array_reverse($registry['fixtures']) as [$type, $id]) {
-        if (!in_array($type, ['Role', 'User', 'Team', 'SmShift', 'SmRegistrationLink'], true)) throw new RuntimeException('Invalid fixture type.');
+        if (!in_array($type, ['Role', 'User', 'Team', 'SmShift', 'SmRegistrationLink', 'Attachment'], true)) throw new RuntimeException('Invalid fixture type.');
         $entity = $em->getEntityById($type, $id);
         if (!$entity) continue;
         if ($type === 'SmRegistrationLink') {

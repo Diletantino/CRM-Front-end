@@ -37,6 +37,10 @@ let checks = 0;
         listenTo() {}
         once() {}
         setFieldReadOnly() {}
+        setFieldRequired(field) { this.requiredField = field; }
+        getFieldView(field) {
+            return {validate: () => this.requiredField === field && !this.model.get('screenshotsIds').length};
+        }
         hideField() {}
         showField() {}
         fetch() { return {}; }
@@ -63,7 +67,8 @@ let checks = 0;
         view.buttonList = [{name: 'save'}];
         view.model = {
             id: 'test-shift', isNew: () => false,
-            get: name => name === 'status' ? status : [], setMultiple() {}, set() {},
+            get: name => name === 'status' ? status : name === 'screenshotsIds' ? ['proof'] : [],
+            setMultiple() {}, set() {},
         };
         view.setup();
         return view;
@@ -71,6 +76,16 @@ let checks = 0;
     const start = create('Draft', {start: true});
     assert.equal(start.buttonList[0].label, 'Start Shift');
     checks++;
+    const missingScreenshot = create('Draft', {start: true});
+    missingScreenshot.model.get = name => name === 'status' ? 'Draft' : [];
+    missingScreenshot.save = () => assert.fail('Empty screenshot field must block saving');
+    await missingScreenshot.actionSave();
+    assert.equal(missingScreenshot.requiredField, 'screenshots');
+    assert.equal(missingScreenshot.actionsEnabled, true);
+    assert.equal(calls.length, 0);
+    assert.equal(create('Draft', {}).requiredField, undefined);
+    checks++;
+
     start.save = () => Promise.reject('notModified');
     await start.actionSave();
     assert(calls.some(([url]) => url === 'SmShift/test-shift/open'));
@@ -103,6 +118,30 @@ let checks = 0;
     field.getUser = () => ({isAdmin: () => false, get: () => 'ProducerAdmin'});
     assert.equal(field.data().profileLinkAllowed, true);
     checks += 2;
+
+    let siteState = 'Started';
+    const SiteData = load(prefix + 'sm-shift/fields/site-data.js', Field, {
+        Ui: {notify() {}, success() {}, error() {}},
+    });
+    const siteField = new SiteData();
+    siteField.name = 'siteData';
+    siteField.translate = value => value;
+    siteField.getUser = () => ({isAdmin: () => true, get: () => null});
+    siteField.reRender = () => {};
+    siteField.model = {
+        get: name => name === 'status' ? 'Open' : [{state: siteState}],
+        save: async (data, options) => {
+            assert.equal(options.wait, true);
+            siteState = data.siteData[0].state;
+        },
+    };
+    assert.equal(siteField.data().rows[0].startActionState, 'Pending');
+    await siteField.setSiteState(0, 'Pending');
+    assert.equal(siteState, 'Pending');
+    assert.equal(siteField.data().rows[0].startActionState, 'Started');
+    await siteField.setSiteState(0, 'Started');
+    assert.equal(siteState, 'Started');
+    checks++;
 
     class LinkField {
         setup() { this.linkSetupCalled = true; }

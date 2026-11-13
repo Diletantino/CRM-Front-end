@@ -25,8 +25,12 @@
                 {{/if}}
                 {{#if ../canManageState}}
                 <td class="nowrap">
-                    <button type="button" class="btn btn-xs btn-success" data-action="set-site-state" data-index="{{index}}" data-state="Started" {{#if started}}disabled{{/if}}>
+                    <button type="button" class="btn btn-xs {{#if started}}btn-default{{else}}btn-success{{/if}}" data-action="set-site-state" data-index="{{index}}" data-state="{{startActionState}}">
+                        {{#if started}}
+                        {{translate 'Undo Site Start' category='labels' scope='SmShift'}}
+                        {{else}}
                         {{translate 'Start Site' category='labels' scope='SmShift'}}
+                        {{/if}}
                     </button>
                     <button type="button" class="btn btn-xs btn-danger" data-action="set-site-state" data-index="{{index}}" data-state="Banned" {{#if banned}}disabled{{/if}}>
                         {{translate 'Banned' category='labels' scope='SmShift'}}

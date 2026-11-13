@@ -2,6 +2,8 @@
 
 namespace Espo\Modules\StudioManagement\Tools;
 
+use Espo\Core\FileStorage\Manager as FileStorageManager;
+use Espo\Entities\Attachment;
 use Espo\Entities\User;
 use Espo\Modules\StudioManagement\Entities\SmShift;
 use Espo\Modules\StudioManagement\Entities\SmShiftExpense;
@@ -21,6 +23,7 @@ final class ShiftService
         private MoneyCalculator $money,
         private TeamComposition $composition,
         private AccountTypeResolver $types,
+        private FileStorageManager $fileStorage,
     ) {}
 
     public function open(string $id): Entity
@@ -40,6 +43,7 @@ final class ShiftService
             $operator = $this->getParticipant($shift, 'operatorId', ['Operator', 'ProducerAdmin']);
             $producer = $this->getProducer($shift);
             [$siteData] = $this->normalizeSiteData((array) ($shift->get('siteData') ?? []));
+            $this->requireStartScreenshot($shift);
             $now = gmdate('Y-m-d H:i:00');
 
             $shift->set([
@@ -55,6 +59,27 @@ final class ShiftService
 
             return $shift;
         });
+    }
+
+    private function requireStartScreenshot(Entity $shift): void
+    {
+        $screenshots = $this->entityManager->getRDBRepository(SmShift::ENTITY_TYPE)
+            ->getRelation($shift, 'screenshots')
+            ->find();
+
+        foreach ($screenshots as $screenshot) {
+            if (
+                $screenshot instanceof Attachment &&
+                !$screenshot->isBeingUploaded() &&
+                str_starts_with($screenshot->getType() ?? '', 'image/') &&
+                $screenshot->getSize() > 0 &&
+                $this->fileStorage->exists($screenshot)
+            ) {
+                return;
+            }
+        }
+
+        throw WorkflowError::badRequest('Перед запуском смены загрузите хотя бы один скриншот.');
     }
 
     public function finish(string $id): Entity

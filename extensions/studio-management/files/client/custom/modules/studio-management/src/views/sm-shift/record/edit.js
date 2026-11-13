@@ -52,6 +52,7 @@ define(['views/record/edit', 'studio-management:role-policy'], function (EditRec
             }
 
             if (status === 'Draft' && params.start) {
+                this.setFieldRequired('screenshots');
                 saveButton.label = 'Start Shift';
                 saveButton.style = 'success';
             } else if (status === 'Counting' && params.count) {

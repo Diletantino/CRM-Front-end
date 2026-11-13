@@ -38,6 +38,14 @@ async function ok(url, method, body) {
     assert.equal(r.status, 200, url + ': ' + r.message);
     return r.data;
 }
+async function attachStartScreenshot(shiftId, headers) {
+    const proof = await ok('Attachment', 'POST', {
+        name: 'shift-proof.png', type: 'image/png', role: 'Attachment', parentType: 'SmShift', field: 'screenshots',
+        file: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jf2QAAAAASUVORK5CYII=',
+    }, headers);
+    fixtures.push(['Attachment', proof.id]);
+    await ok('SmShift/' + shiftId, 'PATCH', {screenshotsIds: [proof.id]}, headers);
+}
 async function cleanup(list) {
     for (const [type, id] of [...list].reverse()) {
         if (['SmShiftFinancialSnapshot', 'SmShiftExpense', 'SmShift'].includes(type)) {
@@ -79,8 +87,17 @@ async function cleanup(list) {
             'Creating a shift with ONLY the group must resolve all three slots on the backend.');
         expect(draft.siteData[0].login === 'fixture-model' && draft.modelBirthDate === '2000-01-01',
             'Group-only creation loads model profile defaults.');
+        expect((await request('SmShift/' + draft.id + '/open', 'POST')).status === 400,
+            'A draft without a screenshot cannot start through the API.');
+        await attachStartScreenshot(draft.id);
         const open = await ok('SmShift/' + draft.id + '/open', 'POST');
         expect(open.status === 'Open', 'Draft -> Open');
+        for (const state of ['Started', 'Pending', 'Started']) {
+            await ok('SmShift/' + draft.id, 'PATCH', {siteData: open.siteData.map(row => ({...row, state}))});
+            const updated = await ok('SmShift/' + draft.id);
+            expect(updated.status === 'Open' && updated.siteData[0].state === state,
+                'Site state ' + state + ' persists without changing the shift status.');
+        }
         await ok('Team/' + team.id, 'PUT', {smProducerId: producer2.id});
         const changedMembers = await ok('Team/' + team.id + '/users');
         expect(changedMembers.list.some(u => u.id === producer2.id) &&
@@ -147,6 +164,7 @@ async function cleanup(list) {
         const legacyTeam = await create('Team', {name: 'Тест — тип по роли ' + suffix,
             smProducerId: legacy.id, smOperatorId: operator.id, smModelId: model.id});
         const legacyShift = await create('SmShift', {teamId: legacyTeam.id, currency: 'USD'});
+        await attachStartScreenshot(legacyShift.id);
         await ok('SmShift/' + legacyShift.id + '/open', 'POST');
         await ok('SmShift/' + legacyShift.id + '/finish', 'POST');
         await ok('SmShift/' + legacyShift.id + '/close', 'POST', {siteData: sites, screenshotsIds: []});
@@ -209,6 +227,7 @@ async function cleanup(list) {
         expect(actorCreate.status === 200 && actorCreate.data.operatorId === registration.userId,
             'Ordinary operator creates a shift using only their group: ' + actorCreate.message);
         fixtures.push(['SmShift', actorCreate.data.id]);
+        await attachStartScreenshot(actorCreate.data.id, actor);
         for (const action of ['open', 'finish']) {
             const r = await request('SmShift/' + actorCreate.data.id + '/' + action, 'POST', {}, actor);
             expect(r.status === 200, 'Ordinary operator can ' + action + ': ' + r.message);
@@ -256,6 +275,7 @@ async function cleanup(list) {
                 chunk('IDAT', zlib.deflateSync(pixels)), chunk('IEND', Buffer.alloc(0))]);
             const proof = await create('Attachment', {name: 'review-proof-' + suffix + '.png', type: 'image/png',
                 role: 'Attachment', parentType: 'SmShift', field: 'screenshots', file: 'data:image/png;base64,' + png.toString('base64')});
+            await attachStartScreenshot(sameShift.id);
             await ok('SmShift/' + sameShift.id + '/open', 'POST');
             await ok('SmShift/' + sameShift.id + '/finish', 'POST');
             const review = await ok('SmShift/' + sameShift.id + '/close', 'POST', {siteData: sites, screenshotsIds: [proof.id]});

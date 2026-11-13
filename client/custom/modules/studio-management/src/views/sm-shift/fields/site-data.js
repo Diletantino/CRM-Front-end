@@ -14,6 +14,7 @@ define(['views/fields/base', 'studio-management:role-policy'], function (BaseFie
                 index,
                 stateLabel: this.translate(row.state || 'Pending', 'siteStates', 'SmShift'),
                 started: row.state === 'Started',
+                startActionState: row.state === 'Started' ? 'Pending' : 'Started',
                 banned: row.state === 'Banned',
             }));
 
@@ -116,19 +117,22 @@ define(['views/fields/base', 'studio-management:role-policy'], function (BaseFie
         async setSiteState(index, state) {
             const rows = this.getRows();
 
-            if (!rows[index] || !['Started', 'Banned'].includes(state)) {
+            if (this.savingSiteState || !rows[index] || !['Pending', 'Started', 'Banned'].includes(state)) {
                 return;
             }
 
+            this.savingSiteState = true;
             rows[index].state = state;
             Espo.Ui.notify(this.translate('saving', 'messages'));
 
             try {
-                await this.model.save({[this.name]: rows}, {patch: true});
+                await this.model.save({[this.name]: rows}, {patch: true, wait: true});
                 Espo.Ui.success(this.translate('Saved'));
                 this.reRender();
             } catch (error) {
                 Espo.Ui.error(error?.message || this.translate('Error'));
+            } finally {
+                this.savingSiteState = false;
             }
         }
     };
