@@ -132,7 +132,10 @@ docker compose down
 
 #### RabbitMQ task processing
 
-The runtime stack includes RabbitMQ and separate publisher/worker containers.
+The `mq` Compose profile adds RabbitMQ and separate publisher/worker containers.
+To enable it, set `COMPOSE_PROFILES=mq`, `MQ_ENABLED=true`, `MQ_USER` and a
+unique `MQ_PASSWORD` in the deployment environment. The default installation
+uses synchronous analytics and shift approval.
 The CRM writes a task and the business change to MariaDB first; the publisher
 then sends the durable event to the `crm.events` topic exchange. This
 transactional-outbox design prevents a temporary broker outage from losing a
@@ -224,8 +227,8 @@ Use `--as-user-id=USER_ID` only when the original initiator no longer exists.
 Completed task records are retained for `MQ_TASK_RETENTION_DAYS` and then
 purged by the publisher. Failed tasks are retained for manual diagnosis.
 
-For the isolated local RabbitMQ installation, use the private `.env.mq-local`
-file together with the explicit Compose project name below on every command.
+For the isolated local RabbitMQ installation, set the variables above in the
+private `.env.mq-local` and use the explicit Compose project name below on every command.
 It selects image `studio-crm:mq-local`, CRM HTTP/WebSocket ports 8098/8099 and
 the management UI on loopback port 15673. Its separate named volumes preserve
 other local CRM installations. `.env.mq-local` contains local credentials and

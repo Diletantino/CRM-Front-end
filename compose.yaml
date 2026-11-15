@@ -9,11 +9,11 @@ x-crm-volumes: &crm-volumes
   - crm-client-custom:/var/www/html/client/custom
 
 x-mq-environment: &mq-environment
-  MQ_ENABLED: ${MQ_ENABLED:-true}
+  MQ_ENABLED: ${MQ_ENABLED:-false}
   MQ_HOST: ${MQ_HOST:-crm_rabbitmq}
   MQ_PORT: ${MQ_PORT:-5672}
-  MQ_USER: ${MQ_USER:?Set MQ_USER in .env}
-  MQ_PASSWORD: ${MQ_PASSWORD:?Set MQ_PASSWORD in .env}
+  MQ_USER: ${MQ_USER:-}
+  MQ_PASSWORD: ${MQ_PASSWORD:-}
   MQ_VHOST: ${MQ_VHOST:-/}
   MQ_EXCHANGE: ${MQ_EXCHANGE:-crm.events}
   MQ_DLX: ${MQ_DLX:-crm.dlx}
@@ -25,11 +25,12 @@ x-mq-environment: &mq-environment
 
 services:
   crm_rabbitmq:
+    profiles: [mq]
     image: rabbitmq:4.1-management-alpine
     restart: unless-stopped
     environment:
-      RABBITMQ_DEFAULT_USER: ${MQ_USER:?Set MQ_USER in .env}
-      RABBITMQ_DEFAULT_PASS: ${MQ_PASSWORD:?Set MQ_PASSWORD in .env}
+      RABBITMQ_DEFAULT_USER: ${MQ_USER:-}
+      RABBITMQ_DEFAULT_PASS: ${MQ_PASSWORD:-}
       RABBITMQ_DEFAULT_VHOST: ${MQ_VHOST:-/}
     volumes:
       - crm-rabbitmq:/var/lib/rabbitmq
@@ -164,6 +165,7 @@ services:
       - "${CRM_BIND_ADDRESS:-127.0.0.1}:${CRM_WEBSOCKET_PORT:-8081}:8080"
 
   mq-publisher:
+    profiles: [mq]
     <<: *crm-image
     entrypoint: ["docker-entrypoint.sh"]
     restart: unless-stopped
@@ -184,6 +186,7 @@ services:
       start_period: 30s
 
   mq-worker-analytics:
+    profiles: [mq]
     <<: *crm-image
     entrypoint: ["docker-entrypoint.sh"]
     restart: unless-stopped
@@ -204,6 +207,7 @@ services:
       start_period: 20s
 
   mq-worker-files:
+    profiles: [mq]
     <<: *crm-image
     entrypoint: ["docker-entrypoint.sh"]
     restart: unless-stopped
@@ -219,6 +223,7 @@ services:
     healthcheck: *mq-worker-healthcheck
 
   mq-worker-websocket:
+    profiles: [mq]
     <<: *crm-image
     entrypoint: ["docker-entrypoint.sh"]
     restart: unless-stopped
