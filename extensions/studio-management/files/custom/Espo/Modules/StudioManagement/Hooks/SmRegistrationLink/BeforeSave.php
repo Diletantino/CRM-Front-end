@@ -64,11 +64,11 @@ class BeforeSave implements BeforeSaveHook
             $recruiter = $this->entityManager->getEntityById('User', $recruiterId);
 
             if (
-                !$recruiter ||
-                !$recruiter->get('isActive') ||
-                $recruiter->get('smAccountType') !== 'Recruiter'
+                !$recruiter instanceof User ||
+                !$recruiter->isActive() ||
+                (!$recruiter->isRegular() && !$recruiter->isAdmin())
             ) {
-                throw WorkflowError::badRequest('Выберите активного пользователя с типом аккаунта «Рекрутер» или оставьте поле пустым. Тип аккаунта задаётся в профиле пользователя.');
+                throw WorkflowError::badRequest('Выберите активного сотрудника или оставьте поле рекрутера пустым.');
             }
         }
 

@@ -7,7 +7,7 @@
     "SmShiftFinancialSnapshot": "Financial Snapshot",
     "SmRegistrationLink": "Registration Link",
     "SmAnalytics": "Studio Analytics",
-    "SmCredits": "Credits"
+    "SmPersonalAnalytics": "Personal Analytics"
   },
   "scopeNamesPlural": {
     "SmRoleAdministration": "Role administration (full access)",
@@ -17,7 +17,7 @@
     "SmShiftFinancialSnapshot": "Financial Snapshots",
     "SmRegistrationLink": "Registration Links",
     "SmAnalytics": "Studio Analytics",
-    "SmCredits": "Credits"
+    "SmPersonalAnalytics": "Personal Analytics"
   },
   "themes": {
     "StudioDark": "Studio Dark"

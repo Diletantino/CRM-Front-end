@@ -2,9 +2,7 @@
 
 namespace Espo\Modules\StudioManagement\Tools;
 
-use DateTimeImmutable;
 use Espo\Entities\User;
-use Espo\Modules\StudioManagement\Entities\SmShiftExpense;
 use Espo\Modules\StudioManagement\Entities\SmShiftFinancialSnapshot;
 use Espo\ORM\EntityManager;
 
@@ -14,7 +12,6 @@ final class AnalyticsService
         private EntityManager $entityManager,
         private RolePolicy $policy,
         private AnalyticsCalendar $calendar,
-        private PersonalAnalytics $personal,
     ) {}
 
     public function get(string $fromRaw, string $toRaw, User $user): array
@@ -144,44 +141,7 @@ final class AnalyticsService
             'to' => $toRaw,
             'totals' => array_values($totalsByCurrency),
             'rows' => $rows,
-            'personalTotals' => $this->getPersonalTotals($from, $to, $user),
-            'personalMetrics' => $this->personal->get($user),
         ];
     }
 
-    /** @return array<int, array{currency: string, amount: string}> */
-    private function getPersonalTotals(
-        DateTimeImmutable $from,
-        DateTimeImmutable $to,
-        User $user,
-    ): array {
-        if ($user->isAdmin()) {
-            return [];
-        }
-
-        $query = $this->entityManager
-            ->getQueryBuilder()
-            ->select()
-            ->from(SmShiftExpense::ENTITY_TYPE)
-            ->select(['currency', ['SUM:amount', 'amount']])
-            ->where([
-                'deleted' => false,
-                'incurredAt>=' => $from->format('Y-m-d H:i:s'),
-                'incurredAt<' => $to->format('Y-m-d H:i:s'),
-                'userId' => $user->getId(),
-            ])
-            ->group(['currency'])
-            ->build();
-        $rows = $this->entityManager->getQueryExecutor()->execute($query)->fetchAll() ?: [];
-        $result = [];
-
-        foreach ($rows as $row) {
-            $result[] = [
-                'currency' => (string) $row['currency'],
-                'amount' => number_format((float) ($row['amount'] ?? 0), 2, '.', ''),
-            ];
-        }
-
-        return $result;
-    }
 }

@@ -91,6 +91,11 @@ try {
         $producer = $createUser('ProducerAdmin');
         $operator = $createUser('Operator');
         $recruiter = $createUser('Recruiter');
+        $referrerRole = $em->getNewEntity('Role');
+        $referrerRole->set(['name' => 'Assigned approval ' . $suffix, 'smAccountOnboardingPermission' => 'own']);
+        $em->saveEntity($referrerRole);
+        $recruiter->set(['smAccountType' => 'Operator', 'rolesIds' => [$referrerRole->getId()]]);
+        $em->saveEntity($recruiter);
         $team = $em->getNewEntity('Team');
         $team->set(['name' => 'Regression ' . $suffix, 'smProducerId' => $producer->getId()]);
         $em->saveEntity($team);
@@ -464,13 +469,19 @@ try {
             'Account type and ACL role can be selected independently.');
         $badInvite = $em->getNewEntity('SmRegistrationLink');
         $badInvite->set(['accountType' => 'Model', 'targetRoleId' => $role->getId(), 'recruiterId' => $operator->getId()]);
+        $em->saveEntity($badInvite);
+        $assert($badInvite->get('recruiterId') === $operator->getId(), 'An active operator can be a recruiter.');
+        $operator->set('isActive', false);
+        $em->saveEntity($operator);
+        $badInvite = $em->getNewEntity('SmRegistrationLink');
+        $badInvite->set(['accountType' => 'Model', 'targetRoleId' => $role->getId(), 'recruiterId' => $operator->getId()]);
         try {
             $em->saveEntity($badInvite);
-            $assert(false, 'Non-recruiter must be rejected.');
+            $assert(false, 'Inactive recruiter must be rejected.');
         } catch (BadRequest $e) {
-            $assert(str_contains($e->getMessage(), 'Рекрутер'), 'Recruiter validation explains the problem in Russian.');
+            $assert(str_contains($e->getMessage(), 'сотрудника'), 'Recruiter validation explains the problem in Russian.');
             $body = json_decode($e->getBody() ?? '{}', true, flags: JSON_THROW_ON_ERROR);
-            $assert(str_contains($body['message'] ?? '', 'Рекрутер'), 'Recruiter validation reaches the browser as UTF-8 JSON.');
+            $assert(str_contains($body['message'] ?? '', 'сотрудника'), 'Recruiter validation reaches the browser as UTF-8 JSON.');
         }
 
         $untypedRole = $em->getNewEntity('Role');

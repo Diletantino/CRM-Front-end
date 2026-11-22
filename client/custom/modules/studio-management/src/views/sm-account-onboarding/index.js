@@ -65,6 +65,11 @@ define(['view'], function (View) {
                 label: this.translate(name, 'fields', 'User'),
             }));
             return {
+                rewardModes: ['None', 'FlatAfterFiveShifts', 'PercentPerShift'].map(value => ({
+                    value,
+                    label: this.getLanguage().translateOption(value, 'smRecruiterRewardMode', 'User'),
+                    selected: (this.profile?.smRecruiterRewardMode || 'None') === value,
+                })),
                 profile: this.profile ? {...this.profile, typeLabel: accountType(this.profile.accountType)} : null,
                 fields,
                 list: this.list.map(account => ({
@@ -91,7 +96,7 @@ define(['view'], function (View) {
         }
 
         readForm() {
-            const fields = [...Object.keys(fieldTypes), 'smProfileBio'];
+            const fields = [...Object.keys(fieldTypes), 'smProfileBio', 'smRecruiterRewardMode'];
             return Object.fromEntries(fields.map(name => [name, this.$el.find(`[name="${name}"]`).val()]));
         }
 
@@ -134,7 +139,7 @@ define(['view'], function (View) {
         async run(task) {
             if (this.busy) return;
             this.busy = true;
-            this.$el.find('button, input, textarea').prop('disabled', true);
+            this.$el.find('button, input, textarea, select').prop('disabled', true);
             this.$el.find('[data-feedback]').text('');
             try {
                 await task();
@@ -145,7 +150,7 @@ define(['view'], function (View) {
                 this.$el.find('[name="profilePhoto"]').val('');
             } finally {
                 this.busy = false;
-                this.$el.find('button, input, textarea').prop('disabled', false);
+                this.$el.find('button, input, textarea, select').prop('disabled', false);
             }
         }
     };

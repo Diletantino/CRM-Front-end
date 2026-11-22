@@ -1,3 +1,4 @@
 {
-  "controller": "studio-management:controllers/home"
+  "controller": "studio-management:controllers/home",
+  "view": "studio-management:views/dashboard"
 }

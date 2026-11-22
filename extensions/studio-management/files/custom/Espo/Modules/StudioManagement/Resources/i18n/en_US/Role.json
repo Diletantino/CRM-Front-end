@@ -8,7 +8,9 @@
     "smStaffAccessPermission": "View staff",
     "smAnalyticsAccessPermission": "View analytics",
     "smInvitationsPermission": "Manage registration links",
-    "smAccountOnboardingPermission": "Approve registrations"
+    "smAccountOnboardingPermission": "Approve registrations",
+    "smProfileAccessPermission": "Profile access",
+    "smPersonalAnalyticsPermission": "Personal analytics"
   },
   "tooltips": {
     "smShiftReviewPermission": "Review and approve shift closure. Own production uses the producer recorded on the shift. Legacy access is limited to the assigned producer and administrator.",
@@ -19,7 +21,9 @@
     "smStaffAccessPermission": "Requires staff tab and User read ACL. Own production means teams produced by this user.",
     "smAnalyticsAccessPermission": "Requires Analytics tab ACL. Own shifts includes model/operator/producer participation.",
     "smInvitationsPermission": "Sensitive: together with link CRUD ACL, allows inviting with any role, including elevated roles.",
-    "smAccountOnboardingPermission": "Allows editing pending profiles, managing their photos and activating accounts in Accounts to complete. Independent of link management and User CRUD. Recruiters remain limited to assigned and unassigned requests. Legacy preserves recruiter access and unrestricted staff/link/User roles. With multiple roles, an allow in one role overrides a deny in another."
+    "smAccountOnboardingPermission": "Assigned links allow only accounts assigned to you as recruiter. All includes unassigned accounts.",
+    "smProfileAccessPermission": "The same access to your own and other profiles. Simplified profiles show only username and avatar.",
+    "smPersonalAnalyticsPermission": "Opens a separate tab with only the current user metrics."
   },
   "labels": {
     "Remove All Restrictions": "Remove All Restrictions",
@@ -31,9 +35,9 @@
   },
   "options": {
     "onboardingLevel": {
-      "not-set": "Legacy behavior",
-      "yes": "Allowed",
-      "no": "Denied"
+      "all": "All",
+      "own": "Assigned links only",
+      "no": "No"
     },
     "studioLevel": {
       "not-set": "Legacy account-type rules",
@@ -42,6 +46,15 @@
       "own": "Own shifts",
       "yes": "Allowed",
       "no": "Denied"
+    },
+    "profileLevel": {
+      "all": "Full",
+      "team": "Simplified",
+      "no": "No"
+    },
+    "personalLevel": {
+      "yes": "Allowed",
+      "no": "No"
     }
   }
 }

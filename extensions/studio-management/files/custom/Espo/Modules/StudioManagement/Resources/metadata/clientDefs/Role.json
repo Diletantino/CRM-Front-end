@@ -12,7 +12,11 @@
     "smShiftRevisePermission",
     "smStaffAccessPermission",
     "smAnalyticsAccessPermission",
-    "smInvitationsPermission"
+    "smInvitationsPermission",
+    "smProfileAccessPermission",
+    "smPersonalAnalyticsPermission",
+    "smShiftReviewPermission",
+    "smAccountOnboardingPermission"
   ],
   "controller": "studio-management:controllers/role",
   "views": {

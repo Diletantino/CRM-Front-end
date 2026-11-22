@@ -80,22 +80,34 @@ final class RolePolicy
 
     public function canAccessOnboarding(User $user): bool
     {
-        if ($user->isAdmin()) {
-            return true;
-        }
-        if (!$user->isRegular()) {
-            return false;
-        }
-        $permission = $this->level($user, 'smAccountOnboarding', 'not-set');
-        if ($permission !== 'not-set') {
-            return in_array($permission, ['yes', 'all'], true);
-        }
-        return AccountOnboarding::isRecruiter($user) || $this->legacyCanApproveAccounts($user);
+        return $this->onboardingLevel($user) !== 'no';
     }
 
     public function canApproveAccounts(User $user): bool
     {
-        return $this->canAccessOnboarding($user) && !AccountOnboarding::isRecruiter($user);
+        return $this->onboardingLevel($user) === 'all';
+    }
+
+    public function onboardingLevel(User $user): string
+    {
+        if ($user->isAdmin()) return 'all';
+        if (!$user->isRegular()) return 'no';
+        $level = $this->level($user, 'smAccountOnboarding', 'not-set');
+        // Previously saved "yes" roles retain their all-account approval grant.
+        if (in_array($level, ['yes', 'all'], true)) return 'all';
+        if (in_array($level, ['own', 'no'], true)) return $level;
+        if ($this->legacyCanApproveAccounts($user)) return 'all';
+        return AccountOnboarding::isRecruiter($user) ? 'own' : 'no';
+    }
+
+    public function profileLevel(User $user): string
+    {
+        return $this->level($user, 'smProfileAccess');
+    }
+
+    public function canReadPersonalAnalytics(User $user): bool
+    {
+        return in_array($this->level($user, 'smPersonalAnalytics'), ['yes', 'all'], true);
     }
 
     private function legacyCanApproveAccounts(User $user): bool

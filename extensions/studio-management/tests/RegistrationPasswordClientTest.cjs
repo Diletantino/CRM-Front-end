@@ -37,7 +37,7 @@ view.$el = {find: selector => {
     eq(message, 'passwordsDoNotMatch'); eq(requests, 0);
     values.passwordConfirm = values.password;
     await view.submit();
-    eq(requests, 1); eq(view.options.invitation.mode, 'login');
+    eq(requests, 1); eq(view.options.invitation.mode, 'pending');
     const template = fs.readFileSync(path.join(root, client, 'res/templates/registration.tpl'), 'utf8');
     eq(template.includes('aria-describedby="registration-password-requirements"'), true);
     eq(template.includes("translate 'passwordRequirements'"), true);

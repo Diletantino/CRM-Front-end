@@ -54,7 +54,10 @@ define(['view', 'studio-management:analytics-periods', 'studio-management:mq-tas
             const $status = this.$el.find('.analytics-status').text(this.translate('Loading...'));
 
             try {
-                let data = await Espo.Ajax.getRequest('StudioManagement/analytics', {from, to});
+                let data = await Espo.Ajax.getRequest(
+                    this.personalPage ? 'StudioManagement/personal-analytics' : 'StudioManagement/analytics',
+                    this.personalPage ? {} : {from, to}
+                );
                 if (data.async === true && data.taskId) {
                     data = await this.waitForTask(data.taskId, requestNumber);
                 }
@@ -63,7 +66,13 @@ define(['view', 'studio-management:analytics-periods', 'studio-management:mq-tas
                 this.renderPersonalTotals(data.personalTotals || []);
                 this.renderTotals(data.totals || []);
                 this.renderRows(data.rows || []);
-                this.renderMetrics(data.personalMetrics || {});
+                if (this.personalPage) {
+                    this.renderMetrics(data.personalMetrics || {});
+                } else {
+                    this.$el.find('[data-analytics-tab]').parent().hide();
+                    this.$el.find('[data-analytics-tab="overview"]').parent().show();
+                    this.selectTab('overview');
+                }
                 $status.text('');
             } catch (e) {
                 if (requestNumber !== this.requestNumber || this.isRemoved()) return;

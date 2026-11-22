@@ -6,7 +6,7 @@
     "smProducerSharePercentOverride": "Процент как продюсера",
     "smTechnicalDirectorSharePercentOverride": "Процент техдиректора",
     "smRecruiter": "Рекрутер",
-    "smRecruiterRewardMode": "Схема выплаты рекрутеру",
+    "smRecruiterRewardMode": "Тип выплаты рекрутеру",
     "smRecruiterPercent": "Процент рекрутера со смены",
     "smRecruiterFlatAmount": "Бонус рекрутеру после 5 смен",
     "smRecruiterMilestonePaid": "Бонус за 5 смен выплачен",
@@ -28,7 +28,7 @@
     "smTechnicalDirectorSharePercentOverride": "Процент техдиректора применяется ко всем закрываемым сменам.",
     "smSiteAccess": "Доступы можно вести в свободном текстовом или табличном формате."
   },
-  "options": {"smAccountType": {"": "Не задан", "Model": "Модель", "Operator": "Оператор", "ProducerAdmin": "Продюсер / Админ", "TechnicalDirector": "Технический директор", "Recruiter": "Рекрутер"}, "smRecruiterRewardMode": {"None": "Без выплаты", "FlatAfterFiveShifts": "$150 после 5 смен", "PercentPerShift": "Процент с каждой смены"}},
+  "options": {"smAccountType": {"": "Не задан", "Model": "Модель", "Operator": "Оператор", "ProducerAdmin": "Продюсер / Админ", "TechnicalDirector": "Технический директор", "Recruiter": "Рекрутер"}, "smRecruiterRewardMode": {"None": "Без выплаты", "FlatAfterFiveShifts": "$150 после 5 смен", "PercentPerShift": "5% с каждой смены"}},
   "labels": {"Recruitment": "Рекрутинг", "Profile Photos": "Фотографии", "Document Photos": "Документы", "Comments": "Комментарии", "Shift History and Earnings": "История смен и доход", "Write a comment": "Введите комментарий", "Add Comment": "Добавить комментарий", "Shift History": "Список смен за последний период", "Income by Payout Day": "График дохода по дням выплат", "Operator": "Оператор", "Team": "Команда", "Start": "Начало", "End": "Конец", "Result": "Результат", "Personal Income": "Личный доход"},
   "messages": {"staffProfileUnavailable": "Профиль доступен только продюсеру команды или администратору.", "commentRequired": "Введите комментарий.", "commentSaveFailed": "Не удалось сохранить комментарий.", "noStaffComments": "Комментариев пока нет.", "noStaffShifts": "Закрытых смен пока нет."}
 }

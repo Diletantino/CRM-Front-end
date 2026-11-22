@@ -1,5 +1,15 @@
 [
   {
+    "route": "/StudioManagement/profiles/:id",
+    "method": "get",
+    "actionClassName": "Espo\\Modules\\StudioManagement\\Api\\GetSimpleProfile"
+  },
+  {
+    "route": "/StudioManagement/personal-analytics",
+    "method": "get",
+    "actionClassName": "Espo\\Modules\\StudioManagement\\Api\\GetPersonalAnalytics"
+  },
+  {
     "route": "/StudioManagement/onboarding",
     "method": "get",
     "actionClassName": "Espo\\Modules\\StudioManagement\\Api\\AccountOnboardingAction"
@@ -93,11 +103,6 @@
     "route": "/StudioManagement/staff/:type/:id",
     "method": "get",
     "actionClassName": "Espo\\Modules\\StudioManagement\\Api\\GetStaffProfile"
-  },
-  {
-    "route": "/StudioManagement/staff/:type/:id/comment",
-    "method": "post",
-    "actionClassName": "Espo\\Modules\\StudioManagement\\Api\\PostStaffComment"
   },
   {
     "route": "/StudioManagement/access-policy",

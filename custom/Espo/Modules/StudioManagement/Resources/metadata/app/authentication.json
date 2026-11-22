@@ -6,6 +6,6 @@
   ],
   "onLoginHookClassNameList": [
     "__APPEND__",
-    "Espo\\Modules\\StudioManagement\\Authentication\\RecruiterAccess"
+    "Espo\\Modules\\StudioManagement\\Authentication\\ProfileAccess"
   ]
 }

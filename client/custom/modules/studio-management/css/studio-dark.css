@@ -18,41 +18,6 @@
     line-height: 1.5;
 }
 
-/* Keep the native copyright clearly visible in the sidebar, not in the workspace.
-   Its DOM/content and EspoCRM's legal-notice checks are left untouched. */
-#navbar li.studio-credits-item {
-    /* This item mounts the positioning helper; Credits itself is a left-menu tab. */
-    display: none !important;
-}
-body[data-navbar="side"] #navbar .navbar-nav.tabs {
-    /* Let long menus scroll clear of the notice above the minimize button. */
-    padding-bottom: 72px;
-}
-
-body > footer.studio-credit-in-sidebar.studio-credit-compact .credit {
-    font-size: 10px;
-    font-family: Arial, sans-serif;
-}
-body > footer#footer.studio-credit-in-sidebar.studio-credit-compact {
-    padding-left: 0 !important;
-    padding-right: 0 !important;
-}
-body > footer.studio-credit-in-sidebar .credit a {
-    color: #c8cdd3;
-}
-body > footer.studio-credit-in-sidebar .credit a:hover,
-body > footer.studio-credit-in-sidebar .credit a:focus {
-    color: #70bbf8;
-    text-decoration: underline;
-}
-.studio-credits-page .panel-body {
-    max-width: 64rem;
-    line-height: 1.65;
-}
-.studio-credits-page h4:not(:first-child) {
-    margin-top: 1.75rem;
-}
-
 /* Center quick-create, quick-view, selection and confirmation dialogs.
    Only visible top-level modals participate; minimized windows and editor subdialogs keep their own layout. */
 :is(body, .modal-container) > .modal.in {

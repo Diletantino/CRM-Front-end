@@ -186,12 +186,6 @@
       "notStorable": true,
       "maxLength": 50
     },
-    "smCommentsWidget": {
-      "type": "varchar",
-      "notStorable": true,
-      "readOnly": true,
-      "view": "studio-management:views/user/fields/staff-comments"
-    },
     "smProfileDashboard": {
       "type": "varchar",
       "notStorable": true,

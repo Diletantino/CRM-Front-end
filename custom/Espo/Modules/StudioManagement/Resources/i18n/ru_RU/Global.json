@@ -7,7 +7,7 @@
     "SmRegistrationLink": "Ссылка регистрации",
     "SmAnalytics": "Аналитика студии",
     "SmRoleAdministration": "Управление ролями (полный доступ)",
-    "SmCredits": "Credits"
+    "SmPersonalAnalytics": "Личная аналитика"
   },
   "scopeNamesPlural": {
     "SmShift": "Смены",
@@ -17,7 +17,7 @@
     "SmRegistrationLink": "Ссылки регистрации",
     "SmAnalytics": "Аналитика студии",
     "SmRoleAdministration": "Управление ролями (полный доступ)",
-    "SmCredits": "Credits"
+    "SmPersonalAnalytics": "Личная аналитика"
   },
   "themes": {
     "StudioDark": "Studio Dark"

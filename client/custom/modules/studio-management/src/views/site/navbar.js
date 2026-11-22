@@ -1,47 +1,38 @@
 define(['views/site/navbar', 'studio-management:role-policy'], function (Navbar, RolePolicy) {
     return class extends Navbar {
-        isRecruiter() {
-            return !this.getUser().isAdmin() && this.getUser().get('smAccountType') === 'Recruiter';
-        }
-
-        getItemDefs(name) {
-            return this.isRecruiter() ? null : super.getItemDefs(name);
-        }
-
         setupMenu() {
             super.setupMenu();
-            if (this.isRecruiter()) {
-                this.menuDataList = this.menuDataList.filter(item => item.name === 'logout');
+            if (RolePolicy.level(this, 'smProfileAccess') === 'no') {
+                this.menuDataList = this.menuDataList.filter(item => !item.link?.startsWith('#User/'));
             }
         }
 
         getTabList() {
-            const onboarding = {
-                type: 'url',
-                url: '#SmAccountOnboarding',
-                text: this.translate('Accounts to complete', 'labels', 'SmAccountOnboarding'),
-            };
-            if (this.isRecruiter()) {
-                return RolePolicy.canAccessOnboarding(this) ? [onboarding] : [];
-            }
-            const isModel = !this.getUser().isAdmin() && this.getUser().get('smAccountType') === 'Model';
-            const filter = items => items.filter(item =>
-                !(isModel && ['User', 'Team'].includes(item) && this.getAcl().getLevel(item, 'read') !== 'all')
-            ).map(item => item?.itemList ? {...item, itemList: filter(item.itemList)} : item);
+            const profile = RolePolicy.level(this, 'smProfileAccess');
+            const personal = ['yes', 'all'].includes(RolePolicy.level(this, 'smPersonalAnalytics'));
+            const onboarding = RolePolicy.canAccessOnboarding(this);
+            const studio = RolePolicy.level(this, 'smAnalyticsAccess', 'legacy') !== 'no';
+            const filter = items => items.filter(item => {
+                const scope = typeof item === 'string' ? item : item?.url?.replace(/^#/, '');
+                return !['SmCredits', 'Stream', 'GlobalStream', 'Note'].includes(scope) &&
+                    !(profile === 'no' && scope === 'User') &&
+                    !(scope === 'SmPersonalAnalytics' && !personal) &&
+                    !(scope === 'SmAnalytics' && !studio) &&
+                    !(scope === 'SmAccountOnboarding' && !onboarding);
+            }).map(item => item?.itemList ? {...item, itemList: filter(item.itemList)} : item);
             const list = filter(super.getTabList());
-            if (RolePolicy.canApproveAccounts(this)) {
-                list.push(onboarding);
+            const add = (scope, text) => {
+                if (!list.some(item => item === scope || item?.url === '#' + scope)) {
+                    list.push({type: 'url', url: '#' + scope, text});
+                }
+            };
+            if (onboarding) {
+                add('SmAccountOnboarding', this.translate('Accounts to complete', 'labels', 'SmAccountOnboarding'));
             }
-            if (this.getAcl().check('SmAnalytics') ||
-                !['Operator', 'Model'].includes(this.getUser().get('smAccountType'))) return list;
-            const personal = {type: 'url', url: '#SmAnalytics',
-                text: this.translate('Personal Analytics', 'labels', 'SmAnalytics')};
-            const replace = items => items.map(item => {
-                if (item === 'SmAnalytics') return personal;
-                if (item?.itemList) return {...item, itemList: replace(item.itemList)};
-                return item;
-            });
-            return replace(list);
+            if (personal) {
+                add('SmPersonalAnalytics', this.translate('Personal Analytics', 'labels', 'SmAnalytics'));
+            }
+            return list;
         }
     };
 });

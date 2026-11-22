@@ -1,5 +1,11 @@
 define(['views/role/record/table'], function (RoleTableView) {
     return class extends RoleTableView {
+        actionList = ['create', 'read', 'edit', 'delete']
+
+        getSortedScopeList() {
+            return super.getSortedScopeList().filter(scope => !['GlobalStream', 'Note'].includes(scope));
+        }
+
         /** Set every scope to its most permissive level and clear field restrictions. */
         removeAllRestrictions() {
             const data = {};

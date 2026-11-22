@@ -40,7 +40,9 @@ define(['views/role/record/edit'], function (RoleEditView) {
                 smStaffAccessPermission: 'all',
                 smAnalyticsAccessPermission: 'all',
                 smInvitationsPermission: 'yes',
-                smAccountOnboardingPermission: 'yes',
+                smAccountOnboardingPermission: 'all',
+                smProfileAccessPermission: 'all',
+                smPersonalAnalyticsPermission: 'yes',
             });
 
             Espo.Ui.success(

@@ -5,5 +5,5 @@
   "acl": true,
   "tab": true,
   "importable": false,
-  "stream": true
+  "stream": false
 }

@@ -42,6 +42,12 @@ for (const type of ['Model', 'Operator', 'ProducerAdmin', 'TechnicalDirector', '
     levels.read = levels.edit = 'no';
     check(controller.checkAccess(), true);
     check(navbar.getTabList().some(item => item.url === '#SmAccountOnboarding'), true);
+    permissions.smAccountOnboarding = 'own';
+    check(controller.checkAccess(), true);
+    check(policy.canApproveAccounts(actor), false);
+    permissions.smAccountOnboarding = 'all';
+    check(controller.checkAccess(), true);
+    check(policy.canApproveAccounts(actor), true);
     permissions.smAccountOnboarding = 'no';
     permissions.smStaffAccess = 'all'; permissions.smInvitations = 'yes';
     levels.read = levels.edit = 'all';

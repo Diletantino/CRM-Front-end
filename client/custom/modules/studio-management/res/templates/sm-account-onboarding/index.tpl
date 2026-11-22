@@ -10,6 +10,14 @@
             <p>{{profile.userName}} · {{profile.typeLabel}}</p>
             <p class="text-muted">{{translate 'Pending completion' scope='SmAccountOnboarding'}}</p>
             <form>
+                <div class="form-group">
+                    <label for="onboarding-reward">{{translate 'smRecruiterRewardMode' category='fields' scope='User'}}</label>
+                    <select id="onboarding-reward" class="form-control" name="smRecruiterRewardMode">
+                        {{#each rewardModes}}
+                        <option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>
+                        {{/each}}
+                    </select>
+                </div>
                 <div class="row">
                     {{#each fields}}
                     <div class="col-sm-6 form-group">

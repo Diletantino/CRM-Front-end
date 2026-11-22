@@ -116,8 +116,10 @@ let checks = 0;
     field.getUser = () => ({isAdmin: () => false, get: () => 'Operator'});
     assert.equal(field.data().profileLinkAllowed, false);
     field.getUser = () => ({isAdmin: () => false, get: () => 'ProducerAdmin'});
+    assert.equal(field.data().profileLinkAllowed, false);
+    field.getAcl = () => ({getPermissionLevel: () => 'team'});
     assert.equal(field.data().profileLinkAllowed, true);
-    checks += 2;
+    checks += 3;
 
     let siteState = 'Started';
     const SiteData = load(prefix + 'sm-shift/fields/site-data.js', Field, {

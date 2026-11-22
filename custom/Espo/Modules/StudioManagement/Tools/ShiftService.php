@@ -541,9 +541,9 @@ final class ShiftService
             if (
                 !$recruiter instanceof User ||
                 !$recruiter->isActive() ||
-                $recruiter->get('smAccountType') !== 'Recruiter'
+                (!$recruiter->isRegular() && !$recruiter->isAdmin())
             ) {
-                throw WorkflowError::badRequest('Для выплаты рекрутеру выберите активного пользователя с типом аккаунта «Рекрутер».');
+                throw WorkflowError::badRequest('Для выплаты рекрутеру выберите активного сотрудника.');
             }
 
             $lineCents = 0;

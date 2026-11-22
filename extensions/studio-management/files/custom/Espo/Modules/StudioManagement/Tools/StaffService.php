@@ -16,8 +16,6 @@ use Espo\ORM\EntityManager;
 final class StaffService
 {
     private const int HISTORY_LIMIT = 100;
-    private const int COMMENT_LIMIT = 200;
-    private const int COMMENT_LENGTH = 2000;
 
     public function __construct(private EntityManager $entityManager, private RolePolicy $policy) {}
 
@@ -26,6 +24,12 @@ final class StaffService
     {
         [$accountType, $linkField] = $this->resolveType($type);
         [$users, $teamNames] = $this->getAccessibleUsers($accountType, $viewer);
+        if ($this->policy->profileLevel($viewer) !== 'all') {
+            return ['type' => $type, 'rows' => array_map(static fn (User $user): array => [
+                'id' => $user->getId(), 'name' => $user->getUserName(),
+                'hasAvatar' => (bool) $user->get('avatarId'),
+            ], array_values($users))];
+        }
         $stats = $this->getListStats($linkField, array_keys($users));
         $rows = [];
 
@@ -63,6 +67,7 @@ final class StaffService
     /** @return array<string, mixed> */
     public function getProfile(string $type, string $id, User $viewer): array
     {
+        if ($this->policy->profileLevel($viewer) !== 'all') throw new Forbidden();
         [$accountType, $linkField] = $this->resolveType($type);
         $user = $this->getAccessibleUser($id, $accountType, $viewer);
         $query = $this->entityManager
@@ -133,54 +138,10 @@ final class StaffService
             'accountType' => $accountType,
             'history' => $history,
             'chart' => $chart,
-            'comments' => $this->normalizeComments($user->get('smProfileComments')),
         ];
     }
 
     /** @return array<int, array<string, string>> */
-    public function addComment(string $type, string $id, string $text, User $viewer): array
-    {
-        [$accountType] = $this->resolveType($type);
-        $text = trim($text);
-
-        if ($text === '' || mb_strlen($text) > self::COMMENT_LENGTH) {
-            throw new BadRequest('A comment must contain between 1 and 2000 characters.');
-        }
-
-        return $this->entityManager->getTransactionManager()->run(
-            function () use ($id, $accountType, $viewer, $text): array {
-                $this->getAccessibleUser($id, $accountType, $viewer);
-                $user = $this->entityManager
-                    ->getRDBRepository(User::ENTITY_TYPE)
-                    ->where(['id' => $id])
-                    ->forUpdate()
-                    ->findOne();
-
-                if (!$user instanceof User) {
-                    throw new NotFound('Staff profile not found.');
-                }
-
-                $comments = $this->normalizeComments($user->get('smProfileComments'));
-                $comments[] = [
-                    'id' => bin2hex(random_bytes(12)),
-                    'text' => $text,
-                    'createdAt' => gmdate('Y-m-d H:i:s'),
-                    'createdById' => $viewer->getId(),
-                    'createdByName' => (string) $viewer->get('name'),
-                ];
-
-                if (count($comments) > self::COMMENT_LIMIT) {
-                    $comments = array_slice($comments, -self::COMMENT_LIMIT);
-                }
-
-                $user->set('smProfileComments', $comments);
-                $this->entityManager->saveEntity($user);
-
-                return $comments;
-            }
-        );
-    }
-
     /** @return array{0: string, 1: string} */
     private function resolveType(string $type): array
     {
@@ -400,33 +361,4 @@ final class StaffService
         return $cache[$key];
     }
 
-    /** @return array<int, array<string, string>> */
-    private function normalizeComments(mixed $value): array
-    {
-        if (!is_array($value)) {
-            return [];
-        }
-
-        $comments = [];
-
-        foreach ($value as $comment) {
-            if (is_object($comment)) {
-                $comment = (array) $comment;
-            }
-
-            if (!is_array($comment) || !is_string($comment['text'] ?? null)) {
-                continue;
-            }
-
-            $comments[] = [
-                'id' => is_string($comment['id'] ?? null) ? $comment['id'] : '',
-                'text' => $comment['text'],
-                'createdAt' => is_string($comment['createdAt'] ?? null) ? $comment['createdAt'] : '',
-                'createdById' => is_string($comment['createdById'] ?? null) ? $comment['createdById'] : '',
-                'createdByName' => is_string($comment['createdByName'] ?? null) ? $comment['createdByName'] : '',
-            ];
-        }
-
-        return array_slice($comments, -self::COMMENT_LIMIT);
-    }
 }

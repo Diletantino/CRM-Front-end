@@ -9,6 +9,6 @@ final class Recruiters implements Filter
 {
     public function apply(SelectBuilder $queryBuilder): void
     {
-        $queryBuilder->where(['isActive' => true, 'smAccountType' => 'Recruiter']);
+        $queryBuilder->where(['isActive' => true, 'type' => ['regular', 'admin']]);
     }
 }

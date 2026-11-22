@@ -2,9 +2,7 @@ define(['views/fields/link', 'studio-management:role-policy'], function (LinkFie
     return class extends LinkFieldView {
         data() {
             const data = super.data();
-            const scope = this.name === 'model' ? 'SmModels' : 'SmOperators';
-            const isManager = RolePolicy.canViewStaff(this, scope);
-            return {...data, profileLinkAllowed: isManager};
+            return {...data, profileLinkAllowed: RolePolicy.level(this, 'smProfileAccess') !== 'no'};
         }
 
         detailTemplate = 'studio-management:sm-shift/fields/participant'

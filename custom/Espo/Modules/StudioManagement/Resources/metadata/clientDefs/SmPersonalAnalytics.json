@@ -1,0 +1,4 @@
+{
+  "controller": "studio-management:controllers/sm-personal-analytics",
+  "iconClass": "fas fa-chart-line"
+}

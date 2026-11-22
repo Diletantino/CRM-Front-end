@@ -4,8 +4,10 @@ const path = require('node:path');
 const crypto = require('node:crypto');
 const assert = require('node:assert/strict');
 const root = path.resolve(__dirname, '../../..');
-const env = Object.fromEntries(fs.readFileSync(path.join(root, '.env'), 'utf8').split(/\r?\n/)
-    .filter(l => l && !l.startsWith('#')).map(l => { const i = l.indexOf('='); return [l.slice(0, i), l.slice(i + 1)]; }));
+const fixture = process.env.CRM_ACCESS_FIXTURE ? JSON.parse(fs.readFileSync(process.env.CRM_ACCESS_FIXTURE, 'utf8')) : null;
+const env = fixture ? {CRM_SITE_URL:fixture.url, CRM_ADMIN_USERNAME:'admin', CRM_ADMIN_PASSWORD:fixture.password}
+    : Object.fromEntries(fs.readFileSync(path.join(root, '.env'), 'utf8').split(/\r?\n/)
+        .filter(l => l && !l.startsWith('#')).map(l => {const i=l.indexOf('=');return [l.slice(0,i),l.slice(i+1)];}));
 const base = env.CRM_SITE_URL + '/api/v1/';
 if (!['localhost', '127.0.0.1'].includes(new URL(base).hostname)) throw Error('Local disposable CRM only.');
 let prefix = 'DynamicRoles ' + crypto.randomBytes(5).toString('hex');
@@ -133,6 +135,7 @@ async function login(type, role) {
             userPermission: 'all', assignmentPermission: 'all',
             smShiftPreparePermission: 'all', smShiftOperatePermission: 'all', smShiftReviewPermission: 'all', smShiftRevisePermission: 'all',
             smStaffAccessPermission: 'all', smAnalyticsAccessPermission: 'all', smInvitationsPermission: 'yes',
+            smProfileAccessPermission: 'all', smPersonalAnalyticsPermission: 'yes', smAccountOnboardingPermission: 'all',
             data: allAcl});
         actorRoles.push(role);
         const actor = await login(type, role);
@@ -141,25 +144,14 @@ async function login(type, role) {
         check(session.user.smAccountType === type, type + ': role type never changes explicit account type');
         check(session.acl.smShiftOperatePermission === 'all', type + ': native ACL map includes grant');
         check(session.acl.table.Team.create === 'yes', type + ': Team create grant reaches active session');
-        if (type === 'Recruiter') {
-            check((await request('StudioManagement/onboarding', 'GET', undefined, actor.headers)).status === 200,
-                'Recruiter can open the account completion queue');
-            for (const resource of ['Team', 'User', 'Role', 'SmShift', 'SmRegistrationLink', 'StudioManagement/analytics']) {
-                check((await request(resource, 'GET', undefined, actor.headers)).status === 403,
-                    'Recruiter access stays limited despite a role grant: ' + resource);
-            }
-            continue;
-        }
         const managedTeam = await create('Team', {name: prefix + ' managed team ' + type}, actor.headers);
         check(Boolean(managedTeam.id), type + ': delegated Team create permission works on backend');
         const managedTeamEdit = await ok('Team/' + managedTeam.id, 'PUT',
             {name: prefix + ' updated team ' + type}, actor.headers);
         check(managedTeamEdit.name === prefix + ' updated team ' + type,
             type + ': delegated Team edit permission works on backend');
-        const managedTeamStream = await ok('Team/' + managedTeam.id + '/stream?maxSize=5',
-            'GET', undefined, actor.headers);
-        check(Array.isArray(managedTeamStream.list),
-            type + ': delegated Team stream permission works on backend');
+        check((await request('Team/' + managedTeam.id + '/stream?maxSize=5',
+            'GET', undefined, actor.headers)).status === 403, type + ': streams remain disabled');
         check((await request('Team/' + managedTeam.id, 'DELETE', undefined, actor.headers)).status === 200,
             type + ': delegated Team delete permission works on backend');
         const managedUser = await create('User', {
@@ -217,7 +209,8 @@ async function login(type, role) {
     const analytics = await ok('StudioManagement/analytics?from=2026-01-01&to=2026-12-31', 'GET', undefined, actor.headers);
     check(analytics.rows.some(row => row.teamId === team.id), 'All-analytics grant includes unrelated production');
     const denied = {smShiftPreparePermission: 'no', smShiftOperatePermission: 'no', smShiftReviewPermission: 'no', smShiftRevisePermission: 'no',
-        smStaffAccessPermission: 'no', smAnalyticsAccessPermission: 'no', smInvitationsPermission: 'no'};
+        smStaffAccessPermission: 'no', smAnalyticsAccessPermission: 'no', smInvitationsPermission: 'no',
+        smProfileAccessPermission:'no', smPersonalAnalyticsPermission:'no', smAccountOnboardingPermission:'no'};
     for (let index = 0; index < actors.length; index++) {
         const viewer = actors[index];
         await ok('Role/' + actorRoles[index].id, 'PUT', {...denied, data: {...allAcl, SmRoleAdministration: false}});
@@ -236,12 +229,10 @@ async function login(type, role) {
         check((await request('SmShift', 'POST', {teamId: team.id, currency: 'USD'}, viewer.headers)).status === 403,
             'Preparation grant revoked');
         const hidden = await request('StudioManagement/analytics?from=2026-01-01&to=2026-12-31', 'GET', undefined, viewer.headers);
-        if (['Model', 'Operator'].includes(session.user.smAccountType)) {
-            check(hidden.status === 200 && hidden.data.personalOnly === true && !hidden.data.rows && !hidden.data.totals,
-                'Revoked studio grant leaves only built-in personal metrics');
-        } else {
-            check(hidden.status === 403, 'Studio analytics revoked, including technical director');
-        }
+        check(hidden.status === 403, 'Studio analytics permission revoked');
+        check((await request('StudioManagement/personal-analytics','GET',undefined,viewer.headers)).status === 403,
+            'Personal analytics permission revoked');
+
     }
     // Invitation catalog permission must not imply permission to manage Role records.
     await ok('Role/' + actorRoles[0].id, 'PUT', {smInvitationsPermission: 'yes'});
@@ -260,7 +251,6 @@ async function login(type, role) {
     check((await request('StudioManagement/staff/model', 'GET', undefined, actor.headers)).status === 403,
         'Native staff tab ACL is authoritative');
     const personalOnly = await request('StudioManagement/analytics?from=2026-01-01&to=2026-12-31', 'GET', undefined, actor.headers);
-    check(personalOnly.status === 200 && personalOnly.data.personalOnly === true && !personalOnly.data.rows && !personalOnly.data.totals,
-        'Native analytics denial still protects studio finances; model retains personal metrics only');
+    check(personalOnly.status === 403, 'Native analytics denial protects studio finances');
     console.log('Dynamic roles HTTP: ' + checks + ' checks passed; 400 roles; ' + ((Date.now() - started) / 1000).toFixed(1) + 's. Run fixture cleanup.');
 })().catch(error => { console.error(error.message); process.exitCode = 1; });

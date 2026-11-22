@@ -54,7 +54,7 @@ final class AccountOnboarding
         }
         $scope = ['type' => User::TYPE_REGULAR, self::PENDING => true, 'isActive' => false];
         if (!$canApproveAll) {
-            $scope['OR'] = [['smRecruiterId' => $actor->getId()], ['smRecruiterId' => null]];
+            $scope['smRecruiterId'] = $actor->getId();
         }
         return $scope;
     }
@@ -87,6 +87,9 @@ final class AccountOnboarding
         return $this->em->getTransactionManager()->run(function () use ($actor, $id, $data, $complete) {
             $user = $this->getPending($actor, $id, true);
             $user->set($this->validateProfile($data));
+            if (!$user->get('smRecruiterId') && ($user->get('smRecruiterRewardMode') ?: 'None') !== 'None') {
+                throw WorkflowError::badRequest('Тип выплаты доступен после назначения сотрудника, который привёл человека.');
+            }
             if ($complete) {
                 $user->set([
                     self::PENDING => false,
@@ -180,7 +183,7 @@ final class AccountOnboarding
     {
         $data = ['id' => $user->getId(), 'name' => $user->get('name'),
             'userName' => $user->getUserName(), 'accountType' => $user->get('smAccountType'), 'photos' => []];
-        foreach (array_merge(self::PERCENT_FIELDS, array_keys(self::TEXT_FIELDS), self::DATE_FIELDS) as $field) {
+        foreach (array_merge(self::PERCENT_FIELDS, array_keys(self::TEXT_FIELDS), self::DATE_FIELDS, ['smRecruiterRewardMode']) as $field) {
             $data[$field] = $user->get($field);
         }
         foreach ($this->photoQuery($user)->select(['id', 'name'])->order('createdAt')->find() as $photo) {
@@ -193,6 +196,15 @@ final class AccountOnboarding
     {
         $values = [];
         foreach ((array) $data as $field => $value) {
+            if ($field === 'smRecruiterRewardMode') {
+                if (!in_array($value, ['None', 'FlatAfterFiveShifts', 'PercentPerShift'], true)) {
+                    throw WorkflowError::badRequest('Выберите корректный тип выплаты рекрутеру.');
+                }
+                $values[$field] = $value;
+                $values['smRecruiterPercent'] = '5';
+                $values['smRecruiterFlatAmount'] = '150';
+                continue;
+            }
             if (in_array($field, self::PERCENT_FIELDS, true)) {
                 if ($value === '' || $value === null) {
                     $values[$field] = null;

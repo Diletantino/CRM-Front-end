@@ -43,22 +43,35 @@ assert.equal(chosenPeriod, 'week'); assert.equal(loaded, 1); checks += 2;
 handlers.get('[data-analytics-tab]')({preventDefault() {}, currentTarget: {dataset: {}}},
     {dataset: {analyticsTab: 'hours'}});
 assert.equal(chosenTab, 'hours'); checks++;
-let Controller, Navbar;
+let Controller, PersonalController, Navbar, Policy;
 vm.runInNewContext(fs.readFileSync(path.join(root,
-    'client/custom/modules/studio-management/src/controllers/sm-analytics.js'), 'utf8'), {
-    define: (deps, factory) => { Controller = factory(class {}); },
+    'client/custom/modules/studio-management/src/role-policy.js'), 'utf8'), {
+    define: (deps, factory) => { Policy = factory(); },
 });
-vm.runInNewContext(fs.readFileSync(path.join(root,
-    'client/custom/modules/studio-management/src/views/site/navbar.js'), 'utf8'), {
-    define: (deps, factory) => { Navbar = factory(class {getTabList() {return ['SmShift', 'SmAnalytics'];}},
-        {canApproveAccounts: () => false, canAccessOnboarding: () => true}); },
-});
-for (const [type, allowed] of [['Operator',true],['Model',true],['Recruiter',false]]) {
-    const actor = {getUser:()=>({get:()=>type,isAdmin:()=>false}),getAcl:()=>({check:()=>false,getLevel:()=> 'own'}),translate:()=> 'Personal Analytics'};
-    const controller = Object.assign(new Controller(), actor);
-    assert.equal(controller.checkAccess(), allowed); checks++;
-    const list = Object.assign(new Navbar(), actor).getTabList();
-    assert.equal(list[1]?.url === '#SmAnalytics', allowed); checks++;
+for (const [file, assign] of [
+    ['controllers/sm-analytics.js', value => {Controller=value;}],
+    ['controllers/sm-personal-analytics.js', value => {PersonalController=value;}],
+    ['views/site/navbar.js', value => {Navbar=value;}],
+]) {
+    vm.runInNewContext(fs.readFileSync(path.join(root,
+        'client/custom/modules/studio-management/src/'+file), 'utf8'), {
+        define: (deps, factory) => assign(factory(class {getTabList() {return ['SmShift', 'SmAnalytics'];}}, Policy)),
+    });
+}
+for (const type of ['Operator','Model','Recruiter','ProducerAdmin']) {
+    for (const allowed of [false,true]) {
+        const actor = {
+            getUser:()=>({get:name=>name==='type'?'regular':type,isAdmin:()=>false}),
+            getAcl:()=>({check:()=>false,checkScope:()=>false,getLevel:()=> 'no',
+                getPermissionLevel:permission=>permission==='smPersonalAnalytics'&&allowed?'yes':'no'}),
+            translate:()=> 'Personal Analytics',
+        };
+        assert.equal(Object.assign(new Controller(),actor).checkAccess(),false); checks++;
+        assert.equal(Object.assign(new PersonalController(),actor).checkAccess(),allowed); checks++;
+        const list=Object.assign(new Navbar(),actor).getTabList();
+        assert.equal(list.some(item=>item?.url==='#SmPersonalAnalytics'),allowed); checks++;
+        assert(!list.includes('SmAnalytics')); checks++;
+    }
 }
 for (const language of ['ru_RU', 'en_US']) {
     const locale = JSON.parse(fs.readFileSync(path.join(root,

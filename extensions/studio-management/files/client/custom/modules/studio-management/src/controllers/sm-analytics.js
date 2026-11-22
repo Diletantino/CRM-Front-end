@@ -1,8 +1,8 @@
-define(['controller'], function (Controller) {
+define(['controller', 'studio-management:role-policy'], function (Controller, RolePolicy) {
     return class extends Controller {
         checkAccess() {
-            return this.getAcl().check('SmAnalytics') ||
-                ['Operator', 'Model'].includes(this.getUser().get('smAccountType'));
+            return this.getAcl().check('SmAnalytics') &&
+                RolePolicy.level(this, 'smAnalyticsAccess', 'legacy') !== 'no';
         }
 
         actionIndex() {

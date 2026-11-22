@@ -1,4 +1,4 @@
-define(['view'], function (View) {
+define(['view', 'studio-management:role-policy'], function (View, RolePolicy) {
     return class extends View {
         template = 'studio-management:staff/list'
 
@@ -12,6 +12,7 @@ define(['view'], function (View) {
             const label = name => this.translate(name, 'labels', this.scope);
 
             return {
+                fullProfile: RolePolicy.level(this, 'smProfileAccess') === 'all',
                 isOperator: this.staffType === 'operator',
                 title: this.translate(this.scope, 'scopeNames'),
                 labels: {
@@ -60,7 +61,7 @@ define(['view'], function (View) {
             if (!rows.length) {
                 $('<tr>').append(
                     $('<td>')
-                        .attr('colspan', isOperator ? 11 : 9)
+                        .attr('colspan', RolePolicy.level(this, 'smProfileAccess') === 'all' ? (isOperator ? 11 : 9) : 3)
                         .addClass('text-muted text-center')
                         .text(this.translate('noData', 'messages', this.scope))
                 ).appendTo($body);
@@ -71,6 +72,19 @@ define(['view'], function (View) {
             rows.forEach((row, index) => {
                 const $tr = $('<tr>');
                 $('<td>').text(index + 1).appendTo($tr);
+                const level = RolePolicy.level(this, 'smProfileAccess');
+                if (level !== 'all') {
+                    const $name = level === 'no' ? $('<span>') : $('<a>').attr('href', `#User/view/${encodeURIComponent(row.id)}`);
+                    $('<td>').append($name.text(row.name || '—')).appendTo($tr);
+                    const $photo = $('<td>');
+                    if (level !== 'no' && row.hasAvatar) {
+                        $('<img>').attr('src', `${this.getBasePath()}?entryPoint=avatar&size=small&id=${encodeURIComponent(row.id)}`)
+                            .attr('alt', row.name || '').css({width:'38px', height:'38px', borderRadius:'50%'}).appendTo($photo);
+                    }
+                    $photo.appendTo($tr);
+                    $tr.appendTo($body);
+                    return;
+                }
                 $('<td>').append(
                     $('<a>').attr('href', `#User/view/${encodeURIComponent(row.id)}`).text(row.name || '—')
                 ).appendTo($tr);

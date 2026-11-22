@@ -11,6 +11,7 @@
                 <tr>
                     <th>#</th>
                     <th>{{labels.fullName}}</th>
+                    {{#if fullProfile}}
                     <th>{{labels.birthDate}}</th>
                     {{#if isOperator}}<th>{{labels.contact}}</th>{{/if}}
                     <th>{{labels.photo}}</th>
@@ -24,6 +25,9 @@
                     {{/if}}
                     <th>{{labels.lastShift}}</th>
                     <th>{{labels.action}}</th>
+                    {{else}}
+                    <th>{{labels.photo}}</th>
+                    {{/if}}
                 </tr>
             </thead>
             <tbody class="staff-rows"></tbody>

@@ -11,7 +11,7 @@ define([], function () {
         if (user.isAdmin()) return true;
         if (user.get('type') !== 'regular') return false;
         const permission = level(view, 'smAccountOnboarding', 'not-set');
-        if (permission !== 'not-set') return ['yes', 'all'].includes(permission);
+        if (permission !== 'not-set') return ['yes', 'all', 'own'].includes(permission);
         if (user.get('smAccountType') === 'Recruiter') return true;
         const acl = view.getAcl();
         return level(view, 'smStaffAccess') === 'all' &&
@@ -47,6 +47,8 @@ define([], function () {
         },
         canApproveAccounts(view) {
             if (view.getUser().isAdmin()) return true;
+            const value = level(view, 'smAccountOnboarding', 'not-set');
+            if (value !== 'not-set') return ['yes', 'all'].includes(value);
             return canAccessOnboarding(view) && view.getUser().get('smAccountType') !== 'Recruiter';
         },
     };

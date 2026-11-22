@@ -1,4 +1,4 @@
 {
   "aclActionList": ["create", "read", "edit", "delete", "stream"],
-  "stream": true
+  "stream": false
 }

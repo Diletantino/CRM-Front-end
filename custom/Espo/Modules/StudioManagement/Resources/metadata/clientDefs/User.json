@@ -21,7 +21,7 @@
     "smSiteAccess",
     "smSiteData",
     "smProfilePhotos",
-    "smDocumentPhotos",
-    "smProfileComments"
-  ]
+    "smDocumentPhotos"
+  ],
+  "controller": "studio-management:controllers/user"
 }

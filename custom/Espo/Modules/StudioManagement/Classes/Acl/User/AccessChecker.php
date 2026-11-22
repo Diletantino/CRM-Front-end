@@ -8,6 +8,7 @@ use Espo\Core\Acl\ScopeData;
 use Espo\Core\Acl\Traits\DefaultAccessCheckerDependency;
 use Espo\Entities\User;
 use Espo\ORM\Entity;
+use Espo\Modules\StudioManagement\Tools\RolePolicy;
 
 /**
  * Makes the User CRUD matrix authoritative for delegated roles.
@@ -20,21 +21,16 @@ final class AccessChecker implements AccessEntityCREDSChecker
 {
     use DefaultAccessCheckerDependency;
 
-    public function __construct(private DefaultAccessChecker $defaultAccessChecker) {}
+    public function __construct(private DefaultAccessChecker $defaultAccessChecker, private RolePolicy $policy) {}
 
     public function check(User $user, ScopeData $data): bool
     {
-        return !$this->isRestrictedModel($user, $data) && $this->defaultAccessChecker->check($user, $data);
+        return $this->policy->profileLevel($user) !== 'no' || $this->defaultAccessChecker->check($user, $data);
     }
 
     public function checkRead(User $user, ScopeData $data): bool
     {
-        return !$this->isRestrictedModel($user, $data) && $this->defaultAccessChecker->checkRead($user, $data);
-    }
-
-    private function isRestrictedModel(User $user, ScopeData $data): bool
-    {
-        return !$user->isAdmin() && $user->get('smAccountType') === 'Model' && $data->getRead() !== 'all';
+        return $this->policy->profileLevel($user) !== 'no' || $this->defaultAccessChecker->checkRead($user, $data);
     }
 
     public function checkEntityCreate(User $user, Entity $entity, ScopeData $data): bool
@@ -48,16 +44,17 @@ final class AccessChecker implements AccessEntityCREDSChecker
 
     public function checkEntityRead(User $user, Entity $entity, ScopeData $data): bool
     {
-        if ($this->isRestrictedModel($user, $data)) return false;
+        if ($this->policy->profileLevel($user) === 'no') return false;
         if ($entity instanceof User && $entity->isSuperAdmin() && !$user->isSuperAdmin()) {
             return false;
         }
 
-        return $this->defaultAccessChecker->checkEntityRead($user, $entity, $data);
+        return true;
     }
 
     public function checkEntityEdit(User $user, Entity $entity, ScopeData $data): bool
     {
+        if ($this->policy->profileLevel($user) !== 'all') return false;
         if (!$entity instanceof User || $entity->isSystem()) {
             return false;
         }
@@ -84,6 +81,6 @@ final class AccessChecker implements AccessEntityCREDSChecker
 
     public function checkEntityStream(User $user, Entity $entity, ScopeData $data): bool
     {
-        return $this->defaultAccessChecker->checkEntityStream($user, $entity, $data);
+        return false;
     }
 }

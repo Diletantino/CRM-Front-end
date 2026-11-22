@@ -1,8 +1,7 @@
 {
   "mandatory": {
     "scopeLevel": {
-      "Role": "SmRoleAdministration",
-      "SmCredits": true
+      "Role": "SmRoleAdministration"
     }
   },
   "adminMandatory": {
@@ -25,7 +24,9 @@
     "smStaffAccessPermission",
     "smAnalyticsAccessPermission",
     "smInvitationsPermission",
-    "smAccountOnboardingPermission"
+    "smAccountOnboardingPermission",
+    "smProfileAccessPermission",
+    "smPersonalAnalyticsPermission"
   ],
   "valuePermissionHighestLevels": {
     "smShiftPreparePermission": "all",
@@ -35,7 +36,9 @@
     "smStaffAccessPermission": "all",
     "smAnalyticsAccessPermission": "all",
     "smInvitationsPermission": "yes",
-    "smAccountOnboardingPermission": "yes"
+    "smAccountOnboardingPermission": "all",
+    "smProfileAccessPermission": "all",
+    "smPersonalAnalyticsPermission": "yes"
   },
   "permissionsStrictDefaults": {
     "smShiftPreparePermission": "not-set",
@@ -45,6 +48,8 @@
     "smStaffAccessPermission": "not-set",
     "smAnalyticsAccessPermission": "not-set",
     "smInvitationsPermission": "not-set",
-    "smAccountOnboardingPermission": "not-set"
+    "smAccountOnboardingPermission": "not-set",
+    "smProfileAccessPermission": "no",
+    "smPersonalAnalyticsPermission": "no"
   }
 }

@@ -1,0 +1,5 @@
+{
+  "actionMiddlewareClassNameListMap": {
+    "get_/App/user": ["Espo\\Modules\\StudioManagement\\Api\\SessionProfileFilter"]
+  }
+}
