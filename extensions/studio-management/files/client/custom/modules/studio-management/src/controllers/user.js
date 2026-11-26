@@ -1,10 +1,9 @@
-define(['controllers/user', 'studio-management:role-policy'], function (UserController, RolePolicy) {
+define(['controllers/user', 'studio-management:role-policy', 'exceptions'], function (UserController, RolePolicy, Exceptions) {
     return class extends UserController {
         actionView(options) {
             const level = RolePolicy.level(this, 'smProfileAccess');
             if (level === 'no') {
-                this.getRouter().dispatch('Error', 'forbidden');
-                return;
+                throw new Exceptions.AccessDenied();
             }
             if (level !== 'all') {
                 this.main('studio-management:views/user/simple-profile', {profileId: options.id});
@@ -15,8 +14,7 @@ define(['controllers/user', 'studio-management:role-policy'], function (UserCont
 
         actionEdit(options) {
             if (RolePolicy.level(this, 'smProfileAccess') !== 'all') {
-                this.getRouter().dispatch('Error', 'forbidden');
-                return;
+                throw new Exceptions.AccessDenied();
             }
             return super.actionEdit(options);
         }

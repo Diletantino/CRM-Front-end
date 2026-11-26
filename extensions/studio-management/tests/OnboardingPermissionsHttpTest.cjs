@@ -43,12 +43,12 @@ async function register(type, role, recruiterId) {
 (async () => {
     try {
         const full = await create('Role', {name: `Approval full ${suffix}`, userPermission: 'all',
-            smStaffAccessPermission: 'all', smInvitationsPermission: 'yes',
+            smStaffAccessPermission: 'all', smInvitationsPermission: 'yes', smAccountOnboardingPermission: 'all',
             data: {User: {read: 'all', edit: 'all', create: 'yes', delete: 'all'}}, fieldData: {User: {}}});
         const limited = await create('Role', {name: `Approval limited ${suffix}`, smStaffAccessPermission: 'all',
             smInvitationsPermission: 'no', data: {User: {read: 'all', edit: 'all'}}});
         const approvalOnly = await create('Role', {name: `Approval only ${suffix}`,
-            smAccountOnboardingPermission: 'yes', smStaffAccessPermission: 'no', smInvitationsPermission: 'no', data: {}});
+            smAccountOnboardingPermission: 'all', smStaffAccessPermission: 'no', smInvitationsPermission: 'no', data: {}});
         const recruiter = await register('Recruiter', limited);
         await ok(`StudioManagement/onboarding/${recruiter.id}/complete`, 'POST', {});
         const managers = [];
@@ -67,8 +67,8 @@ async function register(type, role, recruiterId) {
         await ok(`StudioManagement/onboarding/${delegated.id}/complete`, 'POST', {});
         const target3 = await register('Model', limited, recruiter.id);
         for (const [label, actor, targetUser] of [
-            ['legacy Operator', managers[0], target],
-            ['legacy Model', managers[1], target2],
+            ['granted Operator', managers[0], target],
+            ['granted Model', managers[1], target2],
             ['approval-only Operator', delegated, target3],
         ]) {
             const queueResult = await request('StudioManagement/onboarding', 'GET', undefined, actor.headers);

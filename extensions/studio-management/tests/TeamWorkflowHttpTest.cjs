@@ -214,6 +214,9 @@ async function cleanup(list) {
         const session = Buffer.from(email + ':' + login.data.token).toString('base64');
         const actor = {...headers, Authorization: 'Basic ' + session, 'Espo-Authorization': session,
             'Espo-Authorization-By-Token': 'true'};
+        expect(login.data.acl.smProfileAccessPermission === 'no', 'Ordinary operator has no profile grant.');
+        expect((await request('User/' + registration.userId, 'GET', undefined, actor)).status === 403,
+            'Service link access does not open the operator profile.');
         const forbiddenInvite = await request('SmRegistrationLink', 'POST',
             {accountType: 'Operator', targetRoleId: operatorRole.id}, actor);
         expect(forbiddenInvite.status === 403, 'A non-administrator cannot create registration links.');

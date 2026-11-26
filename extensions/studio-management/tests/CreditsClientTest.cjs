@@ -15,6 +15,7 @@ for (const prefix of ['', 'extensions/studio-management/files/']) {
     }
 }
 const footer=fs.readFileSync(path.join(root,'client/res/templates/site/footer.tpl'),'utf8');
-assert(footer.includes('EspoCRM')); checks++;
+// Footer text is deliberately customizable; the removed Credits page must not restore it.
+assert(footer.includes('class="credit small"')); checks++;
 assert(fs.existsSync(path.join(root,'LICENSE.txt'))); checks++;
 console.log('Credits removal: '+checks+' checks passed.');

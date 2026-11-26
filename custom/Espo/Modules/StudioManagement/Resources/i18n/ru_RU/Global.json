@@ -1,4 +1,7 @@
 {
+  "labels": {
+    "Full Form": "Расширенная форма"
+  },
   "scopeNames": {
     "SmShift": "Смена",
     "SmModels": "Модели",

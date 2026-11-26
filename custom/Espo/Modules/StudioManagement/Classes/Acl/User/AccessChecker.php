@@ -44,11 +44,14 @@ final class AccessChecker implements AccessEntityCREDSChecker
 
     public function checkEntityRead(User $user, Entity $entity, ScopeData $data): bool
     {
-        if ($this->policy->profileLevel($user) === 'no') return false;
         if ($entity instanceof User && $entity->isSuperAdmin() && !$user->isSuperAdmin()) {
             return false;
         }
-
+        // Native relation validation still needs its own/team identity access.
+        // ProfileAccess blocks profile routes; ProfileOutputFilter strips private fields.
+        if ($this->policy->profileLevel($user) === 'no') {
+            return $this->defaultAccessChecker->checkEntityRead($user, $entity, $data);
+        }
         return true;
     }
 

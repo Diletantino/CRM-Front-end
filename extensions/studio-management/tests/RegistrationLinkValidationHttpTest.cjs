@@ -123,11 +123,18 @@ async function cleanup(fixtures) {
         checks++;
         const me = await request('App/user');
         assert.equal(me.status, 200);
-        const invalidRecruiter = await request('SmRegistrationLink', 'POST', {
+        const adminReferrer = await create('SmRegistrationLink', {
             accountType: 'Model', targetRoleId: roles.Model.id, recruiterId: me.data.user.id,
         });
+        assert.equal(adminReferrer.recruiterId, me.data.user.id);
+        checks++;
+        const inactive = await create('User', {userName:'inactive-'+suffix, firstName:'Inactive fixture',
+            type:'regular', isActive:false, smAccountType:'Model'});
+        const invalidRecruiter = await request('SmRegistrationLink', 'POST', {
+            accountType: 'Model', targetRoleId: roles.Model.id, recruiterId: inactive.id,
+        });
         assert.equal(invalidRecruiter.status, 400);
-        assert(invalidRecruiter.data.message?.includes('Рекрутер'));
+        assert(invalidRecruiter.data.message?.includes('активного сотрудника'));
         checks++;
         if (process.argv.includes('--ui-fixture')) {
             await cleanup(created.filter(([type]) => type !== 'Role'));
